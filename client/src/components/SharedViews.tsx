@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, ArrowLeft, Heart, Share2, Ticket, Sparkles, User, Mail, Phone, Users, CheckCircle } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, Heart, Share2, Ticket, Sparkles, User as UserIcon, Mail, Phone, Users, CheckCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import api from '../api/axios';
+import { useAuth } from '../contexts/AuthContext';
 
 // ─── Shared Event Detail View ───────────────────────────────────────────────────────────
 export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack: () => void, onRegister: () => void }) => {
@@ -232,13 +234,30 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
 // ─── Shared Register View ───────────────────────────────────────────────────────────
 export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void }) => {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const { isLoggedIn } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', team: '' });
 
   const isFormValid = formData.name && formData.email && formData.phone;
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
      e.preventDefault();
-     if(isFormValid) setStep(2); // Success state
+     if (!isLoggedIn) {
+       window.location.hash = '#signin';
+       return;
+     }
+     if (!isFormValid) return;
+
+     setLoading(true);
+     try {
+       await api.post(`/events/${event._id}/register`);
+       setStep(2); // Success state
+     } catch (err: any) {
+       console.error('Registration error:', err);
+       alert(err.response?.data?.message || 'Failed to register. Please try again.');
+     } finally {
+       setLoading(false);
+     }
   };
 
   return (
@@ -290,7 +309,7 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
           <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
              {/* Name */}
              <div style={{ position: 'relative' }}>
-                <User size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                <UserIcon size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                 <input required type="text" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
                   style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
                   onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')} />
@@ -323,15 +342,17 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
           
           <motion.button 
             type="submit"
+            disabled={loading}
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
             style={{ 
                background: isFormValid ? 'linear-gradient(135deg, #FF6F3F, #dc5022)' : 'rgba(255,255,255,0.1)',
                color: isFormValid ? '#fff' : '#64748b',
-               padding: '1.2rem', borderRadius: '12px', fontWeight: 700, border: 'none', cursor: isFormValid ? 'pointer' : 'not-allowed',
+               padding: '1.2rem', borderRadius: '12px', fontWeight: 700, border: 'none', cursor: (isFormValid && !loading) ? 'pointer' : 'not-allowed',
                marginTop: '1rem', fontSize: '1.1rem', fontFamily: "'Outfit', sans-serif",
-               transition: 'all 0.3s', boxShadow: isFormValid ? '0 8px 25px rgba(255,111,63,0.3)' : 'none'
+               transition: 'all 0.3s', boxShadow: isFormValid ? '0 8px 25px rgba(255,111,63,0.3)' : 'none',
+               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
             }}>
-            Confirm Registration
+            {loading ? <Loader2 size={24} className="spin" /> : 'Confirm Registration'}
           </motion.button>
         </motion.form>
         ) : (
@@ -349,6 +370,10 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
         </AnimatePresence>
 
       </motion.div>
+      <style>{`
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </motion.div>
   );
 };

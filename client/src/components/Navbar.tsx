@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, Bell, User, Settings, LogOut, Plus, TrendingUp, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../api/axios';
 
 interface NavbarProps {}
 
@@ -9,6 +10,23 @@ const Navbar: React.FC<NavbarProps> = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchNotifications();
+    }
+  }, [isLoggedIn]);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get('/notifications');
+      setNotifications(res.data);
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+    }
+  };
 
   // navLinks for easy mapping
   const navLinks = [
@@ -56,24 +74,95 @@ const Navbar: React.FC<NavbarProps> = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
           {isLoggedIn ? (
             <>
-              {/* Notifications */}
-              <motion.div 
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#666' }}
-              >
-                <Bell size={20} strokeWidth={2} />
-              </motion.div>
+              {/* Admin Panel Link - Only for Admins */}
+              {user?.role === 'admin' && (
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => window.location.hash = '#admin'}
+                  className="nav-button"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', fontSize: '0.85rem', color: '#ff6f3f', border: '1px solid rgba(255,111,63,0.3)' }}
+                >
+                  <TrendingUp size={16} /> <span className="mobile-hidden">Admin Panel</span>
+                </motion.button>
+              )}
 
-              {/* Create Event */}
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="nav-button"
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}
-              >
-                <Plus size={16} /> <span className="mobile-hidden">Create Event</span>
-              </motion.button>
+              {/* Notification Bell */}
+              <div style={{ position: 'relative' }}>
+                <motion.div 
+                  whileHover={{ scale: 1.1 }}
+                  className="nav-icon-button"
+                  style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#666' }}
+                  onClick={() => setShowNotifications(!showNotifications)}
+                >
+                  <Bell size={20} strokeWidth={2} />
+                  {notifications.length > 0 && (
+                    <span style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', background: '#ff6f3f', borderRadius: '50%', border: '2px solid #fff' }}></span>
+                  )}
+                </motion.div>
+
+                <AnimatePresence>
+                  {showNotifications && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      style={{
+                        position: 'absolute', top: '100%', right: 0, marginTop: '1rem',
+                        width: '300px', background: '#18181b', borderRadius: '16px',
+                        border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                        zIndex: 1000, padding: '1rem', maxHeight: '400px', overflowY: 'auto'
+                      }}
+                    >
+                      <h4 style={{ color: '#fff', fontSize: '0.9rem', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Notifications</h4>
+                      {notifications.length === 0 ? (
+                        <p style={{ color: '#52525b', fontSize: '0.8rem', textAlign: 'center', padding: '1rem' }}>No new notifications</p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                          {notifications.map((n) => (
+                            <div key={n._id} style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', borderLeft: '3px solid #ff6f3f' }}>
+                              <p style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 600, marginBottom: '2px' }}>{n.title}</p>
+                              <p style={{ color: '#a1a1aa', fontSize: '0.75rem', lineHeight: 1.4 }}>{n.message}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Create Event - Only if profile completed */}
+              {user?.hasCompletedProfile && (
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="nav-button"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}
+                >
+                  <Plus size={16} /> <span className="mobile-hidden">Create Event</span>
+                </motion.button>
+              )}
+              
+              {!user?.hasCompletedProfile && (
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => window.location.hash = '#signin'}
+                  style={{ 
+                    background: 'rgba(255, 111, 63, 0.1)', 
+                    color: '#ff6f3f', 
+                    border: '1px solid rgba(255, 111, 63, 0.2)',
+                    padding: '0.6rem 1.2rem',
+                    borderRadius: '999px',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Complete Profile
+                </motion.button>
+              )}
               
               {/* Profile Dropdown Trigger */}
               <div style={{ position: 'relative' }}>

@@ -1,42 +1,13 @@
-import { useState } from 'react';
-import { Calendar, MapPin, MoreHorizontal, Grid, List, Filter } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { Calendar, MapPin, MoreHorizontal, Grid, List, Filter, Loader2 } from 'lucide-react';
+import api from '../api/axios';
 import '../index.css';
 
-const events = [
-  {
-    id: 1,
-    title: 'National Healthcare Hackathon 2.0',
-    organizer: 'JECRC University',
-    date: 'Oct 12, 2024 • 9:00 AM PST',
-    venue: 'Moscone Center, SF / Hybrid',
-    image: '/event1.png',
-    category: 'Tech',
-    isMyEvent: true
-  },
-  {
-    id: 2,
-    title: 'Hukum Holi Fest',
-    organizer: 'JECRC University',
-    date: 'Oct 12, 2024 • 9:00 AM PST',
-    venue: 'Moscone Center, SF / Hybrid',
-    image: '/event2.png',
-    category: 'Music',
-    isMyEvent: false
-  },
-  {
-    id: 3,
-    title: 'Code Sparks: Intro to Python',
-    organizer: 'Tech Innovators',
-    date: 'Oct 15, 2024 • 11:00 AM PST',
-    venue: 'Virtual',
-    image: '/event1.png',
-    category: 'Tech',
-    isMyEvent: true
-  }
-];
+// ─── Shared View Imports ───────────────────────────────────────────────────────────
+import { EventDetail, RegisterView } from '../components/SharedViews';
 
+// ─── Timeline View Card ───────────────────────────────────────────────────────
 const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index: number, onViewMore: () => void, onRegister: () => void }) => {
   return (
     <motion.div 
@@ -73,7 +44,7 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
       }}
       onClick={onViewMore}
     >
-      <div className="event-card-image-box" style={{ width: '240px', height: '240px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
+      <div className="event-card-image-box" style={{ width: '240px', height: '180px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
         <motion.img 
           src={event.image} 
           alt={event.title} 
@@ -174,7 +145,7 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
         boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
         border: '1px solid rgba(255,255,255,0.05)',
         cursor: 'pointer',
-        maxWidth: '320px'
+        maxWidth: '100%'
       }}
       variants={{
         hover: {
@@ -220,7 +191,7 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           style={{
-            background: '#3b82f6',
+            background: '#ff6f3f',
             color: '#fff',
             border: 'none',
             padding: '0.6rem 1rem',
@@ -259,35 +230,46 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
   );
 };
 
-// ─── Event Details View ───────────────────────────────────────────────────────
-import { EventDetail, RegisterView } from '../components/SharedViews';
-
-export default function Events({ isLoggedIn }: { isLoggedIn?: boolean }) {
+// ─── Main Events Component ───────────────────────────────────────────────────────
+export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [currentView, setCurrentView] = useState<'list' | 'details' | 'register'>('list');
+  const [eventList, setEventList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'timeline' | 'grid'>('timeline');
-  const [filterDate, setFilterDate] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
 
-  const filteredEvents = events.filter(event => {
-    const matchDate = filterDate === 'all' || event.date.includes(filterDate);
-    const matchCategory = filterCategory === 'all' || event.category === filterCategory;
-    return matchDate && matchCategory;
-  }).sort((a: any, b: any) => {
-    if (a.isMyEvent && !b.isMyEvent) return -1;
-    if (!a.isMyEvent && b.isMyEvent) return 1;
-    return 0;
-  });
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/events');
+      setEventList(res.data);
+    } catch (err) {
+      console.error('Failed to fetch events:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (event: any) => {
+    if (!isLoggedIn) {
+       window.location.hash = '#signin';
+       return;
+    }
+    // We can go to the register view or call direct API depending on which button was clicked
+    // Here, for the "Register Now" button, we show the RegisterView
+    setSelectedEvent(event);
+    setCurrentView('register');
+    window.scrollTo(0, 0);
+  };
 
   const handleViewMore = (event: any) => {
     setSelectedEvent(event);
     setCurrentView('details');
-    window.scrollTo(0, 0);
-  };
-
-  const handleRegister = (event: any) => {
-    setSelectedEvent(event);
-    setCurrentView('register');
     window.scrollTo(0, 0);
   };
 
@@ -296,247 +278,112 @@ export default function Events({ isLoggedIn }: { isLoggedIn?: boolean }) {
     setSelectedEvent(null);
   };
 
+  const filteredEvents = eventList.filter(event => {
+    const matchCategory = filterCategory === 'all' || event.category === filterCategory;
+    return matchCategory;
+  });
+
   return (
     <div style={{
       minHeight: '100vh',
       backgroundColor: '#09090b',
       backgroundImage: `
-        radial-gradient(circle at top right, rgba(138, 43, 226, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 80% 20%, rgba(255, 60, 150, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at top center, rgba(30, 60, 150, 0.1) 0%, transparent 60%)
+        radial-gradient(circle at top right, rgba(255, 111, 63, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%)
       `,
       fontFamily: "'Outfit', sans-serif",
       overflowX: 'hidden'
     }}>
-
-
       <AnimatePresence mode="wait">
         {currentView === 'list' && (
           <motion.main 
             key="list"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.4 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="events-main-section" 
-            style={{ padding: '8rem 6rem 4rem 6rem', display: 'flex', flexDirection: 'column', maxWidth: '1400px', margin: '0 auto' }}
+            style={{ padding: '8rem 2rem 4rem 2rem', display: 'flex', flexDirection: 'column', maxWidth: '1200px', margin: '0 auto' }}
           >
-            <motion.h1 
-              className="events-h1"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              style={{ 
-                color: '#fff', 
-                fontSize: '3.5rem', 
-                fontWeight: 700, 
-                marginBottom: '2rem',
-                display: 'flex',
-                alignItems: 'baseline',
-                justifyContent: 'center'
-              }}
-            >
-              Events<motion.span 
-                className="events-dot"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 10 }}
-                style={{ color: '#3b82f6', fontSize: '4rem', lineHeight: '0' }}
-              >.</motion.span>
-            </motion.h1>
+            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{ color: '#fff', fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 800, marginBottom: '1rem' }}
+              >
+                Campus Events<span style={{ color: '#ff6f3f' }}>.</span>
+              </motion.h1>
+              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Explore and register for the latest happenings on campus.</p>
+            </div>
 
-            {/* Filters and View Toggle */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}
-            >
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Filter size={16} color="#94a3b8" />
-                  <select
-                    value={filterDate}
-                    onChange={e => setFilterDate(e.target.value)}
-                    style={{
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '8px', padding: '0.5rem 1rem', color: '#e2e8f0',
-                      fontSize: '0.85rem', outline: 'none'
-                    }}
-                  >
-                    <option value="all">All Dates</option>
-                    <option value="Oct">October</option>
-                    <option value="Nov">November</option>
-                  </select>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Category:</span>
-                  <select
-                    value={filterCategory}
-                    onChange={e => setFilterCategory(e.target.value)}
-                    style={{
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '8px', padding: '0.5rem 1rem', color: '#e2e8f0',
-                      fontSize: '0.85rem', outline: 'none'
-                    }}
-                  >
-                    <option value="all">All Categories</option>
-                    <option value="Tech">Tech</option>
-                    <option value="Music">Music</option>
-                  </select>
-                </div>
+            {/* Filters */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Filter size={16} color="#64748b" />
+                    <select
+                      value={filterCategory}
+                      onChange={e => setFilterCategory(e.target.value)}
+                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
+                    >
+                      <option value="all">All Categories</option>
+                      {['Tech', 'Music', 'Gaming', 'Dance', 'Culture', 'Academics', 'Workshops'].map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <motion.button
-                  onClick={() => setViewMode('timeline')}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  style={{
-                    background: viewMode === 'timeline' ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${viewMode === 'timeline' ? '#3b82f6' : 'rgba(255,255,255,0.1)'}`,
-                    borderRadius: '8px', padding: '0.5rem', color: '#e2e8f0',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
-                  }}
-                >
-                  <List size={16} />
-                  Timeline
-                </motion.button>
-                <motion.button
-                  onClick={() => setViewMode('grid')}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  style={{
-                    background: viewMode === 'grid' ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${viewMode === 'grid' ? '#3b82f6' : 'rgba(255,255,255,0.1)'}`,
-                    borderRadius: '8px', padding: '0.5rem', color: '#e2e8f0',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
-                  }}
-                >
-                  <Grid size={16} />
-                  Grid
-                </motion.button>
+              <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <button onClick={() => setViewMode('timeline')} style={{ background: viewMode === 'timeline' ? '#ff6f3f' : 'transparent', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
+                   <List size={16} /> Timeline
+                </button>
+                <button onClick={() => setViewMode('grid')} style={{ background: viewMode === 'grid' ? '#ff6f3f' : 'transparent', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
+                   <Grid size={16} /> Grid
+                </button>
               </div>
-            </motion.div>
+            </div>
 
-            {viewMode === 'timeline' ? (
-              <div style={{ display: 'flex', gap: '4rem', width: '100%' }}>
-                {/* Left Timeline Section */}
-                <div className="mobile-hidden" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100px' }}>
-                  <div style={{
-                    background: 'transparent',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    borderRadius: '20px',
-                    padding: '0.5rem 1.25rem',
-                    fontSize: '0.95rem',
-                    fontWeight: 500,
-                    marginBottom: '2rem',
-                    zIndex: 2
-                  }}>
-                    Today
-                  </div>
-                  
-                  <div style={{ position: 'relative', width: '2px', background: 'rgba(255,255,255,0.1)', flex: 1 }}>
-                     {filteredEvents.map((_, index) => (
-                       <div key={index} style={{
-                         position: 'absolute',
-                         top: `calc(${index * 280}px + 60px)`,
-                         left: '50%',
-                         transform: 'translateX(-50%)',
-                         width: '12px',
-                         height: '12px',
-                         background: '#3b82f6',
-                         borderRadius: '50%',
-                         boxShadow: '0 0 0 4px #0a0a0c'
-                       }}></div>
-                     ))}
-                  </div>
-                </div>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', flex: 1, paddingBottom: '4rem' }}>
-                  {filteredEvents.map((event, index) => (
-                    <EventCard 
-                      key={event.id} 
-                      event={event} 
-                      index={index} 
-                      onViewMore={() => handleViewMore(event)}
-                      onRegister={() => handleRegister(event)} 
-                    />
-                  ))}
-                </div>
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}><Loader2 className="spin" size={40} color="#ff6f3f" /></div>
+            ) : filteredEvents.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '5rem', opacity: 0.5 }}>No events found. Check back later!</div>
+            ) : viewMode === 'timeline' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                {filteredEvents.map((event, idx) => (
+                  <EventCard key={event._id} event={event} index={idx} onViewMore={() => handleViewMore(event)} onRegister={() => handleRegister(event)} />
+                ))}
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem', paddingBottom: '4rem' }}
-              >
-                {filteredEvents.map((event, index) => (
-                  <GridEventCard 
-                    key={event.id} 
-                    event={event} 
-                    index={index} 
-                    onViewMore={() => handleViewMore(event)}
-                    onRegister={() => handleRegister(event)} 
-                  />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
+                {filteredEvents.map((event, idx) => (
+                  <GridEventCard key={event._id} event={event} index={idx} onViewMore={() => handleViewMore(event)} onRegister={() => handleRegister(event)} />
                 ))}
-              </motion.div>
+              </div>
             )}
           </motion.main>
         )}
 
         {currentView === 'details' && selectedEvent && (
-          <EventDetail key="details" event={selectedEvent} onBack={handleBack} onRegister={() => handleRegister(selectedEvent)} />
+          <EventDetail event={selectedEvent} onBack={handleBack} onRegister={() => handleRegister(selectedEvent)} />
         )}
 
         {currentView === 'register' && selectedEvent && (
-          <RegisterView key="register" event={selectedEvent} onBack={handleBack} />
+          <RegisterView event={selectedEvent} onBack={handleBack} />
         )}
       </AnimatePresence>
 
-      {/* Auth Blur Overlay */}
-      {!isLoggedIn && currentView === 'list' && (
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '100vh',
-          background: 'linear-gradient(to top, #09090b 40%, rgba(9,9,11,0.7) 70%, transparent 100%)',
-          zIndex: 100,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'all',
-          backdropFilter: 'blur(6px)',
-          paddingTop: '30vh'
-        }}>
-          <div style={{ textAlign: 'center', maxWidth: '450px', padding: '2rem' }}>
-            <h2 style={{ color: '#fff', fontSize: '2.5rem', fontWeight: 800, marginBottom: '1.25rem' }}>The best events, just for you.</h2>
-            <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginBottom: '2.5rem' }}>Sign in to see full event details, register for workshops, and track your campus life.</p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => { window.location.hash = '#signin'; }}
-              style={{
-                background: '#fff',
-                color: '#000',
-                border: 'none',
-                padding: '1.25rem 3rem',
-                borderRadius: '50px',
-                fontWeight: 700,
-                fontSize: '1.1rem',
-                cursor: 'pointer',
-                boxShadow: '0 15px 35px rgba(255,255,255,0.1)'
-              }}
-            >
-              Login to view more
-            </motion.button>
-          </div>
+      {!isLoggedIn && (
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '40vh', background: 'linear-gradient(to top, #09090b 40%, transparent 100%)', zIndex: 10, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '4rem', pointerEvents: 'none' }}>
+           <div style={{ textAlign: 'center', background: 'rgba(24, 24, 27, 0.8)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.05)', pointerEvents: 'all', maxWidth: '400px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Want to see more?</h3>
+              <p style={{ opacity: 0.5, fontSize: '0.9rem', marginBottom: '1.5rem' }}>Sign in to view all details and register for events.</p>
+              <button onClick={() => window.location.hash = '#signin'} style={{ background: '#ff6f3f', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', width: '100%' }}>Login to Continue</button>
+           </div>
         </div>
       )}
+
+      <style>{`
+        .spin { animation: spin-anim 1s linear infinite; }
+        @keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }

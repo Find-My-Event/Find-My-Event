@@ -22,6 +22,33 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  age: {
+    type: Number,
+  },
+  gender: {
+    type: String,
+  },
+  interests: {
+    type: [String],
+    default: [],
+  },
+  hobbies: {
+    type: [String],
+    default: [],
+  },
+  favEvents: {
+    type: [String],
+    default: [],
+  },
+  hasCompletedProfile: {
+    type: Boolean,
+    default: false,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
   isVerified: {
     type: Boolean,
     default: false,

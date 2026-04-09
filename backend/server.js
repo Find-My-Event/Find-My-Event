@@ -78,7 +78,14 @@ passport.deserializeUser(async (id, done) => {
 
 // Import Routes
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
+const eventRoutes = require('./routes/events');
+const notificationRoutes = require('./routes/notifications');
+
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Google Auth Routes
 app.get('/auth/google',

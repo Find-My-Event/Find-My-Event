@@ -9,6 +9,7 @@ import Events from './pages/Events';
 import Discover from './pages/Discover';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import Footer from './components/Footer';
 import ServiceShowcase from './components/ServiceShowcase';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -56,7 +57,7 @@ function AppContent() {
 
   useEffect(() => {
     // Only initialize Lenis and GSAP ScrollTrigger on the Home route
-    if (currentRoute === '#events' || currentRoute === '#discover' || currentRoute === '#signin') {
+    if (currentRoute === '#events' || currentRoute === '#discover' || currentRoute === '#signin' || currentRoute === '#admin') {
        document.body.style.backgroundColor = '';
        document.body.style.color = '';
        return;
@@ -131,6 +132,13 @@ function AppContent() {
     if (currentRoute === '#events') return <Events isLoggedIn={isLoggedIn} />;
     if (currentRoute === '#discover') return <Discover isLoggedIn={isLoggedIn} />;
     if (currentRoute === '#signin') return <Auth />;
+    if (currentRoute === '#admin') {
+      if (isLoggedIn && user?.role === 'admin') {
+        return <AdminDashboard />;
+      }
+      window.location.hash = '#home';
+      return null;
+    }
     
     if (isLoggedIn) return <Dashboard />;
     
