@@ -5,8 +5,13 @@ import api from '../api/axios';
 import { useAuth } from '../contexts/AuthContext';
 
 // ─── Shared Event Detail View ───────────────────────────────────────────────────────────
+import { useLikedEvents } from '../hooks/useLikedEvents';
+
 export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack: () => void, onRegister: () => void }) => {
-  const [isLiked, setIsLiked] = useState(false);
+  const { isLiked: _isLiked, toggleLike } = useLikedEvents();
+  const eventId = event?.id ? String(event.id) : null;
+  const isLiked = eventId ? _isLiked(eventId) : false;
+
   const [isShared, setIsShared] = useState(false);
 
   return (
@@ -73,7 +78,7 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
           position: 'absolute', top: '1.5rem', right: '1.5rem',
           display: 'flex', gap: '0.75rem'
         }}>
-          <motion.button onClick={() => setIsLiked(!isLiked)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          <motion.button onClick={() => { if (eventId) toggleLike(eventId); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
             style={{
               width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)',
               border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',

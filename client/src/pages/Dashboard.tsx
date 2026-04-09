@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Calendar, Search, MapPin, Star, TrendingUp, Bell, Plus, Users, ArrowRight, User, Edit2, Check, X, Loader2 } from 'lucide-react';
+import { darkPageShell } from '../theme/darkShell';
 
 const Dashboard: React.FC = () => {
   const { user, updateProfile } = useAuth();
@@ -47,8 +48,8 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#09090b', color: '#fff', padding: '100px 5% 50px' }}>
-      <div className="dot-grid" style={{ opacity: 0.1 }}></div>
+    <div style={{ ...darkPageShell, padding: '100px 5% 50px' }}>
+      <div className="dot-grid" style={{ opacity: 0.15 }}></div>
       
       {/* Header Section */}
       <motion.div 
@@ -58,7 +59,7 @@ const Dashboard: React.FC = () => {
       >
         <div>
           <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-            Hello, <span style={{ color: '#ff6f3f' }}>{user?.name.split(' ')[0]}!</span>
+            Hello, <span style={{ color: '#ff6f3f' }}>{user?.name ? user.name.split(' ')[0] : 'User'}!</span>
           </h1>
           <p style={{ opacity: 0.6, fontSize: '1.1rem' }}>Welcome back to your personalized campus hub.</p>
         </div>
@@ -216,7 +217,7 @@ const Dashboard: React.FC = () => {
       </AnimatePresence>
 
       {/* Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '4rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.5rem', marginBottom: '4rem' }}>
         {stats.map((stat, idx) => (
           <motion.div
             key={stat.label}
@@ -244,45 +245,53 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '3rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: '3rem' }}>
         {/* Left Column: My Schedule */}
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Upcoming Schedule</h2>
-            <button style={{ background: 'none', border: 'none', color: '#ff6f3f', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button onClick={() => window.location.hash = '#events'} style={{ background: 'none', border: 'none', color: '#ff6f3f', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               View all <ArrowRight size={16} />
             </button>
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {upcomingEvents.map((event, idx) => (
-              <motion.div
-                key={event.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + idx * 0.1 }}
-                style={{
-                  display: 'flex',
-                  gap: '1.5rem',
-                  background: 'rgba(255,255,255,0.02)',
-                  padding: '1rem',
-                  borderRadius: '20px',
-                  border: '1px solid rgba(255,255,255,0.03)',
-                  alignItems: 'center'
-                }}
-              >
-                <div style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
-                  <img src={event.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.4rem' }}>{event.title}</h3>
-                  <div style={{ display: 'flex', gap: '1rem', opacity: 0.5, fontSize: '0.85rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={14} /> {event.date}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><MapPin size={14} /> {event.venue}</span>
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event, idx) => (
+                <motion.div
+                  key={event.title}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + idx * 0.1 }}
+                  style={{
+                    display: 'flex',
+                    gap: '1.5rem',
+                    background: 'rgba(255,255,255,0.02)',
+                    padding: '1rem',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(255,255,255,0.03)',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
+                    <img src={event.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.4rem' }}>{event.title}</h3>
+                    <div style={{ display: 'flex', gap: '1rem', opacity: 0.5, fontSize: '0.85rem' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={14} /> {event.date}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><MapPin size={14} /> {event.venue}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+               <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                  <Calendar size={40} color="#666" style={{ margin: '0 auto 1rem auto' }} />
+                  <p style={{ color: '#ccc', fontSize: '1.1rem', marginBottom: '0.5rem' }}>No upcoming events</p>
+                  <p style={{ color: '#666', fontSize: '0.9rem' }}>Events you register for will appear here.</p>
+               </div>
+            )}
           </div>
         </section>
 
@@ -290,7 +299,7 @@ const Dashboard: React.FC = () => {
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Recommended for You</h2>
-            <button style={{ background: 'none', border: 'none', color: '#ff6f3f', fontWeight: 600, cursor: 'pointer' }}>See all</button>
+            <button onClick={() => window.location.hash = '#discover'} style={{ background: 'none', border: 'none', color: '#ff6f3f', fontWeight: 600, cursor: 'pointer' }}>See all</button>
           </div>
 
           <div style={{ background: 'linear-gradient(135deg, rgba(255,111,63,0.1) 0%, rgba(139,92,246,0.1) 100%)', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
@@ -298,7 +307,7 @@ const Dashboard: React.FC = () => {
              <div style={{ position: 'relative', zIndex: 1 }}>
                 <h3 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '0.75rem' }}>Smart Recommendations</h3>
                 <p style={{ opacity: 0.7, lineHeight: 1.6, marginBottom: '1.5rem' }}>Based on your interests, we found 5 new workshops and 2 hackathons happening next week.</p>
-                <button style={{ background: '#fff', color: '#000', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                <button onClick={() => window.location.hash = '#discover'} style={{ background: '#fff', color: '#000', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>
                   Explore Now
                 </button>
              </div>
@@ -308,7 +317,7 @@ const Dashboard: React.FC = () => {
 
       {/* Action shortcuts */}
       <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', display: 'flex', gap: '1rem', zIndex: 100 }}>
-        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#ff6f3f', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(255,111,63,0.3)', cursor: 'pointer' }}>
+        <motion.button onClick={() => window.location.hash = '#create-event'} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#ff6f3f', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(255,111,63,0.3)', cursor: 'pointer' }}>
           <Plus size={24} />
         </motion.button>
         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(0,0,0,0.3)', cursor: 'pointer' }}>

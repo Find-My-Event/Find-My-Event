@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -14,6 +14,8 @@ interface User {
   favEvents?: string[];
   hasCompletedProfile?: boolean;
   role: 'user' | 'admin';
+  notifyEmail?: boolean;
+  publicProfile?: boolean;
 }
 
 interface AuthContextType {
@@ -25,6 +27,8 @@ interface AuthContextType {
   handleLogin: (email: string, password: string) => Promise<any>;
   setupProfile: (profileData: any) => Promise<any>;
   updateProfile: (profileData: any) => Promise<any>;
+  updateSettings: (payload: { notifyEmail?: boolean; publicProfile?: boolean }) => Promise<any>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
   isLoggedIn: boolean;
 }
@@ -47,8 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUser = async () => {
     try {
-      const { data } = await api.get('/auth/me');
-      setUser(data);
+      const { data } = await api.get<User>('/auth/me');
+      setUser({ ...data, id: String(data.id) });
     } catch (err) {
       setToken(null);
       localStorage.removeItem('token');
@@ -57,6 +61,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     }
   };
+
+  const refreshUser = useCallback(async () => {
+    if (!token) return;
+    try {
+      const { data } = await api.get<User>('/auth/me');
+      setUser({ ...data, id: String(data.id) });
+    } catch {
+      /* ignore */
+    }
+  }, [token]);
 
   const register = (name: string, email: string, password: string) => {
     return api.post('/auth/register', { name, email, password });
@@ -67,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(data.token);
     localStorage.setItem('token', data.token);
     api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-    setUser(data.user);
+    setUser({ ...data.user, id: String(data.user.id) });
     return data;
   };
 
@@ -76,27 +90,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(data.token);
     localStorage.setItem('token', data.token);
     api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-    setUser(data.user);
+    setUser({ ...data.user, id: String(data.user.id) });
     return data;
   };
 
   const setupProfile = async (profileData: any) => {
-    console.log('DEBUG: AuthContext setupProfile called with:', profileData);
-    console.log('DEBUG: AuthContext current user state:', user);
-    if (!user) {
-      console.error('DEBUG: setupProfile aborted because user is null');
-      throw new Error('User not registered in session');
-    }
+    if (!user) throw new Error('User not registered in session');
     const { data } = await api.post('/auth/setup-profile', { userId: user.id || (user as any)._id, ...profileData });
-    console.log('DEBUG: setupProfile API response:', data);
-    setUser(data.user);
+    setUser({ ...data.user, id: String(data.user.id) });
     return data;
   };
 
   const updateProfile = async (profileData: any) => {
     if (!user) return;
-    const { data } = await api.put('/auth/update-profile', { userId: user.id, ...profileData });
-    setUser(data.user);
+    // We try PUT update-profile first as it's the more comprehensive one from Remote
+    try {
+      const { data } = await api.put('/auth/update-profile', { userId: user.id, ...profileData });
+      setUser({ ...data.user, id: String(data.user.id) });
+      return data;
+    } catch {
+      // Fallback to PATCH profile if PUT fails (legacy or different logic)
+      const { data } = await api.patch('/auth/profile', profileData);
+      setUser({ ...data.user, id: String(data.user.id) });
+      return data;
+    }
+  };
+
+  const updateSettings = async (payload: { notifyEmail?: boolean; publicProfile?: boolean }) => {
+    const { data } = await api.patch('/auth/settings', payload);
+    setUser({ ...data.user, id: String(data.user.id) });
     return data;
   };
 
@@ -111,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isLoggedIn = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, register, verifyOtp, handleLogin, setupProfile, updateProfile, logout, isLoggedIn }}>
+    <AuthContext.Provider value={{ user, token, loading, register, verifyOtp, handleLogin, setupProfile, updateProfile, updateSettings, refreshUser, logout, isLoggedIn }}>
       {children}
     </AuthContext.Provider>
   );

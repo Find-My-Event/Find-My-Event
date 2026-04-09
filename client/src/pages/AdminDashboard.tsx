@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, Calendar, Bell, Plus, Trash2, Edit2, 
-  X, Loader2, TrendingUp, 
+  X, Loader2, TrendingUp, Shield, Check,
   Image as ImageIcon, Eye, Info, AlertTriangle, CheckCircle 
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../contexts/AuthContext';
 
-type Tab = 'overview' | 'events' | 'users' | 'notifications';
+type Tab = 'overview' | 'events' | 'pending' | 'users' | 'notifications';
 
 const AdminDashboard: React.FC = () => {
-  const { } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [loading, setLoading] = useState(true);
   
@@ -39,9 +39,21 @@ const AdminDashboard: React.FC = () => {
   // Notification Form State
   const [notifFormData, setNotifFormData] = useState({ title: '', message: '', type: 'info' });
 
+  // Pending Approvals State
+  const [pendingList, setPendingList] = useState<any[]>([]);
+  const [loadingPending, setLoadingPending] = useState(false);
+  const [pendingErr, setPendingErr] = useState('');
+  const [acting, setActing] = useState<string | null>(null);
+
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'pending') {
+      loadPending();
+    }
+  }, [activeTab]);
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -63,6 +75,34 @@ const AdminDashboard: React.FC = () => {
       console.error('Failed to fetch admin data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPending = async () => {
+    setLoadingPending(true);
+    setPendingErr('');
+    try {
+      const { data } = await api.get('/events/admin/pending');
+      setPendingList(data);
+    } catch (e: any) {
+      const status = e?.response?.status || 0;
+      setPendingErr(status === 403 ? 'Admin access only. Set ADMIN_EMAIL in server .env to your account email.' : 'Could not load queue');
+      setPendingList([]);
+    } finally {
+      setLoadingPending(false);
+    }
+  };
+
+  const approvePending = async (id: string) => {
+    setActing(id);
+    try {
+      await api.patch(`/events/${id}/approve`);
+      setPendingList((prev) => prev.filter((x) => x._id !== id));
+      fetchInitialData();
+    } catch {
+      setPendingErr('Approve failed');
+    } finally {
+      setActing(null);
     }
   };
 
@@ -151,6 +191,7 @@ const AdminDashboard: React.FC = () => {
           {[
             { id: 'overview', label: 'Overview', icon: TrendingUp },
             { id: 'events', label: 'Manage Events', icon: Calendar },
+            { id: 'pending', label: 'Pending Approvals', icon: Shield },
             { id: 'users', label: 'Manage Users', icon: Users },
             { id: 'notifications', label: 'Notifications', icon: Bell },
           ].map((item) => (
@@ -175,7 +216,7 @@ const AdminDashboard: React.FC = () => {
       <div style={{ flex: 1, padding: '3rem', overflowY: 'auto', maxHeight: '100vh' }}>
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
           <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>{activeTab === 'pending' ? 'Pending Approvals' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
             <p style={{ opacity: 0.5 }}>Control and manage everything from here.</p>
           </div>
           {activeTab === 'events' && (
@@ -235,6 +276,55 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </motion.div>
             ))}
+          </div>
+        )}
+
+        {/* Pending Approvals Tab */}
+        {activeTab === 'pending' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {pendingErr && <p style={{ color: '#f87171', marginBottom: '1rem' }}>{pendingErr}</p>}
+            {loadingPending ? (
+               <div style={{ textAlign: 'center', padding: '2rem' }}><Loader2 className="spin" /></div>
+            ) : pendingList.length === 0 ? (
+               <p style={{ color: '#52525b', padding: '3rem', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 16 }}>No pending events</p>
+            ) : (
+              pendingList.map((row, i) => (
+                <motion.div
+                  key={row._id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  style={{
+                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '1.35rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <h3 style={{ color: '#fafafa', fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.35rem' }}>{row.title}</h3>
+                      <p style={{ color: '#a1a1aa', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: '0.75rem' }}>{row.description}</p>
+                      <p style={{ color: '#71717a', fontSize: '0.8rem' }}>
+                        {row.mode} · {row.location} · {row.startDate} → {row.endDate}
+                        {row.organizer?.name && ` · by ${row.organizer.name}`}
+                      </p>
+                    </div>
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      disabled={acting === row._id}
+                      onClick={() => approvePending(row._id)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 8,
+                        background: '#22c55e', color: '#052e16', border: 'none', padding: '0.65rem 1.25rem',
+                        borderRadius: 12, fontWeight: 800, cursor: acting === row._id ? 'wait' : 'pointer', alignSelf: 'flex-start',
+                      }}
+                    >
+                      <Check size={18} /> Approve
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         )}
 

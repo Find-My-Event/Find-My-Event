@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import Lenis from '@studio-freight/lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -9,7 +10,11 @@ import Events from './pages/Events';
 import Discover from './pages/Discover';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
+import CreateEvent from './pages/CreateEvent';
+import GeneralSettings from './pages/GeneralSettings';
+import EditProfile from './pages/EditProfile';
 import AdminDashboard from './pages/AdminDashboard';
+import PendingApprovalListener from './components/PendingApprovalListener';
 import Footer from './components/Footer';
 import ServiceShowcase from './components/ServiceShowcase';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -56,8 +61,24 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
+    if (loading) return;
+    const protectedHashes = ['#create-event', '#settings', '#edit-profile', '#admin'];
+    if (!isLoggedIn && protectedHashes.includes(currentRoute)) {
+      window.location.hash = '#signin';
+    }
+  }, [currentRoute, isLoggedIn, loading]);
+
+  useEffect(() => {
     // Only initialize Lenis and GSAP ScrollTrigger on the Home route
-    if (currentRoute === '#events' || currentRoute === '#discover' || currentRoute === '#signin' || currentRoute === '#admin') {
+    if (
+      currentRoute === '#events' ||
+      currentRoute === '#discover' ||
+      currentRoute === '#signin' ||
+      currentRoute === '#create-event' ||
+      currentRoute === '#settings' ||
+      currentRoute === '#edit-profile' ||
+      currentRoute === '#admin'
+    ) {
        document.body.style.backgroundColor = '';
        document.body.style.color = '';
        return;
@@ -132,6 +153,19 @@ function AppContent() {
     if (currentRoute === '#events') return <Events isLoggedIn={isLoggedIn} />;
     if (currentRoute === '#discover') return <Discover isLoggedIn={isLoggedIn} />;
     if (currentRoute === '#signin') return <Auth />;
+
+    if (currentRoute === '#create-event') {
+      if (!isLoggedIn) return null;
+      return <CreateEvent />;
+    }
+    if (currentRoute === '#settings') {
+      if (!isLoggedIn) return null;
+      return <GeneralSettings />;
+    }
+    if (currentRoute === '#edit-profile') {
+      if (!isLoggedIn) return null;
+      return <EditProfile />;
+    }
     if (currentRoute === '#admin') {
       if (isLoggedIn && user?.role === 'admin') {
         return <AdminDashboard />;
@@ -139,7 +173,7 @@ function AppContent() {
       window.location.hash = '#home';
       return null;
     }
-    
+
     if (isLoggedIn) return <Dashboard />;
     
     return (
@@ -268,13 +302,32 @@ function AppContent() {
         </section>
 
         {/* ═══════ CTA SECTION ═══════ */}
-        <section className="cta-section" style={{ textAlign: 'center', padding: '6vh 4rem', background: 'linear-gradient(180deg, #111 0%, #0a0a0a 100%)' }}>
+        <section className="cta-section" style={{ textAlign: 'center', padding: '6vh 5%', background: 'linear-gradient(180deg, #111 0%, #0a0a0a 100%)' }}>
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem', color: '#fff' }}>
             Ready to find your next event<span style={{ color: '#ff4d00' }}>?</span>
           </h2>
           <p style={{ fontSize: '1.1rem', opacity: 0.5, maxWidth: '550px', margin: '0 auto', lineHeight: 1.6, color: '#fff' }}>
             Join thousands of students discovering campus events every day.
           </p>
+          <motion.button
+            onClick={() => { window.location.hash = '#discover'; window.scrollTo(0, 0); }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+              marginTop: '2rem',
+              background: '#ff4d00',
+              color: '#fff',
+              border: 'none',
+              padding: '1.25rem 3rem',
+              borderRadius: '50px',
+              fontWeight: 700,
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              boxShadow: '0 15px 35px rgba(255, 77, 0, 0.2)'
+            }}
+          >
+            View More
+          </motion.button>
         </section>
         <Footer />
       </>
@@ -287,6 +340,7 @@ function AppContent() {
       <main>
         {renderContent()}
       </main>
+      <PendingApprovalListener />
     </div>
   );
 }

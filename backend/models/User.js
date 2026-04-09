@@ -66,7 +66,20 @@ const userSchema = new mongoose.Schema({
   },
   otpExpires: {
     type: Date,
-  }
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
+  notifyEmail: {
+    type: Boolean,
+    default: true,
+  },
+  publicProfile: {
+    type: Boolean,
+    default: true,
+  },
 }, { timestamps: true });
 
 // Pre-save hook to hash password before storing in db

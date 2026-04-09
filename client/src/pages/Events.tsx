@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, MoreHorizontal, Grid, List, Filter, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, MoreHorizontal, Grid, List, Filter, Loader2, Heart } from 'lucide-react';
 import api from '../api/axios';
+import { useLikedEvents } from '../hooks/useLikedEvents';
 import '../index.css';
 
 // ─── Shared View Imports ───────────────────────────────────────────────────────────
@@ -9,6 +10,9 @@ import { EventDetail, RegisterView } from '../components/SharedViews';
 
 // ─── Timeline View Card ───────────────────────────────────────────────────────
 const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index: number, onViewMore: () => void, onRegister: () => void }) => {
+  const { isLiked: checkLiked, toggleLike } = useLikedEvents();
+  const liked = checkLiked(String(event.id));
+
   return (
     <motion.div 
       className="event-card-container"
@@ -44,7 +48,7 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
       }}
       onClick={onViewMore}
     >
-      <div className="event-card-image-box" style={{ width: '240px', height: '180px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
+      <div className="event-card-image-box" style={{ width: '240px', height: '180px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
         <motion.img 
           src={event.image} 
           alt={event.title} 
@@ -53,6 +57,17 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
           }}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
         />
+        <motion.button 
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); toggleLike(String(event.id)); }} 
+            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+            style={{
+              position: 'absolute', top: '10px', right: '10px',
+              width: '35px', height: '35px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', backdropFilter: 'blur(8px)', zIndex: 10
+            }}>
+            <Heart size={16} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#fff'} />
+        </motion.button>
       </div>
       
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -119,7 +134,7 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
               flex: 1
             }}
           >
-            <MoreHorizontal size={18} /> View More
+            < MoreHorizontal size={18} /> View More
           </motion.button>
         </div>
       </div>
@@ -129,6 +144,9 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
 
 // ─── Grid View Card ───────────────────────────────────────────────────────────
 const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, index: number, onViewMore: () => void, onRegister: () => void }) => {
+  const { isLiked: checkLiked, toggleLike } = useLikedEvents();
+  const liked = checkLiked(String(event.id));
+
   return (
     <motion.div 
       className="event-card-container"
@@ -158,7 +176,7 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
       }}
       onClick={onViewMore}
     >
-      <div style={{ width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', marginBottom: '1rem' }}>
+      <div style={{ width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', marginBottom: '1rem', position: 'relative' }}>
         <motion.img 
           src={event.image} 
           alt={event.title} 
@@ -167,6 +185,17 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
           }}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
         />
+        <motion.button 
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); toggleLike(String(event.id)); }} 
+            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+            style={{
+              position: 'absolute', top: '10px', right: '10px',
+              width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', backdropFilter: 'blur(8px)', zIndex: 10
+            }}>
+            <Heart size={14} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#fff'} />
+        </motion.button>
       </div>
       
       <div style={{ marginBottom: '1rem' }}>
@@ -191,7 +220,7 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           style={{
-            background: '#ff6f3f',
+            background: '#ff4d00',
             color: '#fff',
             border: 'none',
             padding: '0.6rem 1rem',
@@ -260,8 +289,6 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
        window.location.hash = '#signin';
        return;
     }
-    // We can go to the register view or call direct API depending on which button was clicked
-    // Here, for the "Register Now" button, we show the RegisterView
     setSelectedEvent(event);
     setCurrentView('register');
     window.scrollTo(0, 0);
@@ -288,7 +315,7 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
       minHeight: '100vh',
       backgroundColor: '#09090b',
       backgroundImage: `
-        radial-gradient(circle at top right, rgba(255, 111, 63, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at top right, rgba(255, 77, 0, 0.1) 0%, transparent 40%),
         radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%)
       `,
       fontFamily: "'Outfit', sans-serif",
@@ -304,16 +331,29 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
             className="events-main-section" 
             style={{ padding: '8rem 2rem 4rem 2rem', display: 'flex', flexDirection: 'column', maxWidth: '1200px', margin: '0 auto' }}
           >
-            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{ color: '#fff', fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 800, marginBottom: '1rem' }}
-              >
-                Campus Events<span style={{ color: '#ff6f3f' }}>.</span>
-              </motion.h1>
-              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Explore and register for the latest happenings on campus.</p>
-            </div>
+            <motion.h1 
+              className="events-h1"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              style={{ 
+                color: '#fff', 
+                fontSize: '3.5rem', 
+                fontWeight: 700, 
+                marginBottom: '2rem',
+                display: 'flex',
+                alignItems: 'baseline',
+                justifyContent: 'center'
+              }}
+            >
+              Events<motion.span 
+                className="events-dot"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 10 }}
+                style={{ color: '#ff4d00', fontSize: '4rem', lineHeight: '0' }}
+              >.</motion.span>
+            </motion.h1>
 
             {/* Filters */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -331,32 +371,105 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
                  </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <button onClick={() => setViewMode('timeline')} style={{ background: viewMode === 'timeline' ? '#ff6f3f' : 'transparent', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
-                   <List size={16} /> Timeline
-                </button>
-                <button onClick={() => setViewMode('grid')} style={{ background: viewMode === 'grid' ? '#ff6f3f' : 'transparent', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
-                   <Grid size={16} /> Grid
-                </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <motion.button
+                  onClick={() => setViewMode('timeline')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    background: viewMode === 'timeline' ? 'rgba(255,77,0,0.2)' : 'rgba(255,255,255,0.05)',
+                    border: `1px solid ${viewMode === 'timeline' ? '#ff4d00' : 'rgba(255,255,255,0.1)'}`,
+                    borderRadius: '8px', padding: '0.5rem 1rem', color: '#e2e8f0',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600
+                  }}
+                >
+                  <List size={16} />
+                  Timeline
+                </motion.button>
+                <motion.button
+                  onClick={() => setViewMode('grid')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    background: viewMode === 'grid' ? 'rgba(255,77,0,0.2)' : 'rgba(255,255,255,0.05)',
+                    border: `1px solid ${viewMode === 'grid' ? '#ff4d00' : 'rgba(255,255,255,0.1)'}`,
+                    borderRadius: '8px', padding: '0.5rem 1rem', color: '#e2e8f0',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600
+                  }}
+                >
+                  <Grid size={16} />
+                  Grid
+                </motion.button>
               </div>
             </div>
 
             {loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}><Loader2 className="spin" size={40} color="#ff6f3f" /></div>
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}><Loader2 className="spin" size={40} color="#ff4d00" /></div>
             ) : filteredEvents.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '5rem', opacity: 0.5 }}>No events found. Check back later!</div>
             ) : viewMode === 'timeline' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                {filteredEvents.map((event, idx) => (
-                  <EventCard key={event._id} event={event} index={idx} onViewMore={() => handleViewMore(event)} onRegister={() => handleRegister(event)} />
-                ))}
+              <div style={{ display: 'flex', gap: '4rem', width: '100%' }}>
+                {/* Left Timeline Section */}
+                <div className="mobile-hidden" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100px' }}>
+                  <div style={{
+                    background: 'transparent',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '20px',
+                    padding: '0.5rem 1.25rem',
+                    fontSize: '0.95rem',
+                    fontWeight: 500,
+                    marginBottom: '2rem',
+                    zIndex: 2
+                  }}>
+                    Today
+                  </div>
+                  
+                  <div style={{ position: 'relative', width: '2px', background: 'rgba(255,255,255,0.1)', flex: 1 }}>
+                     {filteredEvents.map((_, index) => (
+                       <div key={index} style={{
+                         position: 'absolute',
+                         top: `calc(${index * 280}px + 60px)`,
+                         left: '50%',
+                         transform: 'translateX(-50%)',
+                         width: '12px',
+                         height: '12px',
+                         background: '#ff4d00',
+                         borderRadius: '50%',
+                         boxShadow: '0 0 0 4px #0a0a0c'
+                       }}></div>
+                     ))}
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', flex: 1, paddingBottom: '4rem' }}>
+                  {filteredEvents.map((event, index) => (
+                    <EventCard 
+                      key={event.id} 
+                      event={event} 
+                      index={index} 
+                      onViewMore={() => handleViewMore(event)}
+                      onRegister={() => handleRegister(event)} 
+                    />
+                  ))}
+                </div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
-                {filteredEvents.map((event, idx) => (
-                  <GridEventCard key={event._id} event={event} index={idx} onViewMore={() => handleViewMore(event)} onRegister={() => handleRegister(event)} />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '2rem', paddingBottom: '4rem' }}
+              >
+                {filteredEvents.map((event, index) => (
+                  <GridEventCard 
+                    key={event.id} 
+                    event={event} 
+                    index={index} 
+                    onViewMore={() => handleViewMore(event)}
+                    onRegister={() => handleRegister(event)} 
+                  />
                 ))}
-              </div>
+              </motion.div>
             )}
           </motion.main>
         )}
@@ -375,7 +488,7 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
            <div style={{ textAlign: 'center', background: 'rgba(24, 24, 27, 0.8)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.05)', pointerEvents: 'all', maxWidth: '400px' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Want to see more?</h3>
               <p style={{ opacity: 0.5, fontSize: '0.9rem', marginBottom: '1.5rem' }}>Sign in to view all details and register for events.</p>
-              <button onClick={() => window.location.hash = '#signin'} style={{ background: '#ff6f3f', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', width: '100%' }}>Login to Continue</button>
+              <button onClick={() => window.location.hash = '#signin'} style={{ background: '#ff4d00', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', width: '100%' }}>Login to Continue</button>
            </div>
         </div>
       )}
