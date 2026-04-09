@@ -71,25 +71,106 @@ router.post('/verify-otp', async (req, res) => {
     await user.save();
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.status(200).json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.status(200).json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email,
+        role: user.role,
+        hasCompletedProfile: user.hasCompletedProfile 
+      } 
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Route: Setup Profile
+// Route: Setup Profile (Initial)
 router.post('/setup-profile', async (req, res) => {
-  const { userId, bio, avatar } = req.body;
+  console.log('DEBUG: Setup Profile Request Body:', req.body);
+  const { userId, bio, avatar, age, gender, interests, hobbies, favEvents } = req.body;
+  try {
+    if (!userId) {
+      console.error('DEBUG: userId is missing in request');
+      return res.status(400).json({ message: 'User ID is missing' });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      console.error('DEBUG: User not found for ID:', userId);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.bio = bio || user.bio;
+    user.avatar = avatar || user.avatar;
+    user.age = age;
+    user.gender = gender;
+    user.interests = interests || [];
+    user.hobbies = hobbies || [];
+    user.favEvents = favEvents || [];
+    user.hasCompletedProfile = true;
+
+    await user.save();
+
+    res.status(200).json({ 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        bio: user.bio, 
+        avatar: user.avatar,
+        age: user.age,
+        gender: user.gender,
+        interests: user.interests,
+        hobbies: user.hobbies,
+        favEvents: user.favEvents,
+        role: user.role,
+        hasCompletedProfile: user.hasCompletedProfile
+      } 
+    });
+  } catch (err) {
+    console.error('Setup Profile Error:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Route: Update Profile (Editing)
+router.put('/update-profile', async (req, res) => {
+  console.log('DEBUG: Update Profile Request Body:', req.body);
+  const { userId, name, bio, avatar, age, gender, interests, hobbies, favEvents } = req.body;
   try {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    user.bio = bio;
-    user.avatar = avatar;
+    if (name) user.name = name;
+    if (bio !== undefined) user.bio = bio;
+    if (avatar) user.avatar = avatar;
+    if (age !== undefined) user.age = age;
+    if (gender !== undefined) user.gender = gender;
+    if (interests !== undefined) user.interests = interests;
+    if (hobbies !== undefined) user.hobbies = hobbies;
+    if (favEvents !== undefined) user.favEvents = favEvents;
+
     await user.save();
 
-    res.status(200).json({ user: { id: user._id, name: user.name, bio: user.bio, avatar: user.avatar } });
+    res.status(200).json({ 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        bio: user.bio, 
+        avatar: user.avatar,
+        age: user.age,
+        gender: user.gender,
+        interests: user.interests,
+        hobbies: user.hobbies,
+        favEvents: user.favEvents,
+        role: user.role,
+        hasCompletedProfile: user.hasCompletedProfile
+      } 
+    });
   } catch (err) {
+    console.error('Update Profile Error:', err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -109,7 +190,15 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.status(200).json({
       token,
-      user: { id: user._id, name: user.name, email: user.email, bio: user.bio, avatar: user.avatar }
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        bio: user.bio, 
+        avatar: user.avatar,
+        role: user.role,
+        hasCompletedProfile: user.hasCompletedProfile
+      }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -124,7 +213,22 @@ router.get('/me', async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id).select('-password');
-    res.status(200).json(user);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      bio: user.bio,
+      avatar: user.avatar,
+      age: user.age,
+      gender: user.gender,
+      interests: user.interests,
+      hobbies: user.hobbies,
+      favEvents: user.favEvents,
+      role: user.role,
+      hasCompletedProfile: user.hasCompletedProfile
+    });
   } catch (err) {
     res.status(401).json({ message: 'Invalid token' });
   }

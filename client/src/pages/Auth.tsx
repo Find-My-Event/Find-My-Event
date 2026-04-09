@@ -10,7 +10,14 @@ type AuthStep = 'login' | 'signup' | 'otp' | 'profile' | 'welcome';
 const Auth: React.FC<AuthProps> = () => {
   const [step, setStep] = useState<AuthStep>('login');
   const [formData, setFormData] = useState({ name: '', email: '', password: '', otp: '' });
-  const [profileData, setProfileData] = useState({ bio: '', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix' });
+  const [profileData, setProfileData] = useState({ 
+    bio: '', 
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
+    age: '',
+    gender: '',
+    interests: '',
+    hobbies: ''
+  });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -57,7 +64,14 @@ const Auth: React.FC<AuthProps> = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await setupProfile(profileData.bio, profileData.avatar);
+      await setupProfile({
+        bio: profileData.bio,
+        avatar: profileData.avatar,
+        age: profileData.age ? parseInt(profileData.age as string) : undefined,
+        gender: profileData.gender,
+        interests: profileData.interests.split(',').map(i => i.trim()).filter(i => i !== ''),
+        hobbies: profileData.hobbies.split(',').map(h => h.trim()).filter(h => h !== '')
+      });
       setStep('welcome');
       setTimeout(() => {
         window.location.hash = '#home';
@@ -150,7 +164,7 @@ const Auth: React.FC<AuthProps> = () => {
                     {step === 'login' && 'Enter your details to access your account'}
                     {step === 'signup' && 'Sign up to start discovering events'}
                     {step === 'otp' && `Please enter the 6-digit code we sent to ${formData.email}`}
-                    {step === 'profile' && 'Add a name, photo and short bio'}
+                    {step === 'profile' && 'Tell us more about yourself'}
                   </p>
                 </div>
 
@@ -243,15 +257,68 @@ const Auth: React.FC<AuthProps> = () => {
                         </div>
                       ))}
                     </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Age</label>
+                        <input 
+                          type="number"
+                          value={profileData.age}
+                          onChange={(e) => setProfileData({ ...profileData, age: e.target.value })}
+                          placeholder="20"
+                          className="auth-input-old"
+                          style={{ paddingLeft: '1rem' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Gender</label>
+                        <select 
+                          value={profileData.gender}
+                          onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
+                          className="auth-input-old"
+                          style={{ paddingLeft: '1rem', appearance: 'none', background: 'white' }}
+                        >
+                          <option value="">Select</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div>
                       <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Bio</label>
                       <textarea 
                         value={profileData.bio}
                         onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                         placeholder="I love college festivals!"
-                        style={{ width: '100%', minHeight: '100px', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', padding: '1rem', color: '#1a1a1a', resize: 'none', outline: 'none' }}
+                        style={{ width: '100%', minHeight: '80px', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', padding: '1rem', color: '#1a1a1a', resize: 'none', outline: 'none' }}
                       />
                     </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Interests (optional, comma separated)</label>
+                      <input 
+                        type="text"
+                        value={profileData.interests}
+                        onChange={(e) => setProfileData({ ...profileData, interests: e.target.value })}
+                        placeholder="Music, Tech, Art"
+                        className="auth-input-old"
+                        style={{ paddingLeft: '1rem' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Hobbies (optional, comma separated)</label>
+                      <input 
+                        type="text"
+                        value={profileData.hobbies}
+                        onChange={(e) => setProfileData({ ...profileData, hobbies: e.target.value })}
+                        placeholder="Reading, Gaming, Hiking"
+                        className="auth-input-old"
+                        style={{ paddingLeft: '1rem' }}
+                      />
+                    </div>
+
                     <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} disabled={isSubmitting} className="auth-btn-old">
                       {isSubmitting ? <Loader2 className="spin" size={20} /> : 'Let\'s GO'}
                     </motion.button>

@@ -1,10 +1,39 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
-import { Calendar, Search, MapPin, Star, TrendingUp, Bell, Plus, Users, ArrowRight } from 'lucide-react';
+import { Calendar, Search, MapPin, Star, TrendingUp, Bell, Plus, Users, ArrowRight, User, Edit2, Check, X, Loader2 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editData, setEditData] = React.useState({
+    name: user?.name || '',
+    bio: user?.bio || '',
+    age: user?.age || '',
+    gender: user?.gender || '',
+    interests: user?.interests?.join(', ') || '',
+    hobbies: user?.hobbies?.join(', ') || ''
+  });
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  const handleUpdate = async () => {
+    setIsSaving(true);
+    try {
+      await updateProfile({
+        name: editData.name,
+        bio: editData.bio,
+        age: editData.age ? parseInt(editData.age as string) : undefined,
+        gender: editData.gender,
+        interests: editData.interests.split(',').map(i => i.trim()).filter(i => i !== ''),
+        hobbies: editData.hobbies.split(',').map(h => h.trim()).filter(h => h !== '')
+      });
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Update failed:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const stats = [
     { label: 'Registered Events', value: '12', icon: Calendar, color: '#ff6f3f' },
@@ -25,13 +54,166 @@ const Dashboard: React.FC = () => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{ marginBottom: '3rem' }}
+        style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
       >
-        <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-          Hello, <span style={{ color: '#ff6f3f' }}>{user?.name.split(' ')[0]}!</span>
-        </h1>
-        <p style={{ opacity: 0.6, fontSize: '1.1rem' }}>Welcome back to your personalized campus hub.</p>
+        <div>
+          <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+            Hello, <span style={{ color: '#ff6f3f' }}>{user?.name.split(' ')[0]}!</span>
+          </h1>
+          <p style={{ opacity: 0.6, fontSize: '1.1rem' }}>Welcome back to your personalized campus hub.</p>
+        </div>
+        
+        {/* Profile Details Button */}
+        <motion.button 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsEditing(!isEditing)}
+          style={{ 
+            background: isEditing ? 'rgba(255,255,255,0.1)' : 'rgba(255,111,63,0.1)', 
+            border: '1px solid rgba(255,111,63,0.2)',
+            padding: '0.8rem 1.5rem',
+            borderRadius: '16px',
+            color: isEditing ? '#fff' : '#ff6f3f',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            cursor: 'pointer'
+          }}
+        >
+          {isEditing ? <><X size={18} /> Cancel</> : <><Edit2 size={18} /> Edit Profile</>}
+        </motion.button>
       </motion.div>
+
+      {/* Profile Info / Edit Mode */}
+      <AnimatePresence>
+        {isEditing ? (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ 
+              background: 'rgba(255,255,255,0.02)', 
+              border: '1px solid rgba(255,255,255,0.05)',
+              borderRadius: '24px',
+              padding: '2rem',
+              marginBottom: '3rem',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem' }}>Full Name</label>
+                <input 
+                  type="text" 
+                  value={editData.name} 
+                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '12px', color: '#fff' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem' }}>Age</label>
+                <input 
+                  type="number" 
+                  value={editData.age} 
+                  onChange={(e) => setEditData({ ...editData, age: e.target.value })}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '12px', color: '#fff' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem' }}>Gender</label>
+                <select 
+                  value={editData.gender} 
+                  onChange={(e) => setEditData({ ...editData, gender: e.target.value })}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '12px', color: '#fff' }}
+                >
+                  <option value="">Select</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div style={{ marginTop: '1.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem' }}>Bio</label>
+              <textarea 
+                value={editData.bio} 
+                onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '12px', color: '#fff', minHeight: '80px', resize: 'none' }}
+              />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem' }}>Interests (comma separated)</label>
+                <input 
+                  type="text" 
+                  value={editData.interests} 
+                  onChange={(e) => setEditData({ ...editData, interests: e.target.value })}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '12px', color: '#fff' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem' }}>Hobbies (comma separated)</label>
+                <input 
+                  type="text" 
+                  value={editData.hobbies} 
+                  onChange={(e) => setEditData({ ...editData, hobbies: e.target.value })}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '12px', color: '#fff' }}
+                />
+              </div>
+            </div>
+            <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+              <button 
+                onClick={handleUpdate}
+                disabled={isSaving}
+                style={{ background: '#ff6f3f', color: '#fff', border: 'none', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                {isSaving ? <Loader2 className="spin" size={18} /> : <><Check size={18} /> Save Changes</>}
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{ 
+              background: 'rgba(255,255,255,0.02)', 
+              border: '1px solid rgba(255,255,255,0.05)',
+              borderRadius: '24px',
+              padding: '2rem',
+              marginBottom: '3rem',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '2.5rem'
+            }}
+          >
+             <div style={{ flex: '1 1 200px' }}>
+                <div style={{ fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Personal Info</div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{user?.age || 'N/A'} yrs • {user?.gender || 'N/A'}</div>
+             </div>
+             <div style={{ flex: '2 1 300px' }}>
+                <div style={{ fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bio</div>
+                <div style={{ fontSize: '1rem', opacity: 0.8, lineHeight: 1.5 }}>{user?.bio || "No bio yet. Tell us about yourself!"}</div>
+             </div>
+             <div style={{ flex: '1 1 200px' }}>
+                <div style={{ fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Interests</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                   {user?.interests && user.interests.length > 0 ? user.interests.map(i => (
+                     <span key={i} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.3rem 0.8rem', borderRadius: '99px', fontSize: '0.8rem' }}>{i}</span>
+                   )) : <span style={{ opacity: 0.3, fontSize: '0.8rem' }}>None added</span>}
+                </div>
+             </div>
+             <div style={{ flex: '1 1 200px' }}>
+                <div style={{ fontSize: '0.8rem', opacity: 0.5, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hobbies</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                   {user?.hobbies && user.hobbies.length > 0 ? user.hobbies.map(h => (
+                     <span key={h} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.3rem 0.8rem', borderRadius: '99px', fontSize: '0.8rem' }}>{h}</span>
+                   )) : <span style={{ opacity: 0.3, fontSize: '0.8rem' }}>None added</span>}
+                </div>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '4rem' }}>
@@ -133,6 +315,10 @@ const Dashboard: React.FC = () => {
           <Bell size={24} />
         </motion.button>
       </div>
+      <style>{`
+        .spin { animation: spin-anim 1s linear infinite; }
+        @keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 };

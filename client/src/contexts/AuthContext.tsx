@@ -1,10 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
-  withCredentials: true,
-});
+import api from '../api/axios';
 
 interface User {
   id: string;
@@ -12,6 +7,13 @@ interface User {
   email: string;
   bio?: string;
   avatar?: string;
+  age?: number;
+  gender?: string;
+  interests?: string[];
+  hobbies?: string[];
+  favEvents?: string[];
+  hasCompletedProfile?: boolean;
+  role: 'user' | 'admin';
 }
 
 interface AuthContextType {
@@ -21,7 +23,8 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<any>;
   verifyOtp: (email: string, otp: string) => Promise<any>;
   handleLogin: (email: string, password: string) => Promise<any>;
-  setupProfile: (bio: string, avatar: string) => Promise<any>;
+  setupProfile: (profileData: any) => Promise<any>;
+  updateProfile: (profileData: any) => Promise<any>;
   logout: () => void;
   isLoggedIn: boolean;
 }
@@ -77,9 +80,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return data;
   };
 
-  const setupProfile = async (bio: string, avatar: string) => {
+  const setupProfile = async (profileData: any) => {
+    console.log('DEBUG: AuthContext setupProfile called with:', profileData);
+    console.log('DEBUG: AuthContext current user state:', user);
+    if (!user) {
+      console.error('DEBUG: setupProfile aborted because user is null');
+      throw new Error('User not registered in session');
+    }
+    const { data } = await api.post('/auth/setup-profile', { userId: user.id || (user as any)._id, ...profileData });
+    console.log('DEBUG: setupProfile API response:', data);
+    setUser(data.user);
+    return data;
+  };
+
+  const updateProfile = async (profileData: any) => {
     if (!user) return;
-    const { data } = await api.post('/auth/setup-profile', { userId: user.id, bio, avatar });
+    const { data } = await api.put('/auth/update-profile', { userId: user.id, ...profileData });
     setUser(data.user);
     return data;
   };
@@ -95,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isLoggedIn = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, register, verifyOtp, handleLogin, setupProfile, logout, isLoggedIn }}>
+    <AuthContext.Provider value={{ user, token, loading, register, verifyOtp, handleLogin, setupProfile, updateProfile, logout, isLoggedIn }}>
       {children}
     </AuthContext.Provider>
   );
