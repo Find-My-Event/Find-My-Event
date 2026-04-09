@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Mail, Lock, User, Check, Loader2, Camera, Sparkles } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, Check, Loader2, Camera } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface AuthProps {}
