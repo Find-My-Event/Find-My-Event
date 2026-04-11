@@ -16,6 +16,15 @@ const eventSubmissionSchema = new mongoose.Schema(
       enum: ['pending', 'approved', 'rejected'],
       default: 'pending',
     },
+    registeredUsers: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    withdrawalStatus: {
+      type: String,
+      enum: ['none', 'pending', 'approved'],
+      default: 'none'
+    }
   },
   { timestamps: true }
 );

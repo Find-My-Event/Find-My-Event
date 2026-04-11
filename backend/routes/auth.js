@@ -16,6 +16,11 @@ function userResponse(user) {
     role: user.role || 'user',
     notifyEmail: user.notifyEmail !== false,
     publicProfile: user.publicProfile !== false,
+    favEvents: user.favEvents || [],
+    age: user.age,
+    gender: user.gender,
+    hobbies: user.hobbies || [],
+    interests: user.interests || [],
   };
 }
 

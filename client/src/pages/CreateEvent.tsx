@@ -16,8 +16,8 @@ interface Submission {
 
 const inputStyle: CSSProperties = {
   width: '100%',
-  background: 'rgba(255,255,255,0.06)',
-  border: '1px solid rgba(255,255,255,0.1)',
+  background: 'var(--border-subtle)',
+  border: '1px solid var(--border-color)',
   borderRadius: 14,
   padding: '0.9rem 1rem',
   color: '#f4f4f5',
@@ -28,7 +28,7 @@ const inputStyle: CSSProperties = {
 
 const labelStyle: CSSProperties = {
   display: 'block',
-  color: '#a1a1aa',
+  color: 'var(--text-secondary)',
   fontSize: '0.82rem',
   fontWeight: 600,
   marginBottom: '0.45rem',
@@ -48,7 +48,8 @@ export default function CreateEvent() {
   const [mode, setMode] = useState('');
   const [location, setLocation] = useState('');
   const [capacity, setCapacity] = useState('');
-  const [imageUrl, setImageUrl] = useState('/event1.png');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('/event1.png');
 
   const pollStatus = useCallback(async () => {
     if (!submissionId) return;
@@ -81,15 +82,22 @@ export default function CreateEvent() {
     }
     setSubmitting(true);
     try {
-      const { data } = await api.post<{ submission: Submission }>('/events', {
-        title: title.trim(),
-        description: description.trim(),
-        startDate,
-        endDate,
-        mode: mode.trim(),
-        location: location.trim(),
-        capacity: capacity || 0,
-        imageUrl: imageUrl || '/event1.png',
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('description', description.trim());
+      formData.append('startDate', startDate);
+      formData.append('endDate', endDate);
+      formData.append('mode', mode.trim());
+      formData.append('location', location.trim());
+      formData.append('capacity', capacity ? capacity.toString() : '0');
+      if (imageFile) {
+        formData.append('image', imageFile);
+      } else {
+        formData.append('imageUrl', imagePreview);
+      }
+
+      const { data } = await api.post<{ submission: Submission }>('/events', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setSubmissionId(data.submission._id);
       setPendingSubmissionId(data.submission._id);
@@ -118,12 +126,12 @@ export default function CreateEvent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ position: 'relative', zIndex: 1, padding: '6.5rem 1.5rem 4rem', maxWidth: 1120, margin: '0 auto' }}
+            className="page-padding" style={{ position: 'relative', zIndex: 1, maxWidth: 1000, margin: '0 auto' }}
           >
             <motion.h1
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ color: '#fff', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 800, marginBottom: '2.25rem' }}
+              style={{ color: 'var(--text-primary)', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 800, marginBottom: '2.25rem' }}
             >
               Create Event<span style={{ color: '#3b82f6' }}>.</span>
             </motion.h1>
@@ -138,13 +146,13 @@ export default function CreateEvent() {
                 style={{
                   borderRadius: 20,
                   overflow: 'hidden',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  background: '#151518',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-card)',
                   aspectRatio: '1',
                   maxHeight: 420,
                 }}
               >
-                <img src={imageUrl || '/event1.png'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).src = '/event1.png'; }} />
+                <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).src = '/event1.png'; }} />
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
@@ -184,8 +192,19 @@ export default function CreateEvent() {
                     <input style={inputStyle} type="number" min={0} value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="3000" />
                   </div>
                   <div>
-                    <label style={labelStyle}>Poster image URL</label>
-                    <input style={inputStyle} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+                    <label style={labelStyle}>Poster Image</label>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setImageFile(file);
+                          setImagePreview(URL.createObjectURL(file));
+                        }
+                      }} 
+                      style={{ ...inputStyle, cursor: 'pointer', paddingTop: '11px', paddingBottom: '11px' }} 
+                    />
                   </div>
                 </div>
 
@@ -198,8 +217,8 @@ export default function CreateEvent() {
                   style={{
                     marginTop: '0.5rem',
                     width: '100%',
-                    background: '#fff',
-                    color: '#09090b',
+                    background: 'var(--text-primary)',
+                    color: 'var(--bg-primary)',
                     border: 'none',
                     padding: '1rem 1.5rem',
                     borderRadius: 14,
@@ -252,8 +271,8 @@ export default function CreateEvent() {
                   position: 'relative',
                   width: '100%',
                   maxWidth: 400,
-                  background: 'rgba(24,24,27,0.85)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: 20,
                   padding: '1.75rem 1.5rem 1.5rem',
                   backdropFilter: 'blur(16px)',
@@ -264,16 +283,16 @@ export default function CreateEvent() {
                   <button
                     type="button"
                     onClick={() => { setFlow('form'); setSubmissionId(null); }}
-                    style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.12)', background: 'var(--border-subtle)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     <ArrowLeft size={18} />
                   </button>
                   <img src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'} alt="" style={{ width: 44, height: 44, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.2)', objectFit: 'cover' }} />
                 </div>
-                <h2 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem' }}>
+                <h2 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem' }}>
                   Hey {firstName}<span style={{ color: '#3b82f6' }}>.</span>
                 </h2>
-                <p style={{ color: '#a1a1aa', fontSize: '0.95rem', lineHeight: 1.55, marginBottom: '1.75rem' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.55, marginBottom: '1.75rem' }}>
                   Your event is with our team for a quick review. We will notify you as soon as it is approved and live on Discover.
                 </p>
                 <motion.button
@@ -281,7 +300,7 @@ export default function CreateEvent() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => { window.location.hash = '#discover'; }}
-                  style={{ width: '100%', background: '#fff', color: '#09090b', border: 'none', padding: '0.95rem', borderRadius: 14, fontWeight: 800, cursor: 'pointer' }}
+                  style={{ width: '100%', background: 'var(--text-primary)', color: 'var(--bg-primary)', border: 'none', padding: '0.95rem', borderRadius: 14, fontWeight: 800, cursor: 'pointer' }}
                 >
                   Got it
                 </motion.button>
@@ -353,15 +372,15 @@ export default function CreateEvent() {
                 animate={{ opacity: 1, y: 0 }}
                 style={{
                   position: 'relative', maxWidth: 400, width: '100%',
-                  background: 'rgba(24,24,27,0.9)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 20, padding: '2rem 1.5rem', textAlign: 'center',
+                  background: 'var(--bg-card)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 20, padding: '2rem 1.5rem', textAlign: 'center',
                 }}
               >
                 <p style={{ color: '#fecaca', fontWeight: 700, marginBottom: '0.5rem' }}>Not published</p>
-                <p style={{ color: '#a1a1aa', fontSize: '0.9rem', marginBottom: '1.5rem' }}>This submission was not approved. You can create a new event anytime.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>This submission was not approved. You can create a new event anytime.</p>
                 <button
                   type="button"
                   onClick={() => { setFlow('form'); setSubmissionId(null); }}
-                  style={{ width: '100%', background: '#fff', color: '#09090b', border: 'none', padding: '0.9rem', borderRadius: 12, fontWeight: 700, cursor: 'pointer' }}
+                  style={{ width: '100%', background: 'var(--text-primary)', color: 'var(--bg-primary)', border: 'none', padding: '0.9rem', borderRadius: 12, fontWeight: 700, cursor: 'pointer' }}
                 >
                   Back to form
                 </button>

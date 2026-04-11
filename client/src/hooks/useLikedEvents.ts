@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 export const useLikedEvents = () => {
+  const { user, updateProfile, isLoggedIn } = useAuth();
+  
   const [likedEvents, setLikedEvents] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('likedEvents') || '[]');
@@ -9,15 +12,38 @@ export const useLikedEvents = () => {
     }
   });
 
-  const toggleLike = (id: string) => {
-    if (!id) return;
-    const newLiked = likedEvents.includes(id) 
-      ? likedEvents.filter(e => e !== id) 
-      : [...likedEvents, id];
+  // When user logs in, merge local favorites into backend, then use backend's favorites
+  useEffect(() => {
+    if (isLoggedIn && user?.favEvents) {
+      const currentLocal = JSON.parse(localStorage.getItem('likedEvents') || '[]');
+      const backendFavs = user.favEvents;
       
-    localStorage.setItem('likedEvents', JSON.stringify(newLiked));
-    setLikedEvents(newLiked);
-    window.dispatchEvent(new Event('likedEventsChanged'));
+      const mergedSet = new Set([...currentLocal, ...backendFavs]);
+      const mergedArray = Array.from(mergedSet);
+      
+      setLikedEvents(mergedArray);
+      localStorage.setItem('likedEvents', JSON.stringify(mergedArray));
+      
+      if (mergedArray.length > backendFavs.length) {
+        updateProfile({ favEvents: mergedArray }).catch(() => {});
+      }
+    }
+  }, [isLoggedIn, user?.id]);
+
+  const toggleLike = async (id: string) => {
+    if (!id) return;
+    
+    setLikedEvents(prev => {
+      const newLiked = prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id];
+      localStorage.setItem('likedEvents', JSON.stringify(newLiked));
+      window.dispatchEvent(new Event('likedEventsChanged'));
+      
+      if (isLoggedIn) {
+        updateProfile({ favEvents: newLiked }).catch(console.error);
+      }
+      
+      return newLiked;
+    });
   };
 
   useEffect(() => {

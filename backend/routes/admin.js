@@ -4,6 +4,7 @@ const { protect, admin } = require('../middleware/authMiddleware');
 const { upload } = require('../config/cloudinary');
 const User = require('../models/User');
 const Event = require('../models/Event');
+const EventSubmission = require('../models/EventSubmission');
 const Notification = require('../models/Notification');
 
 // @desc    Get all users (Admin only)
@@ -52,23 +53,40 @@ router.post('/events', protect, admin, upload.single('image'), async (req, res) 
 // @route   PUT /api/admin/events/:id
 router.put('/events/:id', protect, admin, upload.single('image'), async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
+    let event = await Event.findById(req.params.id);
+    let isSubmission = false;
+    
+    if (!event) {
+      event = await EventSubmission.findById(req.params.id);
+      isSubmission = true;
+    }
+
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
     const { title, description, organizer, date, venue, category, price, seats, tag } = req.body;
 
     event.title = title || event.title;
     event.description = description || event.description;
-    event.organizer = organizer || event.organizer;
-    event.date = date || event.date;
-    event.venue = venue || event.venue;
-    event.category = category || event.category;
-    event.price = price || event.price;
-    event.seats = seats || event.seats;
-    event.tag = tag || event.tag;
-
-    if (req.file) {
-      event.image = req.file.path;
+    
+    if (isSubmission) {
+      event.startDate = date || event.startDate;
+      event.location = venue || event.location;
+      event.capacity = seats ? Number(seats) : event.capacity;
+      event.category = category || event.category;
+      if (req.file) {
+        event.imageUrl = req.file.path;
+      }
+    } else {
+      event.organizer = organizer || event.organizer;
+      event.date = date || event.date;
+      event.venue = venue || event.venue;
+      event.category = category || event.category;
+      event.price = price || event.price;
+      event.seats = seats || event.seats;
+      event.tag = tag || event.tag;
+      if (req.file) {
+        event.image = req.file.path;
+      }
     }
 
     const updatedEvent = await event.save();
@@ -82,11 +100,19 @@ router.put('/events/:id', protect, admin, upload.single('image'), async (req, re
 // @route   DELETE /api/admin/events/:id
 router.delete('/events/:id', protect, admin, async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
-    if (!event) return res.status(404).json({ message: 'Event not found' });
+    let event = await Event.findById(req.params.id);
+    if (event) {
+      await Event.deleteOne({ _id: req.params.id });
+      return res.json({ message: 'Event removed' });
+    }
+    
+    event = await EventSubmission.findById(req.params.id);
+    if (event) {
+      await EventSubmission.deleteOne({ _id: req.params.id });
+      return res.json({ message: 'Event removed' });
+    }
 
-    await Event.deleteOne({ _id: req.params.id });
-    res.json({ message: 'Event removed' });
+    res.status(404).json({ message: 'Event not found' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -96,7 +122,11 @@ router.delete('/events/:id', protect, admin, async (req, res) => {
 // @route   GET /api/admin/events/:id/registrations
 router.get('/events/:id/registrations', protect, admin, async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id).populate('registeredUsers', 'name email avatar');
+    let event = await Event.findById(req.params.id).populate('registeredUsers', 'name email avatar');
+    if (!event) {
+      event = await EventSubmission.findById(req.params.id).populate('registeredUsers', 'name email avatar');
+    }
+    
     if (!event) return res.status(404).json({ message: 'Event not found' });
     
     res.json(event.registeredUsers);

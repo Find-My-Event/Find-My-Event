@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, useMemo, type MouseEvent } from 'react';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { MapPin, Search, X, Sparkles, TrendingUp, Clock, Filter, Calendar, MoreHorizontal, Star, Loader2 } from 'lucide-react';
+import { useState, useEffect, useMemo, type MouseEvent } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Search, X, Sparkles, TrendingUp, Clock, Calendar, MoreHorizontal, Loader2, Filter } from 'lucide-react';
 import api from '../api/axios';
 import { EventDetail, RegisterView } from '../components/SharedViews';
 import { darkPageShell } from '../theme/darkShell';
+import { useAuth } from '../contexts/AuthContext';
 
 // ─── Tag Badge ────────────────────────────────────────────────────────────────
 const TagBadge = ({ tag }: { tag: string }) => {
@@ -17,7 +18,7 @@ const TagBadge = ({ tag }: { tag: string }) => {
     <div style={{
       position: 'absolute', top: '10px', left: '10px', zIndex: 3,
       background: colors[tag] || '#ff4d00',
-      color: '#fff', fontSize: '0.65rem', fontWeight: 700,
+      color: '#ffffff', fontSize: '0.65rem', fontWeight: 700,
       padding: '3px 8px', borderRadius: '20px',
       textTransform: 'uppercase', letterSpacing: '0.08em',
       boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
@@ -93,11 +94,11 @@ const DiscoverGridCard = ({
     whileHover="hover"
     whileTap="hover"
     style={{
-      background: '#151518',
+      background: 'var(--bg-card)',
       borderRadius: '16px',
       padding: '1.5rem',
       boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-      border: '1px solid rgba(255,255,255,0.05)',
+      border: '1px solid var(--border-subtle)',
       cursor: 'pointer',
       width: '100%',
       maxWidth: '360px',
@@ -126,18 +127,18 @@ const DiscoverGridCard = ({
     </div>
 
     <div style={{ marginBottom: '1rem' }}>
-      <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '0.25rem', lineHeight: 1.3 }}>{event.title}</h3>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>By {event.organizer}</p>
+      <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem', lineHeight: 1.3 }}>{event.title}</h3>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>By {event.organizer}</p>
     </div>
 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <Calendar size={14} color="#aaa" />
-        <span style={{ color: '#ccc', fontSize: '0.8rem' }}>{event.date}</span>
+        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{event.date}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <MapPin size={14} color="#aaa" />
-        <span style={{ color: '#ccc', fontSize: '0.8rem' }}>{event.venue}</span>
+        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{event.venue}</span>
       </div>
     </div>
 
@@ -149,7 +150,7 @@ const DiscoverGridCard = ({
         whileTap={{ scale: 0.95 }}
         style={{
           background: '#ff4d00',
-          color: '#fff',
+          color: '#ffffff',
           border: 'none',
           padding: '0.6rem 1rem',
           borderRadius: '8px',
@@ -164,12 +165,12 @@ const DiscoverGridCard = ({
       <motion.button
         type="button"
         onClick={(e: MouseEvent) => { e.stopPropagation(); onViewMore(); }}
-        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.08)' }}
+        whileHover={{ scale: 1.05, backgroundColor: 'var(--border-subtle)' }}
         whileTap={{ scale: 0.95 }}
         style={{
           background: 'transparent',
-          color: '#aaa',
-          border: '1px solid rgba(255,255,255,0.1)',
+          color: 'var(--text-muted)',
+          border: '1px solid var(--border-color)',
           padding: '0.6rem 1rem',
           borderRadius: '8px',
           fontWeight: 600,
@@ -186,7 +187,10 @@ const DiscoverGridCard = ({
   </motion.div>
 );
 
-export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
+// ─── Main Discover Page ───────────────────────────────────────────────────────
+export default function Discover({ isLoggedIn: propIsLoggedIn }: { isLoggedIn?: boolean }) {
+  const { isLoggedIn: authIsLoggedIn } = useAuth();
+  const isLoggedIn = propIsLoggedIn ?? authIsLoggedIn;
   const [approvedFromApi, setApprovedFromApi] = useState<ReturnType<typeof mapApprovedToCard>[]>([]);
   const [currentView, setCurrentView] = useState<'grid' | 'details' | 'register'>('grid');
   const [loading, setLoading] = useState(true);
@@ -215,10 +219,11 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
   const featuredEvents = useMemo(() => {
     const fromApproved = approvedFromApi.slice(0, 2);
     const fromStatic = allEvents.filter((e) => e.tag === 'Trending' || e.tag === 'Hot').slice(0, 2);
-    return [...fromApproved, ...fromStatic].slice(0, 3);
-  }, [approvedFromApi]);
+    const allFeatured = [...fromApproved, ...fromStatic];
+    return !isLoggedIn ? allFeatured.slice(0, 1) : allFeatured.slice(0, 3);
+  }, [approvedFromApi, isLoggedIn]);
 
-  const filteredEvents = mergedEvents.filter((e) => {
+  const filteredEventsAll = mergedEvents.filter((e) => {
     const matchCat = selectedCategory === 'All' || e.category === selectedCategory;
     const matchSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.organizer.toLowerCase().includes(searchQuery.toLowerCase());
@@ -236,11 +241,14 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
   });
 
   const gridEvents = useMemo(() => {
+    const filtered = !isLoggedIn ? filteredEventsAll.slice(0, 3) : filteredEventsAll;
     const showFeatured = selectedCategory === 'All' && !searchQuery.trim() && featuredEvents.length > 0;
-    if (!showFeatured) return filteredEvents;
+    if (!showFeatured) return filtered;
     const featuredIds = new Set(featuredEvents.map((e) => e.id));
-    return filteredEvents.filter((e) => !featuredIds.has(e.id));
-  }, [filteredEvents, featuredEvents, selectedCategory, searchQuery]);
+    return filtered.filter((e) => !featuredIds.has(e.id));
+  }, [filteredEventsAll, featuredEvents, selectedCategory, searchQuery, isLoggedIn]);
+
+  const filteredEvents = !isLoggedIn ? filteredEventsAll.slice(0, 3) : filteredEventsAll;
 
   const handleEventClick = (event: any) => {
     setSelectedEvent(event);
@@ -331,7 +339,7 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               style={{
-                color: '#fff',
+                color: 'var(--text-primary)',
                 fontSize: '3.5rem',
                 fontWeight: 700,
                 marginBottom: '1rem',
@@ -356,7 +364,7 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
               transition={{ delay: 0.15 }}
               style={{
                 textAlign: 'center',
-                color: '#888',
+                color: 'var(--text-muted)',
                 fontSize: '1rem',
                 marginBottom: '2.5rem',
                 maxWidth: '520px',
@@ -379,14 +387,14 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.75rem',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${searchFocused ? '#ff4d00' : 'rgba(255,255,255,0.1)'}`,
+                  background: 'var(--border-subtle)',
+                  border: `1px solid ${searchFocused ? '#ff4d00' : 'var(--border-color)'}`,
                   borderRadius: '8px',
                   padding: '0.65rem 1rem',
                   transition: 'border-color 0.2s',
                 }}
               >
-                <Search size={18} color={searchFocused ? '#ff4d00' : '#888'} />
+                <Search size={18} color={searchFocused ? '#ff4d00' : 'var(--text-muted)'} />
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -399,7 +407,7 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                     background: 'transparent',
                     border: 'none',
                     outline: 'none',
-                    color: '#e2e8f0',
+                    color: 'var(--text-primary)',
                     fontSize: '0.9rem',
                     fontFamily: "'Outfit', sans-serif",
                   }}
@@ -423,8 +431,8 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                       right: 0,
                       zIndex: 10,
                       marginTop: '0.5rem',
-                      background: '#151518',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-color)',
                       borderRadius: '8px',
                       overflow: 'hidden',
                     }}
@@ -443,9 +451,9 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                           padding: '0.65rem 1rem',
                           cursor: 'pointer',
                           border: 'none',
-                          borderBottom: index < recentSearches.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                          borderBottom: index < recentSearches.length - 1 ? '1px solid var(--border-subtle)' : 'none',
                           background: 'transparent',
-                          color: '#ccc',
+                          color: 'var(--text-secondary)',
                           fontSize: '0.88rem',
                           display: 'flex',
                           alignItems: 'center',
@@ -473,7 +481,7 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                     transition={{ delay: 0.12 }}
                     style={{ marginBottom: '2.5rem' }}
                   >
-                    <h2 style={{ color: '#fff', fontSize: '1.15rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <h2 style={{ color: 'var(--text-primary)', fontSize: '1.15rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Sparkles size={18} color="#ff4d00" />
                       Featured
                     </h2>
@@ -499,17 +507,17 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Filter size={16} color="#94a3b8" />
-                      <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Sort:</span>
+                      <Filter size={16} color="var(--text-muted)" />
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Sort:</span>
                       <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value as 'date' | 'popularity' | 'name')}
                         style={{
-                          background: 'rgba(255,255,255,0.05)',
-                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: 'var(--border-subtle)',
+                          border: '1px solid var(--border-color)',
                           borderRadius: '8px',
                           padding: '0.5rem 1rem',
-                          color: '#e2e8f0',
+                          color: 'var(--text-primary)',
                           fontSize: '0.85rem',
                           outline: 'none',
                         }}
@@ -520,7 +528,7 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                       </select>
                     </div>
                   </div>
-                  <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                     {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''}
                   </span>
                 </motion.div>
@@ -542,9 +550,9 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                         whileTap={{ scale: 0.97 }}
                         style={{
                           flexShrink: 0,
-                          background: active ? 'rgba(255,77,0,0.2)' : 'rgba(255,255,255,0.05)',
-                          color: active ? '#e2e8f0' : '#94a3b8',
-                          border: `1px solid ${active ? '#ff4d00' : 'rgba(255,255,255,0.1)'}`,
+                          background: active ? 'rgba(255,77,0,0.2)' : 'var(--border-color)',
+                          color: active ? '#ff4d00' : 'var(--text-secondary)',
+                          border: `1px solid ${active ? '#ff4d00' : 'var(--border-color)'}`,
                           padding: '0.45rem 1rem',
                           borderRadius: '8px',
                           fontWeight: 600,
@@ -591,10 +599,10 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                     <motion.div
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      style={{ textAlign: 'center', padding: '4rem 1.5rem', color: '#888' }}
+                      style={{ textAlign: 'center', padding: '4rem 1.5rem', color: 'var(--text-muted)' }}
                     >
                       <Search size={40} style={{ margin: '0 auto 1rem', opacity: 0.35, display: 'block' }} />
-                      <p style={{ fontSize: '1.05rem', fontWeight: 600, color: '#aaa' }}>No events match</p>
+                      <p style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-muted)' }}>No events match</p>
                       <p style={{ fontSize: '0.9rem', marginTop: '0.35rem' }}>Try another category or search term.</p>
                     </motion.div>
                   )}
@@ -610,7 +618,7 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                   left: 0,
                   right: 0,
                   height: '100vh',
-                  background: 'linear-gradient(to top, #09090b 40%, rgba(9,9,11,0.72) 72%, transparent 100%)',
+                  background: 'linear-gradient(to top, var(--bg-primary) 40%, rgba(9,9,11,0.72) 72%, transparent 100%)',
                   zIndex: 100,
                   display: 'flex',
                   flexDirection: 'column',
@@ -622,7 +630,7 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                 }}
               >
                 <div style={{ textAlign: 'center', maxWidth: '450px', padding: '2rem' }}>
-                  <h2 style={{ color: '#fff', fontSize: '2.25rem', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.15 }}>
+                  <h2 style={{ color: 'var(--text-primary)', fontSize: '2.25rem', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.15 }}>
                     Sign in to explore Discover
                   </h2>
                   <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: '2rem', lineHeight: 1.55 }}>
@@ -634,15 +642,15 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => { window.location.hash = '#signin'; }}
                     style={{
-                      background: '#fff',
-                      color: '#000',
+                      background: '#ff4d00',
+                      color: '#ffffff',
                       border: 'none',
                       padding: '1.1rem 2.75rem',
                       borderRadius: '50px',
                       fontWeight: 700,
                       fontSize: '1.05rem',
                       cursor: 'pointer',
-                      boxShadow: '0 15px 35px rgba(255,255,255,0.08)',
+                      boxShadow: '0 15px 35px var(--border-subtle)',
                     }}
                   >
                     Login to view more
@@ -656,6 +664,10 @@ export default function Discover({ isLoggedIn }: { isLoggedIn?: boolean }) {
       <style>{`
         .spin { animation: spin-anim 1s linear infinite; }
         @keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+          .discover-padding { padding: 6rem 1rem 4rem 1rem !important; }
+          .events-h1 { font-size: 2.2rem !important; }
+        }
       `}</style>
     </div>
   );

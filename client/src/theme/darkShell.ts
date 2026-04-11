@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 
 export const darkPageShell: CSSProperties = {
   minHeight: '100vh',
-  backgroundColor: '#09090b',
+  backgroundColor: 'var(--bg-primary)',
   backgroundImage: `
     radial-gradient(circle at top right, rgba(138, 43, 226, 0.15) 0%, transparent 40%),
     radial-gradient(circle at 80% 20%, rgba(255, 60, 150, 0.08) 0%, transparent 50%),

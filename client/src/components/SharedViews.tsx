@@ -38,19 +38,19 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
       {/* Navigation */}
       <motion.div
         onClick={onBack}
-        whileHover={{ scale: 1.05, background: 'rgba(255,255,255,0.1)' }}
+        whileHover={{ scale: 1.05, background: 'var(--border-color)' }}
         whileTap={{ scale: 0.95 }}
         style={{
           width: '45px', height: '45px',
-          background: 'rgba(255,255,255,0.05)', borderRadius: '50%',
+          background: 'var(--border-subtle)', borderRadius: '50%',
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           cursor: 'pointer', marginBottom: '2rem',
-          border: '1px solid rgba(255,255,255,0.1)',
+          border: '1px solid var(--border-color)',
           backdropFilter: 'blur(10px)',
           boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
         }}
       >
-        <ArrowLeft size={22} color="#fff" />
+        <ArrowLeft size={22} color='var(--text-primary)' />
       </motion.div>
 
       {/* Hero Section */}
@@ -58,73 +58,78 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="sv-hero-container"
         style={{
           width: '100%', borderRadius: '24px', overflow: 'hidden',
           marginBottom: '3rem', position: 'relative',
           boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          background: '#111'
+          border: '1px solid var(--border-color)',
+          background: 'var(--bg-primary)',
+          display: 'grid',
+          gridTemplateColumns: 'minmax(300px, 450px) 1fr',
+          gap: '2rem'
         }}
       >
-        <img
-          className="sv-hero-image"
-          src={event?.image || '/event1.png'}
-          alt={event?.title || 'Event'}
-          style={{ width: '100%', height: '500px', objectFit: 'cover', display: 'block', filter: 'brightness(0.8)' }}
-        />
-        
-        {/* Floating Actions */}
-        <div style={{
-          position: 'absolute', top: '1.5rem', right: '1.5rem',
-          display: 'flex', gap: '0.75rem'
-        }}>
-          <motion.button onClick={() => { if (eventId) toggleLike(eventId); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-            style={{
-              width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)',
-              border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', backdropFilter: 'blur(12px)', color: isLiked ? '#ef4444' : '#fff'
-            }}>
-            <Heart size={20} fill={isLiked ? '#ef4444' : 'none'} />
-          </motion.button>
-          <motion.button onClick={() => { setIsShared(true); setTimeout(() => setIsShared(false), 2000); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-            style={{
-              width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)',
-              border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', backdropFilter: 'blur(12px)', color: '#fff'
-            }}>
-            {isShared ? <CheckCircle size={20} color="#34d399" /> : <Share2 size={20} />}
-          </motion.button>
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1' }}>
+          <img
+            className="sv-hero-image"
+            src={event?.image || '/event1.png'}
+            alt={event?.title || 'Event'}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'brightness(0.9)' }}
+          />
+          
+          {/* Floating Actions */}
+          <div style={{
+            position: 'absolute', top: '1.5rem', right: '1.5rem',
+            display: 'flex', gap: '0.75rem'
+          }}>
+            <motion.button onClick={() => { if (eventId) toggleLike(eventId); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+              style={{
+                width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', backdropFilter: 'blur(12px)', color: isLiked ? '#ef4444' : 'var(--text-primary)'
+              }}>
+              <Heart size={20} fill={isLiked ? '#ef4444' : 'none'} />
+            </motion.button>
+            <motion.button onClick={() => { setIsShared(true); setTimeout(() => setIsShared(false), 2000); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+              style={{
+                width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', backdropFilter: 'blur(12px)', color: 'var(--text-primary)'
+              }}>
+              {isShared ? <CheckCircle size={20} color="#34d399" /> : <Share2 size={20} />}
+            </motion.button>
+          </div>
         </div>
 
-        {/* Hero Content Overlay */}
+        {/* Hero Content (Right Side) */}
         <div className="sv-hero-content" style={{
-           position: 'absolute', bottom: 0, left: 0, right: 0,
-           padding: '3rem 2rem 2rem 2rem',
-           background: 'linear-gradient(to top, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.6) 60%, transparent 100%)',
-           display: 'flex', flexDirection: 'column', gap: '0.5rem'
+           padding: '3rem 3rem 3rem 0',
+           display: 'flex', flexDirection: 'column', gap: '1rem',
+           justifyContent: 'center'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
              <span style={{
-                background: 'linear-gradient(135deg, #FF6F3F, #ff4c1a)', color: '#fff',
-                padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700,
+                background: 'linear-gradient(135deg, #FF6F3F, #ff4c1a)', color: '#ffffff',
+                padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700,
                 textTransform: 'uppercase', letterSpacing: '0.05em', boxShadow: '0 4px 15px rgba(255,111,63,0.4)'
              }}>
                {event?.category || 'Special'}
              </span>
              {(event?.tag === 'Trending' || event?.tag === 'Hot') && (
-               <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 600 }}>
-                 <Sparkles size={14} /> Trending
+               <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#fbbf24', fontSize: '0.85rem', fontWeight: 600 }}>
+                 <Sparkles size={16} /> Trending
                </span>
              )}
           </div>
           
-          <h1 style={{ color: '#fff', fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 800, lineHeight: 1.1, textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+          <h1 style={{ color: 'var(--text-primary)', fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, lineHeight: 1.15 }}>
             {event?.title}
           </h1>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-            <img src={`https://ui-avatars.com/api/?name=${event?.organizer || 'A'}&background=random&color=fff`} alt="Organizer" style={{ width: '30px', height: '30px', borderRadius: '50%', border: '2px solid #fff' }} />
-            <p style={{ color: '#ccc', fontSize: '1rem', fontWeight: 500 }}>By <span style={{ color: '#fff' }}>{event?.organizer || 'Unknown Organizer'}</span></p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
+            <img src={`https://ui-avatars.com/api/?name=${event?.organizer || 'A'}&background=random&color=fff`} alt="Organizer" style={{ width: '40px', height: '40px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.2)' }} />
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', fontWeight: 500 }}>By <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{event?.organizer || 'Unknown Organizer'}</span></p>
           </div>
         </div>
       </motion.div>
@@ -138,7 +143,7 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
         }}
       >
         <div style={{
-          background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px',
+          background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', borderRadius: '20px',
           padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', backdropFilter: 'blur(10px)',
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
         }}>
@@ -147,13 +152,13 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
           </div>
           <div>
             <p style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: '6px' }}>Date & Time</p>
-            <p style={{ color: '#f8fafc', fontSize: '1.1rem', fontWeight: 600 }}>{event?.date?.split('•')[0] || 'TBD'}</p>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '2px' }}>{event?.date?.split('•')[1] || ''}</p>
+            <p style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 600 }}>{event?.date?.split('•')[0] || 'TBD'}</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '2px' }}>{event?.date?.split('•')[1] || ''}</p>
           </div>
         </div>
 
         <div style={{
-          background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px',
+          background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', borderRadius: '20px',
           padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', backdropFilter: 'blur(10px)',
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
         }}>
@@ -162,8 +167,8 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
           </div>
           <div>
             <p style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: '6px' }}>Location</p>
-            <p style={{ color: '#f8fafc', fontSize: '1.1rem', fontWeight: 600, lineHeight: 1.3 }}>{event?.venue?.split(',')[0] || 'TBD'}</p>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '2px' }}>{event?.venue?.split(',')[1] || ''}</p>
+            <p style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 600, lineHeight: 1.3 }}>{event?.venue?.split(',')[0] || 'TBD'}</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '2px' }}>{event?.venue?.split(',')[1] || ''}</p>
           </div>
         </div>
       </motion.div>
@@ -171,16 +176,16 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
       {/* Main Content & Sidebar CTA */}
       <div className="sv-main-content-gap" style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} style={{ flex: '1 1 500px', minWidth: 0 }}>
-            <h3 style={{ color: '#fff', fontSize: '1.8rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                <div style={{ width: '4px', height: '24px', background: '#FF6F3F', borderRadius: '4px' }} />
                About This Event
             </h3>
-            <div style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: 1.8 }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: 1.8 }}>
                <p style={{ marginBottom: '1.5rem' }}>
                  Prepare to elevate your experience! Join us for a breathtaking immersion into {event?.category?.toLowerCase() || 'this field'}, brought to you by {event?.organizer || 'the best'}. Expect dynamic showcases, brilliant insights, and networking that fuels innovation.
                </p>
-               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '16px', marginBottom: '2rem' }}>
-                  <h4 style={{ color: '#f8fafc', fontSize: '1.2rem', marginBottom: '1rem', fontWeight: 600 }}>🌟 Event Highlights</h4>
+               <div style={{ background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', padding: '1.5rem', borderRadius: '16px', marginBottom: '2rem' }}>
+                  <h4 style={{ color: 'var(--text-primary)', fontSize: '1.2rem', marginBottom: '1rem', fontWeight: 600 }}>🌟 Event Highlights</h4>
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                     <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Sparkles size={16} color="#fbbf24" style={{flexShrink: 0}} /> Exclusive interactive sessions and keynotes.</li>
                     <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Users size={16} color="#38bdf8" style={{flexShrink: 0}} /> Connect with highly influential professionals.</li>
@@ -194,15 +199,15 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} style={{ flex: '1 1 300px', maxWidth: '400px', width: '100%' }}>
             <div className="sv-cta-card" style={{
                background: 'linear-gradient(180deg, rgba(30,30,35,0.8), rgba(20,20,25,0.8))',
-               border: '1px solid rgba(255,255,255,0.1)',
+               border: '1px solid var(--border-color)',
                borderRadius: '24px', padding: '2rem',
                backdropFilter: 'blur(16px)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
                position: 'sticky', top: '100px'
             }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
                   <div>
                     <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '4px' }}>Ticket Price</p>
-                    <p style={{ color: event?.price === 'Free' ? '#34d399' : '#fff', fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{event?.price || 'Free'}</p>
+                    <p style={{ color: event?.price === 'Free' ? '#34d399' : 'var(--text-primary)', fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{event?.price || 'Free'}</p>
                   </div>
                   {event?.seats && (
                      <div style={{ textAlign: 'right' }}>
@@ -218,7 +223,7 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
                   whileTap={{ scale: 0.97 }}
                   style={{
                      width: '100%', background: 'linear-gradient(135deg, #FF6F3F, #dc5022)',
-                     color: '#fff', border: 'none', padding: '1rem', borderRadius: '14px',
+                     color: '#ffffff', border: 'none', padding: '1rem', borderRadius: '14px',
                      fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                      cursor: 'pointer', fontFamily: "'Outfit', sans-serif"
                   }}
@@ -255,7 +260,8 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
 
      setLoading(true);
      try {
-       await api.post(`/events/${event._id}/register`);
+       const eventId = event._id || event.id;
+       await api.post(`/events/${eventId}/register`);
        setStep(2); // Success state
      } catch (err: any) {
        console.error('Registration error:', err);
@@ -281,8 +287,8 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
         initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         className="sv-form-padding"
         style={{
-           width: '100%', maxWidth: '600px', background: 'rgba(20,20,25,0.7)',
-           backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)',
+           width: '100%', maxWidth: '600px', background: 'var(--bg-card)',
+           backdropFilter: 'blur(20px)', border: '1px solid var(--border-subtle)',
            borderRadius: '24px', padding: '2.5rem', boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
            position: 'relative', overflow: 'hidden'
         }}
@@ -292,16 +298,16 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
            style={{
              position: 'absolute', top: '2rem', left: '2rem',
-             width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%',
+             width: '40px', height: '40px', background: 'var(--border-subtle)', borderRadius: '50%',
              display: 'flex', justifyContent: 'center', alignItems: 'center',
-             cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)'
+             cursor: 'pointer', border: '1px solid var(--border-color)'
            }}
         >
-          <ArrowLeft size={18} color="#fff" />
+          <ArrowLeft size={18} color='var(--text-primary)' />
         </motion.div>
 
         <div style={{ textAlign: 'center', marginTop: '1rem', marginBottom: '2.5rem', padding: '0 3rem' }}>
-           <h2 style={{ color: '#fff', fontSize: '2rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '0.5rem' }}>
+           <h2 style={{ color: 'var(--text-primary)', fontSize: '2rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '0.5rem' }}>
               Reserve Your Seat
            </h2>
            <p style={{ color: '#94a3b8', fontSize: '1rem' }}>For <span style={{ color: '#FF6F3F', fontWeight: 600 }}>{event?.title}</span></p>
@@ -316,32 +322,32 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
              <div style={{ position: 'relative' }}>
                 <UserIcon size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                 <input required type="text" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')} />
+                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
+                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'var(--border-color)')} />
              </div>
 
              {/* Email */}
              <div style={{ position: 'relative' }}>
                 <Mail size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                 <input required type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')} />
+                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
+                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'var(--border-color)')} />
              </div>
 
              {/* Phone */}
              <div style={{ position: 'relative' }}>
                 <Phone size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                 <input required type="text" placeholder="Phone Number" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
-                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')} />
+                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
+                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'var(--border-color)')} />
              </div>
 
              {/* Team Name */}
              <div style={{ position: 'relative' }}>
                 <Users size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                 <input type="text" placeholder="Team Name (Optional)" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}
-                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')} />
+                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
+                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'var(--border-color)')} />
              </div>
           </div>
           
@@ -350,8 +356,8 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
             disabled={loading}
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
             style={{ 
-               background: isFormValid ? 'linear-gradient(135deg, #FF6F3F, #dc5022)' : 'rgba(255,255,255,0.1)',
-               color: isFormValid ? '#fff' : '#64748b',
+               background: isFormValid ? 'linear-gradient(135deg, #FF6F3F, #dc5022)' : 'var(--border-color)',
+               color: isFormValid ? 'var(--text-primary)' : '#64748b',
                padding: '1.2rem', borderRadius: '12px', fontWeight: 700, border: 'none', cursor: (isFormValid && !loading) ? 'pointer' : 'not-allowed',
                marginTop: '1rem', fontSize: '1.1rem', fontFamily: "'Outfit', sans-serif",
                transition: 'all 0.3s', boxShadow: isFormValid ? '0 8px 25px rgba(255,111,63,0.3)' : 'none',
@@ -365,9 +371,9 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200, delay: 0.2 }} style={{ width: '80px', height: '80px', background: 'rgba(52,211,153,0.2)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 1.5rem auto' }}>
               <CheckCircle size={40} color="#34d399" />
            </motion.div>
-           <h3 style={{ color: '#fff', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem' }}>Registration Successful!</h3>
+           <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem' }}>Registration Successful!</h3>
            <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: '2rem' }}>We've sent the ticket details to your email.</p>
-           <motion.button onClick={onBack} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Outfit', sans-serif" }}>
+           <motion.button onClick={onBack} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ background: 'var(--border-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Outfit', sans-serif" }}>
               Back to Events
            </motion.button>
         </motion.div>
@@ -376,6 +382,10 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
 
       </motion.div>
       <style>{`
+        @media (max-width: 900px) {
+          .sv-hero-container { grid-template-columns: 1fr !important; }
+          .sv-hero-content { padding: 2rem !important; }
+        }
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>

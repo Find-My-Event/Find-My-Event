@@ -93,7 +93,7 @@ const Auth: React.FC<AuthProps> = () => {
   );
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: '#f8f9fa', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--bg-primary)', position: 'relative', overflow: 'hidden' }}>
       {/* Decorative dot grid */}
       <div className="dot-grid"></div>
       
@@ -103,7 +103,7 @@ const Auth: React.FC<AuthProps> = () => {
           href="#home"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          style={{ position: 'absolute', top: '2rem', left: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: '#1a1a1a', fontWeight: 500, zIndex: 100, background: 'rgba(255, 255, 255, 0.5)', padding: '0.5rem 1rem', borderRadius: '999px', backdropFilter: 'blur(10px)', border: '1px solid rgba(0,0,0,0.05)' }}
+          style={{ position: 'absolute', top: '2rem', left: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'var(--bg-card)', fontWeight: 500, zIndex: 100, background: 'rgba(255, 255, 255, 0.5)', padding: '0.5rem 1rem', borderRadius: '999px', backdropFilter: 'blur(10px)', border: '1px solid rgba(0,0,0,0.05)' }}
         >
           <ArrowLeft size={18} />
           Back
@@ -112,7 +112,21 @@ const Auth: React.FC<AuthProps> = () => {
 
       {/* Left Section - Branding (Old UI style) */}
       <div 
-        style={{ flex: 1, display: 'none', flexDirection: 'column', justifyContent: 'center', padding: '4rem', position: 'relative', backgroundColor: '#111', color: 'white', borderTopRightRadius: '3rem', borderBottomRightRadius: '3rem' }}
+        style={{ 
+          flex: 1, 
+          display: 'none', 
+          flexDirection: 'column', 
+          justifyContent: 'center', 
+          padding: '4rem', 
+          position: 'relative', 
+          backgroundColor: '#0a0a0a', 
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url("https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?auto=format&fit=crop&q=80")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          color: 'white', 
+          borderTopRightRadius: '3rem', 
+          borderBottomRightRadius: '3rem' 
+        }}
         className="auth-left-panel"
       >
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
@@ -138,7 +152,7 @@ const Auth: React.FC<AuthProps> = () => {
                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12 }} style={{ width: '120px', height: '120px', borderRadius: '50%', margin: '0 auto 2rem', border: '4px solid #ff6f3f', padding: '5px', background: 'white', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
                    <img src={profileData.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
                  </motion.div>
-                 <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1a1a1a' }}>Hello, {formData.name.split(' ')[0]}</h1>
+                 <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>Hello, {formData.name.split(' ')[0]}</h1>
                  <p style={{ opacity: 0.6, marginTop: '1rem', fontSize: '1.1rem', color: '#666' }}>Your account is ready. Redirecting you home...</p>
                  <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', color: '#ff6f3f' }}>
                     <Check size={24} />
@@ -154,7 +168,7 @@ const Auth: React.FC<AuthProps> = () => {
                 transition={{ duration: 0.4 }}
               >
                 <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
-                  <h2 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', letterSpacing: '-0.03em', color: '#1a1a1a' }}>
+                  <h2 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>
                     {step === 'login' && 'Welcome back'}
                     {step === 'signup' && 'Create an account'}
                     {step === 'otp' && 'Enter Code'}
@@ -176,21 +190,21 @@ const Auth: React.FC<AuthProps> = () => {
 
                 {(step === 'login' || step === 'signup') && (
                   <>
-                    <button style={{ width: '100%', padding: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', backgroundColor: 'white', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', fontSize: '1rem', fontWeight: 500, color: '#1a1a1a', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }} onClick={() => {}}>
+                    <button style={{ width: '100%', padding: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', backgroundColor: 'white', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', fontSize: '1rem', fontWeight: 500, color: 'var(--text-primary)', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }} onClick={() => {}}>
                       <GoogleIcon />
                       {step === 'login' ? 'Log in with Google' : 'Sign up with Google'}
                     </button>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '1.5rem 0' }}>
                       <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.1)' }}></div>
-                      <span style={{ fontSize: '0.875rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Or</span>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Or</span>
                       <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.1)' }}></div>
                     </div>
 
                     <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                       {step === 'signup' && (
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Full Name</label>
+                          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Full Name</label>
                           <div style={{ position: 'relative' }}>
                             <User size={18} color="#888" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                             <input name="name" value={formData.name} onChange={handleChange} placeholder="John Doe" required className="auth-input-old" />
@@ -198,14 +212,14 @@ const Auth: React.FC<AuthProps> = () => {
                         </div>
                       )}
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Email Address</label>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Email Address</label>
                         <div style={{ position: 'relative' }}>
                           <Mail size={18} color="#888" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                           <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="you@university.edu" required className="auth-input-old" />
                         </div>
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Password</label>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Password</label>
                         <div style={{ position: 'relative' }}>
                           <Lock size={18} color="#888" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                           <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required className="auth-input-old" />
@@ -227,7 +241,7 @@ const Auth: React.FC<AuthProps> = () => {
                         value={formData.otp} 
                         onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
                         placeholder="000000"
-                        style={{ width: '100%', textAlign: 'center', letterSpacing: '0.8rem', fontSize: '1.5rem', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', color: '#1a1a1a', padding: '1rem', borderRadius: '12px', outline: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}
+                        style={{ width: '100%', textAlign: 'center', letterSpacing: '0.8rem', fontSize: '1.5rem', background: 'var(--bg-card)', border: '1px solid rgba(0,0,0,0.1)', color: 'var(--text-primary)', padding: '1rem', borderRadius: '12px', outline: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}
                       />
                     </div>
                     <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} disabled={isSubmitting} className="auth-btn-old">
@@ -259,7 +273,7 @@ const Auth: React.FC<AuthProps> = () => {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Age</label>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Age</label>
                         <input 
                           type="number"
                           value={profileData.age}
@@ -270,7 +284,7 @@ const Auth: React.FC<AuthProps> = () => {
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Gender</label>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Gender</label>
                         <select 
                           value={profileData.gender}
                           onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
@@ -286,17 +300,17 @@ const Auth: React.FC<AuthProps> = () => {
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Bio</label>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Bio</label>
                       <textarea 
                         value={profileData.bio}
                         onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                         placeholder="I love college festivals!"
-                        style={{ width: '100%', minHeight: '80px', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', padding: '1rem', color: '#1a1a1a', resize: 'none', outline: 'none' }}
+                        style={{ width: '100%', minHeight: '80px', background: 'var(--text-primary)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', padding: '1rem', color: 'var(--bg-card)', resize: 'none', outline: 'none' }}
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Interests (optional, comma separated)</label>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Interests (optional, comma separated)</label>
                       <input 
                         type="text"
                         value={profileData.interests}
@@ -308,7 +322,7 @@ const Auth: React.FC<AuthProps> = () => {
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#1a1a1a' }}>Hobbies (optional, comma separated)</label>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Hobbies (optional, comma separated)</label>
                       <input 
                         type="text"
                         value={profileData.hobbies}

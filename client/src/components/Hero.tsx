@@ -120,6 +120,7 @@ const Hero = () => {
           
           <motion.div 
             ref={mascotRef}
+            className="hero-mascot-wrapper"
             variants={wordVars}
             style={{ 
               width: '2.6em', 
@@ -129,7 +130,6 @@ const Hero = () => {
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
-              margin: '0.2em 0 0 0', // Lowered slightly
               overflow: 'visible',
               boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
               flexShrink: 0,
@@ -162,7 +162,7 @@ const Hero = () => {
         style={{ 
             maxWidth: '650px', 
             fontSize: 'clamp(1.1rem, 2.5vw, 1.6rem)', 
-            color: '#111', 
+            color: 'var(--bg-primary)', 
             marginTop: '1.5rem', 
             fontWeight: 400,
             lineHeight: 1.4
@@ -171,10 +171,26 @@ const Hero = () => {
         Discover the best mini-events, workshops, and student-run festivals across your campus.
       </motion.p>
 
-      <div style={{ position: 'absolute', bottom: '4rem', left: '5rem', fontSize: '1rem', fontWeight: 600, opacity: 0.3 }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .hero-tagline { 
+            grid-template-columns: 1fr !important;
+            gap: 1.5rem !important;
+          }
+          .hero-tagline > div:first-child { justify-content: center !important; text-align: center !important; }
+          .hero-tagline > div:last-child { text-align: center !important; }
+          .hero-mascot-wrapper { 
+            margin: 0 auto !important;
+            width: 5em !important; 
+            height: 5em !important; 
+          }
+          .hero-watermark { display: none !important; }
+        }
+      `}</style>
+      <div className="hero-watermark" style={{ position: 'absolute', bottom: '4rem', left: '5rem', fontSize: '1rem', fontWeight: 600, opacity: 0.3 }}>
         @findmyevent
       </div>
-      <div style={{ position: 'absolute', bottom: '4rem', right: '5rem', fontSize: '1rem', fontWeight: 600, opacity: 0.3 }}>
+      <div className="hero-watermark" style={{ position: 'absolute', bottom: '4rem', right: '5rem', fontSize: '1rem', fontWeight: 600, opacity: 0.3 }}>
         Designing moments that matter.
       </div>
     </section>

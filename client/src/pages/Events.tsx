@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, MoreHorizontal, Grid, List, Filter, Loader2, Heart } from 'lucide-react';
+import { Calendar, MapPin, MoreHorizontal, Grid, List, Loader2, Heart } from 'lucide-react';
 import api from '../api/axios';
 import { useLikedEvents } from '../hooks/useLikedEvents';
+import { useAuth } from '../contexts/AuthContext';
 import '../index.css';
 
 // ─── Shared View Imports ───────────────────────────────────────────────────────────
@@ -11,7 +12,9 @@ import { EventDetail, RegisterView } from '../components/SharedViews';
 // ─── Timeline View Card ───────────────────────────────────────────────────────
 const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index: number, onViewMore: () => void, onRegister: () => void }) => {
   const { isLiked: checkLiked, toggleLike } = useLikedEvents();
+  const { user } = useAuth();
   const liked = checkLiked(String(event.id));
+  const isOrganizer = user && (event.organizer === user.name || event.organizer === user.id);
 
   return (
     <motion.div 
@@ -25,12 +28,12 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
       style={{
         display: 'flex',
         flexDirection: 'row',
-        background: '#151518',
+        background: 'var(--bg-card)',
         borderRadius: '16px',
         padding: '1.5rem',
         gap: '2rem',
         boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-        border: '1px solid rgba(255,255,255,0.05)',
+        border: '1px solid var(--border-subtle)',
         width: '100%',
         maxWidth: '900px',
         alignItems: 'center',
@@ -66,14 +69,14 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
               border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', backdropFilter: 'blur(8px)', zIndex: 10
             }}>
-            <Heart size={16} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#fff'} />
+            <Heart size={16} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : 'var(--text-primary)'} />
         </motion.button>
       </div>
       
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
-          <h3 className="event-card-title" style={{ fontSize: '1.75rem', fontWeight: 600, color: '#fff', marginBottom: '0.25rem' }}>{event.title}</h3>
-          <p style={{ color: '#888', fontSize: '0.95rem' }}>Organized by {event.organizer}</p>
+          <h3 className="event-card-title" style={{ fontSize: '1.75rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>{event.title}</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Organized by {event.organizer}</p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
@@ -81,7 +84,7 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
             <Calendar size={18} color="#aaa" style={{ marginTop: '0.1rem' }} />
             <div>
               <p style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Date & Time</p>
-              <p style={{ color: '#ccc', fontSize: '0.95rem', fontWeight: 500 }}>{event.date}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 500 }}>{event.date}</p>
             </div>
           </div>
           
@@ -89,39 +92,41 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
             <MapPin size={18} color="#aaa" style={{ marginTop: '0.1rem' }} />
             <div>
               <p style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Venue</p>
-              <p style={{ color: '#ccc', fontSize: '0.95rem', fontWeight: 500 }}>{event.venue}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 500 }}>{event.venue}</p>
             </div>
           </div>
         </div>
 
         <div className="event-actions-container" style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-          <motion.button 
-            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onRegister(); }}
-            whileHover={{ scale: 1.05, backgroundColor: '#eee' }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              background: '#fff',
-              color: '#000',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '8px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontSize: '0.95rem',
-              flex: 1
-            }}
-          >
-            Register Now
-          </motion.button>
+          {!isOrganizer && (
+            <motion.button 
+              onClick={(e: React.MouseEvent) => { e.stopPropagation(); onRegister(); }}
+              whileHover={{ scale: 1.05, backgroundColor: '#eee' }}
+              whileTap={{ scale: 0.95 }}
+              style={{
+                background: '#ff4d00',
+                color: '#ffffff',
+                border: 'none',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: '0.95rem',
+                flex: 1
+              }}
+            >
+              Register Now
+            </motion.button>
+          )}
           
           <motion.button 
             onClick={(e: React.MouseEvent) => { e.stopPropagation(); onViewMore(); }}
-            whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.08)', color: '#fff' }}
+            whileHover={{ scale: 1.05, backgroundColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
             whileTap={{ scale: 0.95 }}
             style={{
               background: 'transparent',
-              color: '#aaa',
-              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'var(--text-muted)',
+              border: '1px solid var(--border-color)',
               padding: '0.75rem 1.5rem',
               borderRadius: '8px',
               fontWeight: 600,
@@ -145,7 +150,9 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
 // ─── Grid View Card ───────────────────────────────────────────────────────────
 const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, index: number, onViewMore: () => void, onRegister: () => void }) => {
   const { isLiked: checkLiked, toggleLike } = useLikedEvents();
+  const { user } = useAuth();
   const liked = checkLiked(String(event.id));
+  const isOrganizer = user && (event.organizer === user.name || event.organizer === user.id);
 
   return (
     <motion.div 
@@ -157,11 +164,11 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
       whileHover="hover"
       whileTap="hover"
       style={{
-        background: '#151518',
+        background: 'var(--bg-card)',
         borderRadius: '16px',
         padding: '1.5rem',
         boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-        border: '1px solid rgba(255,255,255,0.05)',
+        border: '1px solid var(--border-subtle)',
         cursor: 'pointer',
         maxWidth: '100%'
       }}
@@ -194,53 +201,55 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
               border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', backdropFilter: 'blur(8px)', zIndex: 10
             }}>
-            <Heart size={14} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#fff'} />
+            <Heart size={14} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : 'var(--text-primary)'} />
         </motion.button>
       </div>
       
       <div style={{ marginBottom: '1rem' }}>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '0.25rem', lineHeight: 1.3 }}>{event.title}</h3>
-        <p style={{ color: '#888', fontSize: '0.9rem' }}>By {event.organizer}</p>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem', lineHeight: 1.3 }}>{event.title}</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>By {event.organizer}</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Calendar size={14} color="#aaa" />
-          <span style={{ color: '#ccc', fontSize: '0.8rem' }}>{event.date}</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{event.date}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <MapPin size={14} color="#aaa" />
-          <span style={{ color: '#ccc', fontSize: '0.8rem' }}>{event.venue}</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{event.venue}</span>
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <motion.button 
-          onClick={(e: React.MouseEvent) => { e.stopPropagation(); onRegister(); }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          style={{
-            background: '#ff4d00',
-            color: '#fff',
-            border: 'none',
-            padding: '0.6rem 1rem',
-            borderRadius: '8px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            flex: 1
-          }}
-        >
-          Register
-        </motion.button>
+        {!isOrganizer && (
+          <motion.button 
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onRegister(); }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+              background: '#ff4d00',
+              color: '#ffffff',
+              border: 'none',
+              padding: '0.6rem 1rem',
+              borderRadius: '8px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              flex: 1
+            }}
+          >
+            Register
+          </motion.button>
+        )}
         
         <motion.button 
           onClick={(e: React.MouseEvent) => { e.stopPropagation(); onViewMore(); }}
-          whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.08)' }}
+          whileHover={{ scale: 1.05, backgroundColor: 'var(--border-subtle)' }}
           whileTap={{ scale: 0.95 }}
           style={{
             background: 'transparent',
-            color: '#aaa',
+            color: 'var(--text-muted)',
             border: '1px solid rgba(255,255,255,0.1)',
             padding: '0.6rem 1rem',
             borderRadius: '8px',
@@ -249,10 +258,11 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
             fontSize: '0.85rem',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flex: isOrganizer ? 1 : undefined
           }}
         >
-          <MoreHorizontal size={16} />
+          <MoreHorizontal size={16} /> {isOrganizer && <span style={{ marginLeft: '4px' }}>View More</span>}
         </motion.button>
       </div>
     </motion.div>
@@ -261,22 +271,43 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
 
 // ─── Main Events Component ───────────────────────────────────────────────────────
 export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
+  const { user } = useAuth();
   const [currentView, setCurrentView] = useState<'list' | 'details' | 'register'>('list');
   const [eventList, setEventList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'timeline' | 'grid'>('timeline');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const categories = ['all', 'Tech', 'Music', 'Gaming', 'Dance', 'Culture', 'Academics', 'Workshops'];
 
   useEffect(() => {
     fetchEvents();
   }, []);
 
+
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/events');
-      setEventList(res.data);
+      const [eventsRes, approvedRes] = await Promise.all([
+        api.get('/events'),
+        api.get('/events/approved')
+      ]);
+
+      const mappedApproved = approvedRes.data.map((s: any) => ({
+        _id: s._id,
+        id: s._id,
+        title: s.title,
+        description: s.description,
+        date: s.startDate,
+        venue: s.location,
+        image: s.imageUrl || '/event1.png',
+        organizer: s.organizer?.name || 'Unknown',
+        organizerId: s.organizer?._id || s.organizer,
+        category: 'Workshops',
+      }));
+
+      const combined = [...mappedApproved, ...eventsRes.data];
+      setEventList(combined);
     } catch (err) {
       console.error('Failed to fetch events:', err);
     } finally {
@@ -305,15 +336,25 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
     setSelectedEvent(null);
   };
 
-  const filteredEvents = eventList.filter(event => {
+  const filteredEventsAll = eventList.filter(event => {
     const matchCategory = filterCategory === 'all' || event.category === filterCategory;
     return matchCategory;
+  }).sort((a, b) => {
+    if (!user) return 0;
+    const aIsMine = a.organizer === user.name || String(a.organizerId || a.organizer) === String(user.id || user._id);
+    const bIsMine = b.organizer === user.name || String(b.organizerId || b.organizer) === String(user.id || user._id);
+    
+    if (aIsMine && !bIsMine) return -1;
+    if (!aIsMine && bIsMine) return 1;
+    return 0;
   });
+
+  const filteredEvents = !isLoggedIn ? filteredEventsAll.slice(0, 3) : filteredEventsAll;
 
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#09090b',
+      backgroundColor: 'var(--bg-primary)',
       backgroundImage: `
         radial-gradient(circle at top right, rgba(255, 77, 0, 0.1) 0%, transparent 40%),
         radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%)
@@ -321,7 +362,7 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
       fontFamily: "'Outfit', sans-serif",
       overflowX: 'hidden'
     }}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout">
         {currentView === 'list' && (
           <motion.main 
             key="list"
@@ -337,7 +378,7 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               style={{ 
-                color: '#fff', 
+                color: 'var(--text-primary)', 
                 fontSize: '3.5rem', 
                 fontWeight: 700, 
                 marginBottom: '2rem',
@@ -355,20 +396,44 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
               >.</motion.span>
             </motion.h1>
 
+            <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  style={{ display: 'flex', gap: '0.5rem', marginBottom: '2.5rem', overflowX: 'auto', paddingBottom: '4px' }}
+                >
+                  {categories.map((cat) => {
+                    const active = filterCategory === cat;
+                    return (
+                      <motion.button
+                        key={cat}
+                        type="button"
+                        onClick={() => setFilterCategory(cat)}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        style={{
+                          flexShrink: 0,
+                          background: active ? 'rgba(255,77,0,0.2)' : 'var(--border-color)',
+                          color: active ? '#ff4d00' : 'var(--text-secondary)',
+                          border: `1px solid ${active ? '#ff4d00' : 'var(--border-color)'}`,
+                          padding: '0.45rem 1rem',
+                          borderRadius: '8px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          fontSize: '0.82rem',
+                          fontFamily: "'Outfit', sans-serif",
+                          textTransform: 'capitalize'
+                        }}
+                      >
+                        {cat}
+                      </motion.button>
+                    );
+                  })}
+                </motion.div>
+
             {/* Filters */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <Filter size={16} color="#64748b" />
-                    <select
-                      value={filterCategory}
-                      onChange={e => setFilterCategory(e.target.value)}
-                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
-                    >
-                      <option value="all">All Categories</option>
-                      {['Tech', 'Music', 'Gaming', 'Dance', 'Culture', 'Academics', 'Workshops'].map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -377,9 +442,9 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   style={{
-                    background: viewMode === 'timeline' ? 'rgba(255,77,0,0.2)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${viewMode === 'timeline' ? '#ff4d00' : 'rgba(255,255,255,0.1)'}`,
-                    borderRadius: '8px', padding: '0.5rem 1rem', color: '#e2e8f0',
+                    background: viewMode === 'timeline' ? 'rgba(255,77,0,0.2)' : 'var(--border-color)',
+                    border: `1px solid ${viewMode === 'timeline' ? '#ff4d00' : 'var(--border-color)'}`,
+                    borderRadius: '8px', padding: '0.5rem 1rem', color: viewMode === 'timeline' ? '#ff4d00' : 'var(--text-secondary)',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600
                   }}
                 >
@@ -391,9 +456,9 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   style={{
-                    background: viewMode === 'grid' ? 'rgba(255,77,0,0.2)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${viewMode === 'grid' ? '#ff4d00' : 'rgba(255,255,255,0.1)'}`,
-                    borderRadius: '8px', padding: '0.5rem 1rem', color: '#e2e8f0',
+                    background: viewMode === 'grid' ? 'rgba(255,77,0,0.2)' : 'var(--border-color)',
+                    border: `1px solid ${viewMode === 'grid' ? '#ff4d00' : 'var(--border-color)'}`,
+                    borderRadius: '8px', padding: '0.5rem 1rem', color: viewMode === 'grid' ? '#ff4d00' : 'var(--text-secondary)',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600
                   }}
                 >
@@ -407,69 +472,111 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
               <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}><Loader2 className="spin" size={40} color="#ff4d00" /></div>
             ) : filteredEvents.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '5rem', opacity: 0.5 }}>No events found. Check back later!</div>
-            ) : viewMode === 'timeline' ? (
-              <div style={{ display: 'flex', gap: '4rem', width: '100%' }}>
-                {/* Left Timeline Section */}
-                <div className="mobile-hidden" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100px' }}>
-                  <div style={{
-                    background: 'transparent',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    borderRadius: '20px',
-                    padding: '0.5rem 1.25rem',
-                    fontSize: '0.95rem',
-                    fontWeight: 500,
-                    marginBottom: '2rem',
-                    zIndex: 2
-                  }}>
-                    Today
-                  </div>
-                  
-                  <div style={{ position: 'relative', width: '2px', background: 'rgba(255,255,255,0.1)', flex: 1 }}>
-                     {filteredEvents.map((_, index) => (
-                       <div key={index} style={{
-                         position: 'absolute',
-                         top: `calc(${index * 280}px + 60px)`,
-                         left: '50%',
-                         transform: 'translateX(-50%)',
-                         width: '12px',
-                         height: '12px',
-                         background: '#ff4d00',
-                         borderRadius: '50%',
-                         boxShadow: '0 0 0 4px #0a0a0c'
-                       }}></div>
-                     ))}
-                  </div>
-                </div>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', flex: 1, paddingBottom: '4rem' }}>
-                  {filteredEvents.map((event, index) => (
-                    <EventCard 
-                      key={event.id} 
-                      event={event} 
-                      index={index} 
-                      onViewMore={() => handleViewMore(event)}
-                      onRegister={() => handleRegister(event)} 
-                    />
-                  ))}
-                </div>
-              </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '2rem', paddingBottom: '4rem' }}
-              >
-                {filteredEvents.map((event, index) => (
-                  <GridEventCard 
-                    key={event.id} 
-                    event={event} 
-                    index={index} 
-                    onViewMore={() => handleViewMore(event)}
-                    onRegister={() => handleRegister(event)} 
-                  />
-                ))}
-              </motion.div>
+              <>
+                {viewMode === 'timeline' ? (
+                  <div style={{ display: 'flex', gap: '4rem', width: '100%' }}>
+                    {/* Left Timeline Section */}
+                    <div className="mobile-hidden" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100px' }}>
+                      <div style={{
+                        background: 'transparent',
+                        color: 'var(--text-primary)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: '20px',
+                        padding: '0.5rem 1.25rem',
+                        fontSize: '0.95rem',
+                        fontWeight: 500,
+                        marginBottom: '2rem',
+                        zIndex: 2
+                      }}>
+                        Today
+                      </div>
+                      
+                      <div style={{ position: 'relative', width: '2px', background: 'var(--border-color)', flex: 1 }}>
+                         {filteredEvents.map((_, index) => (
+                           <div key={index} style={{
+                             position: 'absolute',
+                             top: `calc(${index * 280}px + 60px)`,
+                             left: '50%',
+                             transform: 'translateX(-50%)',
+                             width: '12px',
+                             height: '12px',
+                             background: '#ff4d00',
+                             borderRadius: '50%',
+                             boxShadow: '0 0 0 4px #0a0a0c'
+                           }}></div>
+                         ))}
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', flex: 1, paddingBottom: '4rem' }}>
+                      {filteredEvents.map((event, index) => (
+                        <EventCard 
+                          key={event.id} 
+                          event={event} 
+                          index={index} 
+                          onViewMore={() => handleViewMore(event)}
+                          onRegister={() => handleRegister(event)} 
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '2rem', paddingBottom: '4rem' }}
+                  >
+                    {filteredEvents.map((event, index) => (
+                      <GridEventCard 
+                        key={event.id} 
+                        event={event} 
+                        index={index} 
+                        onViewMore={() => handleViewMore(event)}
+                        onRegister={() => handleRegister(event)} 
+                      />
+                    ))}
+                  </motion.div>
+                )}
+
+                {/* Login Wall UI */}
+                {!isLoggedIn && (
+                  <div style={{ 
+                    marginTop: '5rem', 
+                    textAlign: 'center', 
+                    padding: '4rem 2rem',
+                    background: 'rgba(255, 77, 0, 0.05)',
+                    borderRadius: '24px',
+                    border: '1px solid rgba(255, 77, 0, 0.1)',
+                    backdropFilter: 'blur(8px)',
+                    width: '100%',
+                    maxWidth: '900px',
+                    margin: '5rem auto 0 auto'
+                  }}>
+                    <div style={{ marginBottom: '1.5rem' }}>
+                       <Calendar size={32} color="#ff4d00" style={{ margin: '0 auto 1rem' }} />
+                       <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Want to explore more events?</h3>
+                       <p style={{ color: '#64748b', marginTop: '0.5rem' }}>Login to see the full schedule and secure your tickets.</p>
+                    </div>
+                    <button 
+                      onClick={() => window.location.hash = '#signin'}
+                      style={{ 
+                        background: '#ff4d00', 
+                        color: 'var(--text-primary)', 
+                        border: 'none', 
+                        padding: '1rem 2.5rem', 
+                        borderRadius: '12px', 
+                        fontWeight: 700, 
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        boxShadow: '0 4px 20px rgba(255, 77, 0, 0.4)'
+                      }}
+                    >
+                      Login to Continue
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </motion.main>
         )}
@@ -484,18 +591,25 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
       </AnimatePresence>
 
       {!isLoggedIn && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '40vh', background: 'linear-gradient(to top, #09090b 40%, transparent 100%)', zIndex: 10, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '4rem', pointerEvents: 'none' }}>
-           <div style={{ textAlign: 'center', background: 'rgba(24, 24, 27, 0.8)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.05)', pointerEvents: 'all', maxWidth: '400px' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Want to see more?</h3>
-              <p style={{ opacity: 0.5, fontSize: '0.9rem', marginBottom: '1.5rem' }}>Sign in to view all details and register for events.</p>
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '40vh', background: 'linear-gradient(to top, var(--bg-primary) 40%, transparent 100%)', zIndex: 10, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '4rem', pointerEvents: 'none' }}>
+           <div style={{ textAlign: 'center', background: 'var(--bg-card-hover)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(12px)', border: '1px solid var(--border-subtle)', pointerEvents: 'all', maxWidth: '400px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Want to see more?</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Sign in to view all details and register for events.</p>
               <button onClick={() => window.location.hash = '#signin'} style={{ background: '#ff4d00', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', width: '100%' }}>Login to Continue</button>
            </div>
         </div>
       )}
-
       <style>{`
         .spin { animation: spin-anim 1s linear infinite; }
         @keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+          .events-main-section { padding: 6rem 1rem 4rem 1rem !important; }
+          .events-h1 { font-size: 2.2rem !important; }
+          .event-card-container { flex-direction: column !important; }
+          .event-card-image-box { width: 100% !important; height: 160px !important; }
+          .event-card-title { font-size: 1.2rem !important; }
+          .event-actions-container { flex-direction: column !important; }
+        }
       `}</style>
     </div>
   );

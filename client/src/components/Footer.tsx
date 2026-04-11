@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 const Footer = () => (
   <footer style={{
     backgroundColor: '#0a0a0a',
-    borderTop: '1px solid rgba(255,255,255,0.06)',
+    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
     padding: '5rem 6rem 3rem 6rem',
-    color: '#fff',
+    color: '#ffffff',
     fontFamily: "'Outfit', sans-serif",
-  }}>
+  }}
+  className="site-footer"
+  >
     {/* Top: Big brand + tagline */}
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '3rem', marginBottom: '4rem' }}>
       <div>
@@ -19,40 +21,40 @@ const Footer = () => (
         </p>
       </div>
 
-      <div style={{ display: 'flex', gap: '5rem' }}>
+      <div className="footer-columns" style={{ display: 'flex', gap: '5rem' }}>
         {/* Column 1 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', opacity: 0.3, marginBottom: '0.5rem' }}>Product</span>
-          <a href="#home" style={{ color: '#fff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem', transition: 'opacity 0.2s' }}>Home</a>
-          <a href="#events" style={{ color: '#fff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Events</a>
-          <a href="#discover" style={{ color: '#fff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Discover</a>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', opacity: 0.3, marginBottom: '0.5rem', color: '#fff' }}>Product</span>
+          <a href="#home" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem', transition: 'opacity 0.2s' }}>Home</a>
+          <a href="#events" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Events</a>
+          <a href="#discover" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Discover</a>
         </div>
         {/* Column 2 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', opacity: 0.3, marginBottom: '0.5rem' }}>Company</span>
-          <a href="#about" style={{ color: '#fff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>About</a>
-          <a href="#contact" style={{ color: '#fff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Contact</a>
-          <a href="#careers" style={{ color: '#fff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Careers</a>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', opacity: 0.3, marginBottom: '0.5rem', color: '#fff' }}>Company</span>
+          <a href="#about" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>About</a>
+          <a href="#contact" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Contact</a>
+          <a href="#careers" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Careers</a>
         </div>
         {/* Column 3 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', opacity: 0.3, marginBottom: '0.5rem' }}>Social</span>
-          <a href="#" style={{ color: '#fff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Twitter</a>
-          <a href="#" style={{ color: '#fff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Instagram</a>
-          <a href="#" style={{ color: '#fff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>LinkedIn</a>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', opacity: 0.3, marginBottom: '0.5rem', color: '#fff' }}>Social</span>
+          <a href="#" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Twitter</a>
+          <a href="#" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>Instagram</a>
+          <a href="#" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.6, fontSize: '0.95rem' }}>LinkedIn</a>
         </div>
       </div>
     </div>
 
     {/* Divider */}
-    <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', marginBottom: '2rem' }} />
+    <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.1)', marginBottom: '2rem' }} />
 
     {/* Bottom bar */}
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-      <p style={{ fontSize: '0.85rem', opacity: 0.3 }}>© 2026 Find My Event. All rights reserved.</p>
+      <p style={{ fontSize: '0.85rem', opacity: 0.3, color: '#fff' }}>© 2026 Find My Event. All rights reserved.</p>
       <div style={{ display: 'flex', gap: '2rem' }}>
-        <a href="#" style={{ color: '#fff', textDecoration: 'none', opacity: 0.3, fontSize: '0.85rem' }}>Privacy Policy</a>
-        <a href="#" style={{ color: '#fff', textDecoration: 'none', opacity: 0.3, fontSize: '0.85rem' }}>Terms of Service</a>
+        <a href="#" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.3, fontSize: '0.85rem' }}>Privacy Policy</a>
+        <a href="#" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.3, fontSize: '0.85rem' }}>Terms of Service</a>
       </div>
     </div>
 
@@ -65,7 +67,20 @@ const Footer = () => (
     >
       FIND MY EVENT
     </motion.div>
+
+    <style>{`
+      @media (max-width: 768px) {
+        .site-footer {
+          padding: 3rem 1.5rem 2rem 1.5rem !important;
+        }
+        .footer-columns {
+          gap: 2rem !important;
+          flex-wrap: wrap !important;
+        }
+      }
+    `}</style>
   </footer>
 );
 
 export default Footer;
+

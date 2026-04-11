@@ -1,9 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,500;1,600&display=swap');
 
 :root {
-  --bg-primary: #f8f9fa;
-  --text-primary: #1a1a1a;
+  --bg-primary: #09090b;
+  --bg-card: #151518;
+  --bg-card-hover: rgba(255, 255, 255, 0.05);
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #888888;
   --accent-orange: #ff6f3f;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --input-bg: rgba(0, 0, 0, 0.3);
+  --dot-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f9fafb;
+  --bg-card: #ffffff;
+  --bg-card-hover: rgba(0, 0, 0, 0.03);
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+  --accent-orange: #ff6f3f;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --input-bg: #fff;
   --dot-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -184,6 +205,61 @@ html.lenis {
   .discover-feature-grid {
     grid-template-columns: 1fr !important;
   }
+
+  /* Home Page Responsiveness */
+  .hero-tagline {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .hero-tagline div {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  .hero-mascot-wrapper {
+    margin: 1rem 0 !important;
+  }
+  
+  .problem-group, .gateway-text {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    text-align: center !important;
+    align-self: center !important;
+    max-width: 100% !important;
+  }
+  
+  .line-text-block {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    justify-content: center !important;
+    min-height: 40vh !important;
+  }
+  
+  .winding-line {
+    stroke-width: 80 !important;
+  }
+
+  .sv-main-container {
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    padding-top: 6rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    height: auto !important;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+  .sv-text-content {
+    flex: none !important;
+    width: 100% !important;
+    text-align: center !important;
+    margin-bottom: 2rem;
+  }
+  .sv-text-content div {
+    align-items: center;
+  }
 }
 
 @media (max-width: 768px) { .mobile-hidden { display: none !important; } }
@@ -221,4 +297,21 @@ html.lenis {
 
 .dropdown-item.logout:hover {
   background: rgba(239, 68, 68, 0.05);
+}
+
+/* Standard Page Padding Utility */
+.page-padding {
+  padding-top: 6.5rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-bottom: 4rem;
+}
+
+@media (max-width: 768px) {
+  .page-padding {
+    padding-top: 5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 3rem;
+  }
 }

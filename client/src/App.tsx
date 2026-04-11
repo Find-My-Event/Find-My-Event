@@ -13,11 +13,16 @@ import Dashboard from './pages/Dashboard';
 import CreateEvent from './pages/CreateEvent';
 import GeneralSettings from './pages/GeneralSettings';
 import EditProfile from './pages/EditProfile';
+import ManageEvent from './pages/ManageEvent';
+import YourEvents from './pages/YourEvents';
+import RegisteredEvents from './pages/RegisteredEvents';
+import Favourites from './pages/Favourites';
 import AdminDashboard from './pages/AdminDashboard';
 import PendingApprovalListener from './components/PendingApprovalListener';
 import Footer from './components/Footer';
 import ServiceShowcase from './components/ServiceShowcase';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import './index.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -62,7 +67,7 @@ function AppContent() {
 
   useEffect(() => {
     if (loading) return;
-    const protectedHashes = ['#create-event', '#settings', '#edit-profile', '#admin'];
+    const protectedHashes = ['#create-event', '#settings', '#edit-profile', '#admin', '#your-events', '#registered-events'];
     if (!isLoggedIn && protectedHashes.includes(currentRoute)) {
       window.location.hash = '#signin';
     }
@@ -77,6 +82,10 @@ function AppContent() {
       currentRoute === '#create-event' ||
       currentRoute === '#settings' ||
       currentRoute === '#edit-profile' ||
+      currentRoute === '#your-events' ||
+      currentRoute === '#registered-events' ||
+      currentRoute === '#favourites' ||
+      currentRoute.startsWith('#edit-event') ||
       currentRoute === '#admin'
     ) {
        document.body.style.backgroundColor = '';
@@ -90,12 +99,9 @@ function AppContent() {
     function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
     requestAnimationFrame(raf);
 
-    const ctx = gsap.context(() => {
-      /* Theme transition */
-      gsap.to(document.body, {
-        backgroundColor: '#111', color: '#fff',
-        scrollTrigger: { trigger: '.content-section', start: 'top 80%', end: 'top 20%', scrub: true },
-      });
+      const ctx = gsap.context(() => {
+      /* Theme transition is now disabled for the content boundary, CSS rules handle background colors dynamically.
+         But we keep the dot-grid opacity control. */
       gsap.to('.dot-grid', {
         opacity: 0,
         scrollTrigger: { trigger: '.content-section', start: 'top 80%', end: 'top 20%', scrub: true },
@@ -151,8 +157,11 @@ function AppContent() {
 
   const renderContent = () => {
     if (currentRoute === '#events') return <Events isLoggedIn={isLoggedIn} />;
-    if (currentRoute === '#discover') return <Discover isLoggedIn={isLoggedIn} />;
+    if (currentRoute === '#discover') return <Discover />;
     if (currentRoute === '#signin') return <Auth />;
+    if (currentRoute === '#your-events') return <YourEvents />;
+    if (currentRoute === '#registered-events') return <RegisteredEvents />;
+    if (currentRoute === '#favourites') return <Favourites />;
 
     if (currentRoute === '#create-event') {
       if (!isLoggedIn) return null;
@@ -165,6 +174,10 @@ function AppContent() {
     if (currentRoute === '#edit-profile') {
       if (!isLoggedIn) return null;
       return <EditProfile />;
+    }
+    if (currentRoute.startsWith('#edit-event')) {
+      if (!isLoggedIn) return null;
+      return <ManageEvent />;
     }
     if (currentRoute === '#admin') {
       if (isLoggedIn && user?.role === 'admin') {
@@ -183,7 +196,7 @@ function AppContent() {
         {/* ═══════ CONTENT SECTION: taglines ═══════ */}
         <section className="content-section" style={{ minHeight: '180vh', display: 'flex', flexDirection: 'column', padding: '12vh 0', position: 'relative', zIndex: 1 }}>
           {/* Tagline: Top-Left */}
-          <div className="problem-group" style={{ maxWidth: '800px', position: 'relative', paddingLeft: '6rem' }}>
+          <div className="problem-group" style={{ maxWidth: '800px', position: 'relative', paddingLeft: 'clamp(1.5rem, 8vw, 6rem)', paddingRight: '1.5rem' }}>
             <div style={{ marginBottom: '1.5rem' }}>
               <span style={{ fontSize: '0.9rem', fontWeight: 600, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.15em' }}>Our Work</span>
             </div>
@@ -198,8 +211,8 @@ function AppContent() {
           </div>
 
           {/* Tagline: Bottom-Right */}
-          <div className="gateway-text" style={{ alignSelf: 'flex-end', textAlign: 'right', maxWidth: '500px', paddingRight: '6rem', marginTop: '6vh' }}>
-            <h3 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)', fontWeight: 500, lineHeight: 1.4, opacity: 0.8 }}>
+          <div className="gateway-text" style={{ alignSelf: 'flex-end', textAlign: 'right', maxWidth: '500px', paddingRight: 'clamp(1.5rem, 8vw, 6rem)', paddingLeft: '1.5rem', marginTop: '6vh' }}>
+            <h3 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 2.2rem)', fontWeight: 500, lineHeight: 1.4, opacity: 0.8 }}>
               Your Gateway to <br />
               <span className="serif-italic" style={{ fontWeight: 500 }}>Every College Event</span>
             </h3>
@@ -230,7 +243,7 @@ function AppContent() {
         <ServiceShowcase />
 
         {/* ═══════ WINDING LINE + TEXT IN BLACK SPACES ═══════ */}
-        <section className="winding-section" style={{ position: 'relative', minHeight: '300vh', padding: '0', overflow: 'hidden', background: '#111' }}>
+        <section className="winding-section" style={{ position: 'relative', minHeight: '300vh', padding: '0', background: 'var(--bg-primary)' }}>
           {/* Thick winding orange line */}
           <svg viewBox="0 0 1440 2800" preserveAspectRatio="none" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}>
             <path
@@ -248,52 +261,52 @@ function AppContent() {
           {/* Text in the empty black spaces between line curves */}
           <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', padding: '10vh 0' }}>
             {/* Text 1: RIGHT side */}
-            <div className="line-text-block" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '6rem', paddingLeft: '55%' }}>
+            <div className="line-text-block row-right" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 'clamp(1.5rem, 8vw, 6rem)', paddingLeft: '1.5rem' }}>
               <div>
-                <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, lineHeight: 1, marginBottom: '1.5rem', letterSpacing: '-0.02em', color: '#fff' }}>
+                <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, lineHeight: 1, marginBottom: '1.5rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
                   Discover <br/>
                   <span className="serif-italic" style={{ fontWeight: 400 }}>Events.</span>
                 </h2>
-                <p style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.75, opacity: 0.5, maxWidth: '420px', fontWeight: 400, color: '#fff' }}>
+                <p style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.75, opacity: 0.5, maxWidth: '420px', fontWeight: 400, color: 'var(--text-primary)' }}>
                   Find all events happening in your college in one place. Never miss a workshop, fest, or hackathon again.
                 </p>
               </div>
             </div>
 
             {/* Text 2: LEFT side */}
-            <div className="line-text-block" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', paddingLeft: '6rem', paddingRight: '55%' }}>
+            <div className="line-text-block row-left" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', paddingLeft: 'clamp(1.5rem, 8vw, 6rem)', paddingRight: '1.5rem' }}>
               <div>
-                <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, lineHeight: 1, marginBottom: '1.5rem', letterSpacing: '-0.02em', color: '#fff' }}>
+                <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, lineHeight: 1, marginBottom: '1.5rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
                   Create & <br/>
                   <span className="serif-italic" style={{ fontWeight: 400 }}>Register Event.</span>
                 </h2>
-                <p style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.75, opacity: 0.5, maxWidth: '420px', fontWeight: 400, color: '#fff' }}>
+                <p style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.75, opacity: 0.5, maxWidth: '420px', fontWeight: 400, color: 'var(--text-primary)' }}>
                   Hosting an event? Publish it and reach more students across campus instantly.
                 </p>
               </div>
             </div>
 
             {/* Text 3: RIGHT side */}
-            <div className="line-text-block" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '6rem', paddingLeft: '55%' }}>
+            <div className="line-text-block row-right" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 'clamp(1.5rem, 8vw, 6rem)', paddingLeft: '1.5rem' }}>
               <div>
-                <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, lineHeight: 1, marginBottom: '1.5rem', letterSpacing: '-0.02em', color: '#fff' }}>
+                <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, lineHeight: 1, marginBottom: '1.5rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
                   Register for <br/>
                   <span className="serif-italic" style={{ fontWeight: 400 }}>Events.</span>
                 </h2>
-                <p style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.75, opacity: 0.5, maxWidth: '420px', fontWeight: 400, color: '#fff' }}>
+                <p style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.75, opacity: 0.5, maxWidth: '420px', fontWeight: 400, color: 'var(--text-primary)' }}>
                   Register instantly for events with a single click. No forms, no hassle.
                 </p>
               </div>
             </div>
 
             {/* Text 4: LEFT side */}
-            <div className="line-text-block" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', paddingLeft: '6rem', paddingRight: '55%' }}>
+            <div className="line-text-block row-left" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', paddingLeft: 'clamp(1.5rem, 8vw, 6rem)', paddingRight: '1.5rem' }}>
               <div>
-                <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, lineHeight: 1, marginBottom: '1.5rem', letterSpacing: '-0.02em', color: '#fff' }}>
+                <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, lineHeight: 1, marginBottom: '1.5rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
                   Track & <br/>
                   <span className="serif-italic" style={{ fontWeight: 400 }}>Manage.</span>
                 </h2>
-                <p style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.75, opacity: 0.5, maxWidth: '420px', fontWeight: 400, color: '#fff' }}>
+                <p style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.75, opacity: 0.5, maxWidth: '420px', fontWeight: 400, color: 'var(--text-primary)' }}>
                   Get real-time insights on registrations, attendance, and engagement for your events.
                 </p>
               </div>
@@ -302,11 +315,11 @@ function AppContent() {
         </section>
 
         {/* ═══════ CTA SECTION ═══════ */}
-        <section className="cta-section" style={{ textAlign: 'center', padding: '6vh 5%', background: 'linear-gradient(180deg, #111 0%, #0a0a0a 100%)' }}>
-          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem', color: '#fff' }}>
+        <section className="cta-section" style={{ textAlign: 'center', padding: '6vh 5%', background: 'var(--bg-card)' }}>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem', color: 'var(--text-primary)' }}>
             Ready to find your next event<span style={{ color: '#ff4d00' }}>?</span>
           </h2>
-          <p style={{ fontSize: '1.1rem', opacity: 0.5, maxWidth: '550px', margin: '0 auto', lineHeight: 1.6, color: '#fff' }}>
+          <p style={{ fontSize: '1.1rem', opacity: 0.5, maxWidth: '550px', margin: '0 auto', lineHeight: 1.6, color: 'var(--text-primary)' }}>
             Join thousands of students discovering campus events every day.
           </p>
           <motion.button
@@ -316,7 +329,7 @@ function AppContent() {
             style={{
               marginTop: '2rem',
               background: '#ff4d00',
-              color: '#fff',
+              color: 'var(--text-primary)',
               border: 'none',
               padding: '1.25rem 3rem',
               borderRadius: '50px',
@@ -341,14 +354,60 @@ function AppContent() {
         {renderContent()}
       </main>
       <PendingApprovalListener />
+      <style>{`
+        @media (max-width: 768px) {
+          .content-section { min-height: 120vh !important; padding: 6vh 0 !important; }
+          .problem-group { text-align: center !important; padding: 0 1.5rem !important; margin: 0 auto !important; }
+          .gateway-text { text-align: center !important; padding: 0 1.5rem !important; align-self: center !important; margin-top: 4vh !important; }
+          .main-tagline-part1, .main-tagline-part2 { width: 100% !important; }
+          .character-illustration { height: 40vh !important; }
+          .winding-section { min-height: 250vh !important; }
+          .winding-line { stroke-width: 100 !important; }
+          .line-text-block { 
+            position: relative !important; 
+            inset: auto !important; 
+            margin: 2rem auto !important; 
+            padding: 0 1.5rem !important;
+            transform: none !important;
+            text-align: center !important;
+            width: 100% !important;
+          }
+          .hero-tagline { 
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+            align-items: center !important;
+          }
+          .hero-tagline > div:first-child { 
+            justify-content: center !important; 
+            text-align: center !important; 
+            order: 1 !important;
+          }
+          .hero-mascot-wrapper { 
+            order: 2 !important;
+            margin: 0.5rem 0 !important;
+            width: 3.5em !important; 
+            height: 3.5em !important; 
+          }
+          .hero-tagline > div:last-child { 
+            order: 3 !important;
+            text-align: center !important; 
+          }
+          .hero-watermark { display: none !important; }
+          .line-text-block p { margin: 0.5rem auto 0 auto !important; }
+          .cta-section { padding: 8vh 1.5rem !important; }
+        }
+      `}</style>
     </div>
   );
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
