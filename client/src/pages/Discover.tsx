@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, type MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Search, X, Sparkles, TrendingUp, Clock, Calendar, MoreHorizontal, Loader2, Filter } from 'lucide-react';
+import { MapPin, Search, X, Sparkles, TrendingUp, Clock, Calendar, MoreHorizontal, Loader2, Filter, CheckCircle } from 'lucide-react';
 import api from '../api/axios';
 import { EventDetail, RegisterView } from '../components/SharedViews';
 import { darkPageShell } from '../theme/darkShell';
@@ -56,21 +56,26 @@ type ApiApproved = {
   capacity?: number;
   imageUrl?: string;
   organizer?: { name?: string };
+  isRegistered?: boolean;
+  pricing?: any;
 };
 
 function mapApprovedToCard(s: ApiApproved) {
   const cap = s.capacity ?? 0;
   return {
     id: `api-${s._id}`,
+    _id: s._id, // Keep the original MongoDB ID
     title: s.title,
     organizer: s.organizer?.name || 'Campus host',
-    date: `${s.startDate} → ${s.endDate}`,
-    venue: `${s.location} · ${s.mode}`,
+    date: (s.startDate && s.endDate) ? `${s.startDate} → ${s.endDate}` : (s.startDate || s.date || 'TBD'),
+    venue: s.location ? `${s.location} · ${s.mode || 'Venue'}` : (s.venue || 'TBD'),
     image: s.imageUrl || '/event1.png',
-    category: 'Culture',
-    price: 'Free',
+    category: s.category || 'Culture',
+    price: s.pricing ? `₹${s.pricing.ticketPrice}` : 'Free',
     seats: cap ? `${Math.min(12, cap)}/${cap}` : 'Open',
-    tag: 'New' as const,
+    tag: (s.tag || 'New') as any,
+    isRegistered: s.isRegistered ?? false,
+    pricing: s.pricing,
   };
 }
 
@@ -117,6 +122,21 @@ const DiscoverGridCard = ({
   >
     <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', marginBottom: '1rem', background: '#1a1a1f' }}>
       <TagBadge tag={event.tag} />
+      
+      {/* Price Badge */}
+      <div style={{
+        position: 'absolute', top: '10px', right: '10px', zIndex: 3,
+        background: 'rgba(0,0,0,0.6)',
+        backdropFilter: 'blur(8px)',
+        color: event.price === 'Free' ? '#34d399' : '#ffffff',
+        fontSize: '0.8rem', fontWeight: 700,
+        padding: '4px 10px', borderRadius: '8px',
+        border: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+      }}>
+        {event.price}
+      </div>
+
       <motion.img
         src={event.image}
         alt={event.title}
@@ -145,22 +165,36 @@ const DiscoverGridCard = ({
     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
       <motion.button
         type="button"
-        onClick={(e: MouseEvent) => { e.stopPropagation(); onRegister(); }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        disabled={event.isRegistered}
+        onClick={(e: MouseEvent) => { 
+          e.stopPropagation(); 
+          if (!event.isRegistered) onRegister(); 
+        }}
+        whileHover={!event.isRegistered ? { scale: 1.05 } : {}}
+        whileTap={!event.isRegistered ? { scale: 0.95 } : {}}
         style={{
-          background: '#ff4d00',
+          background: event.isRegistered ? '#10b981' : '#ff4d00', // Green if registered
           color: '#ffffff',
           border: 'none',
           padding: '0.6rem 1rem',
           borderRadius: '8px',
-          fontWeight: 600,
-          cursor: 'pointer',
+          fontWeight: 700,
+          cursor: event.isRegistered ? 'default' : 'pointer',
           fontSize: '0.85rem',
           flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '4px'
         }}
       >
-        Register
+        {event.isRegistered ? (
+          <>
+            <CheckCircle size={14} /> Registered
+          </>
+        ) : (
+          'Register'
+        )}
       </motion.button>
       <motion.button
         type="button"
@@ -611,52 +645,56 @@ export default function Discover({ isLoggedIn: propIsLoggedIn }: { isLoggedIn?: 
             )}
 
             {!isLoggedIn && (
-              <div
+              <motion.div
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
                 style={{
                   position: 'fixed',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: '100vh',
-                  background: 'linear-gradient(to top, var(--bg-primary) 40%, rgba(9,9,11,0.72) 72%, transparent 100%)',
-                  zIndex: 100,
+                  bottom: '2rem',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(30, 30, 35, 0.9)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '24px',
+                  padding: '1.5rem 3rem',
+                  zIndex: 200,
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  pointerEvents: 'all',
-                  backdropFilter: 'blur(6px)',
-                  paddingTop: '28vh',
+                  gap: '3rem',
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                  maxWidth: '90%',
+                  width: 'fit-content'
                 }}
               >
-                <div style={{ textAlign: 'center', maxWidth: '450px', padding: '2rem' }}>
-                  <h2 style={{ color: 'var(--text-primary)', fontSize: '2.25rem', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.15 }}>
-                    Sign in to explore Discover
-                  </h2>
-                  <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: '2rem', lineHeight: 1.55 }}>
-                    Open full details, register for events, and sync with the rest of the app.
+                <div style={{ textAlign: 'left' }}>
+                  <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                    Join the Community
+                  </h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
+                    Sign in to register for events, save your favorites, and get personalized recommendations.
                   </p>
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => { window.location.hash = '#signin'; }}
-                    style={{
-                      background: '#ff4d00',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '1.1rem 2.75rem',
-                      borderRadius: '50px',
-                      fontWeight: 700,
-                      fontSize: '1.05rem',
-                      cursor: 'pointer',
-                      boxShadow: '0 15px 35px var(--border-subtle)',
-                    }}
-                  >
-                    Login to view more
-                  </motion.button>
                 </div>
-              </div>
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { window.location.hash = '#signin'; }}
+                  style={{
+                    background: '#ff4d00',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.8rem 2rem',
+                    borderRadius: '50px',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Sign In Now
+                </motion.button>
+              </motion.div>
             )}
           </motion.div>
         )}

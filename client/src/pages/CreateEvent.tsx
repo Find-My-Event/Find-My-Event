@@ -51,6 +51,15 @@ export default function CreateEvent() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('/event1.png');
 
+  // Paid Event Fields
+  const [isPaid, setIsPaid] = useState(false);
+  const [ticketPrice, setTicketPrice] = useState('');
+  const [ticketCapacity, setTicketCapacity] = useState('');
+  const [maxTicketsPerUser, setMaxTicketsPerUser] = useState('1');
+  const [isRefundable, setIsRefundable] = useState(false);
+  const [paymentDescription, setPaymentDescription] = useState('');
+  const [entryConditions, setEntryConditions] = useState('');
+
   const pollStatus = useCallback(async () => {
     if (!submissionId) return;
     try {
@@ -80,6 +89,12 @@ export default function CreateEvent() {
       setError('Please fill all required fields.');
       return;
     }
+
+    if (isPaid && (!ticketPrice || !ticketCapacity)) {
+      setError('Please set price and capacity for the paid event.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const formData = new FormData();
@@ -90,6 +105,18 @@ export default function CreateEvent() {
       formData.append('mode', mode.trim());
       formData.append('location', location.trim());
       formData.append('capacity', capacity ? capacity.toString() : '0');
+      
+      // Paid Fields
+      formData.append('isPaid', isPaid.toString());
+      if (isPaid) {
+        formData.append('ticketPrice', ticketPrice);
+        formData.append('ticketCapacity', ticketCapacity);
+        formData.append('maxTicketsPerUser', maxTicketsPerUser);
+        formData.append('isRefundable', isRefundable.toString());
+        formData.append('paymentDescription', paymentDescription);
+        formData.append('entryConditions', entryConditions);
+      }
+
       if (imageFile) {
         formData.append('image', imageFile);
       } else {
@@ -186,27 +213,96 @@ export default function CreateEvent() {
                   <label style={labelStyle}>Event location <span style={{ color: '#3b82f6' }}>*</span></label>
                   <input style={inputStyle} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Jaipur, Rajasthan" />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label style={labelStyle}>Capacity</label>
-                    <input style={inputStyle} type="number" min={0} value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="3000" />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div>
+                      <label style={labelStyle}>Capacity</label>
+                      <input style={inputStyle} type="number" min={0} value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="3000" />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Poster Image</label>
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setImageFile(file);
+                            setImagePreview(URL.createObjectURL(file));
+                          }
+                        }} 
+                        style={{ ...inputStyle, cursor: 'pointer', paddingTop: '11px', paddingBottom: '11px' }} 
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label style={labelStyle}>Poster Image</label>
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setImageFile(file);
-                          setImagePreview(URL.createObjectURL(file));
-                        }
-                      }} 
-                      style={{ ...inputStyle, cursor: 'pointer', paddingTop: '11px', paddingBottom: '11px' }} 
-                    />
+
+                  {/* Paid Event Section */}
+                  <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', borderRadius: 20, border: '1px solid var(--border-subtle)', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isPaid ? '1.25rem' : '0' }}>
+                      <div>
+                        <h4 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>Paid Event</h4>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Enable ticket pricing and capacity limits</p>
+                      </div>
+                      <div 
+                        onClick={() => setIsPaid(!isPaid)}
+                        style={{ 
+                          width: 50, height: 26, background: isPaid ? '#3b82f6' : 'var(--border-color)', 
+                          borderRadius: 20, position: 'relative', cursor: 'pointer', transition: '0.3s' 
+                        }}
+                      >
+                        <div style={{ 
+                          width: 20, height: 20, background: '#fff', borderRadius: '50%', position: 'absolute', 
+                          top: 3, left: isPaid ? 27 : 3, transition: '0.3s' 
+                        }} />
+                      </div>
+                    </div>
+
+                    {isPaid && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflow: 'hidden' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                          <div>
+                            <label style={labelStyle}>Ticket Price (INR) <span style={{ color: '#3b82f6' }}>*</span></label>
+                            <input style={inputStyle} type="number" value={ticketPrice} onChange={(e) => setTicketPrice(e.target.value)} placeholder="e.g. 499" />
+                          </div>
+                          <div>
+                            <label style={labelStyle}>Ticket Capacity <span style={{ color: '#3b82f6' }}>*</span></label>
+                            <input style={inputStyle} type="number" value={ticketCapacity} onChange={(e) => setTicketCapacity(e.target.value)} placeholder="Max seats" />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                          <div>
+                            <label style={labelStyle}>Max Tickets Per User</label>
+                            <input style={inputStyle} type="number" value={maxTicketsPerUser} onChange={(e) => setMaxTicketsPerUser(e.target.value)} />
+                          </div>
+                          <div>
+                            <label style={labelStyle}>Refund Policy</label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button 
+                                type="button"
+                                onClick={() => setIsRefundable(true)}
+                                style={{ ...inputStyle, background: isRefundable ? '#3b82f6' : 'var(--border-subtle)', border: 'none', cursor: 'pointer', flex: 1, fontSize: '0.8rem' }}
+                              >Refundable</button>
+                              <button 
+                                type="button"
+                                onClick={() => setIsRefundable(false)}
+                                style={{ ...inputStyle, background: !isRefundable ? '#ef4444' : 'var(--border-subtle)', border: 'none', cursor: 'pointer', flex: 1, fontSize: '0.8rem' }}
+                              >Non-Refundable</button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label style={labelStyle}>Payment Description</label>
+                          <input style={inputStyle} value={paymentDescription} onChange={(e) => setPaymentDescription(e.target.value)} placeholder="e.g. Includes workshop kit + lunch" />
+                        </div>
+
+                        <div>
+                          <label style={labelStyle}>Entry Conditions</label>
+                          <input style={inputStyle} value={entryConditions} onChange={(e) => setEntryConditions(e.target.value)} placeholder="e.g. College ID required at entry" />
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
-                </div>
 
                 <motion.button
                   type="button"

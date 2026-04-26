@@ -207,28 +207,60 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
                   <div>
                     <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '4px' }}>Ticket Price</p>
-                    <p style={{ color: event?.price === 'Free' ? '#34d399' : 'var(--text-primary)', fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{event?.price || 'Free'}</p>
+                    <p style={{ color: (event?.pricing?.isPaid ? 'var(--text-primary)' : '#34d399'), fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>
+                       {event?.pricing?.isPaid ? `₹${event.pricing.ticketPrice}` : 'Free'}
+                    </p>
                   </div>
-                  {event?.seats && (
+                  {(event?.pricing?.ticketCapacity || event?.seats) && (
                      <div style={{ textAlign: 'right' }}>
-                        <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: '4px' }}>Seats Left</p>
-                        <p style={{ color: '#f59e0b', fontSize: '1.1rem', fontWeight: 700 }}>{event.seats}</p>
+                        <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: '4px' }}>Capacity</p>
+                        <p style={{ color: '#f59e0b', fontSize: '1.1rem', fontWeight: 700 }}>
+                           {event?.pricing?.ticketCapacity || event.seats}
+                        </p>
                      </div>
                   )}
                </div>
 
+               {event?.pricing?.isPaid && (
+                 <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '0.85rem' }}>
+                     <CheckCircle size={14} color={event.pricing.isRefundable ? '#34d399' : '#ef4444'} />
+                     {event.pricing.isRefundable ? 'Refundable Policy Applied' : 'Non-Refundable Ticket'}
+                   </div>
+                   {event.pricing.paymentDescription && (
+                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.4 }}>
+                       <strong style={{ color: 'var(--text-primary)' }}>Includes:</strong> {event.pricing.paymentDescription}
+                     </p>
+                   )}
+                   {event.pricing.entryConditions && (
+                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.4 }}>
+                       <strong style={{ color: 'var(--text-primary)' }}>Note:</strong> {event.pricing.entryConditions}
+                     </p>
+                   )}
+                 </div>
+               )}
+
                <motion.button
-                  onClick={onRegister}
-                  whileHover={{ scale: 1.03, boxShadow: '0 8px 30px rgba(255,111,63,0.4)' }}
-                  whileTap={{ scale: 0.97 }}
+                  onClick={event.isRegistered ? undefined : onRegister}
+                  whileHover={!event.isRegistered ? { scale: 1.03, boxShadow: '0 8px 30px rgba(255,111,63,0.4)' } : {}}
+                  whileTap={!event.isRegistered ? { scale: 0.97 } : {}}
                   style={{
-                     width: '100%', background: 'linear-gradient(135deg, #FF6F3F, #dc5022)',
+                     width: '100%', 
+                     background: event.isRegistered ? '#10b981' : 'linear-gradient(135deg, #FF6F3F, #dc5022)',
                      color: '#ffffff', border: 'none', padding: '1rem', borderRadius: '14px',
                      fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                     cursor: 'pointer', fontFamily: "'Outfit', sans-serif"
+                     cursor: event.isRegistered ? 'default' : 'pointer', fontFamily: "'Outfit', sans-serif"
                   }}
                >
-                  <Ticket size={20} /> Secure Your Spot
+                  {event.isRegistered ? (
+                    <>
+                      <CheckCircle size={20} /> Already Registered
+                    </>
+                  ) : (
+                    <>
+                      <Ticket size={20} /> Secure Your Spot
+                    </>
+                  )}
                </motion.button>
 
                <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center', marginTop: '1rem', fontWeight: 500 }}>
@@ -247,8 +279,55 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
   const [loading, setLoading] = useState(false);
   const { isLoggedIn } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', team: '' });
+  const [ticketsCount, setTicketsCount] = useState(1);
 
   const isFormValid = formData.name && formData.email && formData.phone;
+
+  const handleRazorpayPayment = async (orderData: any) => {
+    const options = {
+      key: orderData.keyId,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: "Find My Event",
+      description: `Registration for ${event.title}`,
+      order_id: orderData.orderId,
+      handler: async (response: any) => {
+        setLoading(true);
+        try {
+          const verifyData = {
+            ...response,
+            eventId: event._id || (event.id.startsWith('api-') ? event.id.replace('api-', '') : event.id),
+            eventModel: event.id?.startsWith('api-') || event._id ? 'EventSubmission' : 'Event' // Adjust based on how IDs are mapped
+          };
+          
+          // Re-evaluate eventModel logic based on Discover.tsx mapApprovedToCard
+          // If id starts with 'api-', it's an EventSubmission
+          const actualEventId = event._id || (String(event.id).startsWith('api-') ? event.id.replace('api-', '') : event.id);
+          const actualModel = (event._id || String(event.id).startsWith('api-')) ? 'EventSubmission' : 'Event';
+
+          await api.post('/payments/verify-payment', {
+            ...response,
+            eventId: actualEventId,
+            eventModel: actualModel
+          });
+          setStep(2);
+        const errorMessage = err.response?.data?.details || err.response?.data?.message || 'Payment verification failed. Please contact support.';
+        alert(errorMessage);
+      } finally {
+          setLoading(false);
+        }
+      },
+      prefill: {
+        name: formData.name,
+        email: formData.email,
+        contact: formData.phone
+      },
+      theme: { color: "#FF6F3F" }
+    };
+
+    const rzp1 = new (window as any).Razorpay(options);
+    rzp1.open();
+  };
 
   const handleSubmit = async (e: any) => {
      e.preventDefault();
@@ -260,12 +339,28 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
 
      setLoading(true);
      try {
-       const eventId = event._id || event.id;
-       await api.post(`/events/${eventId}/register`);
-       setStep(2); // Success state
+       const actualEventId = event._id || (String(event.id).startsWith('api-') ? event.id.replace('api-', '') : event.id);
+       const actualModel = (event._id || String(event.id).startsWith('api-')) ? 'EventSubmission' : 'Event';
+
+       if (event.pricing?.isPaid) {
+          // 1. Create Order
+          const { data: orderData } = await api.post('/payments/create-order', {
+            eventId: actualEventId,
+            eventModel: actualModel,
+            ticketsCount
+          });
+          
+          // 2. Open Razorpay
+          await handleRazorpayPayment(orderData);
+       } else {
+          // Free Registration
+          await api.post(`/events/${actualEventId}/register`);
+          setStep(2);
+       }
      } catch (err: any) {
        console.error('Registration error:', err);
-       alert(err.response?.data?.message || 'Failed to register. Please try again.');
+       const detailedError = err.response?.data?.details || err.response?.data?.message || 'Failed to process registration. Please try again.';
+       alert(detailedError);
      } finally {
        setLoading(false);
      }
@@ -308,13 +403,24 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
 
         <div style={{ textAlign: 'center', marginTop: '1rem', marginBottom: '2.5rem', padding: '0 3rem' }}>
            <h2 style={{ color: 'var(--text-primary)', fontSize: '2rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '0.5rem' }}>
-              Reserve Your Seat
+              {event.isRegistered ? 'Already Registered' : 'Reserve Your Seat'}
            </h2>
            <p style={{ color: '#94a3b8', fontSize: '1rem' }}>For <span style={{ color: '#FF6F3F', fontWeight: 600 }}>{event?.title}</span></p>
         </div>
 
         <AnimatePresence mode="wait">
-        {step === 1 ? (
+        {event.isRegistered ? (
+          <motion.div key="is-registered" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', padding: '2rem 0' }}>
+             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200, delay: 0.2 }} style={{ width: '80px', height: '80px', background: 'rgba(52,211,153,0.2)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 1.5rem auto' }}>
+                <CheckCircle size={40} color="#34d399" />
+             </motion.div>
+             <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem' }}>You're in!</h3>
+             <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: '2rem' }}>You have already registered for this event. Check your email for ticket details.</p>
+             <motion.button onClick={onBack} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ background: 'var(--border-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Outfit', sans-serif" }}>
+                Back to Details
+             </motion.button>
+          </motion.div>
+        ) : step === 1 ? (
         <motion.form key="form" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
           <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
@@ -349,6 +455,38 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
                   style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
                   onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'var(--border-color)')} />
              </div>
+
+             {/* Paid Event: Quantity Selector */}
+             {event.pricing?.isPaid && (
+               <div style={{ 
+                 background: 'rgba(255,111,63,0.05)', padding: '1.25rem', borderRadius: '16px', 
+                 border: '1px solid rgba(255,111,63,0.15)', marginTop: '0.5rem' 
+               }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div>
+                     <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem' }}>Select Tickets</p>
+                     <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Max {event.pricing.maxTicketsPerUser} per user</p>
+                   </div>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-primary)', borderRadius: '10px', padding: '0.4rem 0.8rem', border: '1px solid var(--border-color)' }}>
+                     <button 
+                       type="button"
+                       onClick={() => setTicketsCount(Math.max(1, ticketsCount - 1))}
+                       style={{ background: 'none', border: 'none', color: '#FF6F3F', fontSize: '1.5rem', cursor: 'pointer', display: 'flex' }}
+                     >−</button>
+                     <span style={{ color: 'var(--text-primary)', fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{ticketsCount}</span>
+                     <button 
+                       type="button"
+                       onClick={() => setTicketsCount(Math.min(event.pricing.maxTicketsPerUser, ticketsCount + 1))}
+                       style={{ background: 'none', border: 'none', color: '#FF6F3F', fontSize: '1.2rem', cursor: 'pointer', display: 'flex' }}
+                     >+</button>
+                   </div>
+                 </div>
+                 <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px dashed rgba(255,111,63,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Total Amount</span>
+                   <span style={{ color: '#FF6F3F', fontSize: '1.25rem', fontWeight: 800 }}>₹{event.pricing.ticketPrice * ticketsCount}</span>
+                 </div>
+               </div>
+             )}
           </div>
           
           <motion.button 
@@ -357,13 +495,13 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
             style={{ 
                background: isFormValid ? 'linear-gradient(135deg, #FF6F3F, #dc5022)' : 'var(--border-color)',
-               color: isFormValid ? 'var(--text-primary)' : '#64748b',
+               color: isFormValid ? '#ffffff' : '#64748b',
                padding: '1.2rem', borderRadius: '12px', fontWeight: 700, border: 'none', cursor: (isFormValid && !loading) ? 'pointer' : 'not-allowed',
                marginTop: '1rem', fontSize: '1.1rem', fontFamily: "'Outfit', sans-serif",
                transition: 'all 0.3s', boxShadow: isFormValid ? '0 8px 25px rgba(255,111,63,0.3)' : 'none',
                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
             }}>
-            {loading ? <Loader2 size={24} className="spin" /> : 'Confirm Registration'}
+            {loading ? <Loader2 size={24} className="spin" /> : (event.pricing?.isPaid ? 'Pay & Register' : 'Confirm Registration')}
           </motion.button>
         </motion.form>
         ) : (

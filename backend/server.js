@@ -81,11 +81,13 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const eventRoutes = require('./routes/events');
 const notificationRoutes = require('./routes/notifications');
+const paymentRoutes = require('./routes/payments');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Google Auth Routes
 app.get('/auth/google',
