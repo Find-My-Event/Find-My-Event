@@ -23,6 +23,26 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+async function softAuth(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+    if (user) {
+      await syncAdminRole(user);
+    }
+    req.user = user || null;
+    next();
+  } catch (err) {
+    req.user = null;
+    next();
+  }
+}
+
 async function syncAdminRole(user) {
   const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   if (!adminEmail || !user.email) return;
@@ -32,4 +52,4 @@ async function syncAdminRole(user) {
   }
 }
 
-module.exports = { requireAuth, requireAdmin, syncAdminRole };
+module.exports = { requireAuth, requireAdmin, syncAdminRole, softAuth };
