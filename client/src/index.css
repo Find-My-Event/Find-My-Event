@@ -44,16 +44,7 @@ body {
 
 /* Dot Grid Background */
 .dot-grid {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background-image: url('https://cdn.prod.website-files.com/66b0c146aa30e40075a7013f/66b49fbf6e094bd39fc7b2c9_dot-grain%20(5).svg');
-  background-size: 100px 100px;
-  z-index: 0;
-  opacity: 0.4;
+  display: none;
 }
 
 h1, h2, h3 {

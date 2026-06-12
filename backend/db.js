@@ -8,15 +8,19 @@ const connectDB = async () => {
     }
 
     const conn = await mongoose.connect(mongoUri);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    console.log(`\x1b[32m✔ MongoDB Connected: ${conn.connection.host}\x1b[0m`);
   } catch (error) {
-    console.error(`Error connecting to MongoDB: ${error.message}`);
-    if (error.message.includes('querySrv')) {
-      console.error('TIP: This looks like a DNS/SRV record issue. Try the Atlas "Standard Connection String" URI (mongodb://...) instead of the SRV URI.');
+    console.error(`\x1b[31m✘ Error connecting to MongoDB: ${error.message}\x1b[0m`);
+    
+    if (error.message.includes('querySrv') || error.message.includes('ECONNREFUSED')) {
+      console.log('\n\x1b[33m--- ACTION REQUIRED ---\x1b[0m');
+      console.log('1. Go to https://cloud.mongodb.com/');
+      console.log('2. Go to "Network Access" under "Security" on the left sidebar.');
+      console.log('3. Add your current IP address, or add "0.0.0.0/0" to allow access from anywhere (recommended for local development).');
+      console.log('4. Ensure your connection string in .env is correct.');
+      console.log('\x1b[33m------------------------\x1b[0m\n');
     }
-    if (error.message.includes('whitelist')) {
-      console.error('TIP: Add your current IP in Atlas Network Access, or allow 0.0.0.0/0 temporarily for development.');
-    }
+    
     process.exit(1);
   }
 };

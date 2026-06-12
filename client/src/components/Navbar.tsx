@@ -8,20 +8,12 @@ import api from '../api/axios';
 import darkLogo from '../logo/dark logo.png';
 import lightLogo from '../logo/light logo .png';
 
-const DARK_HASHES = new Set([
-  '#events',
-  '#discover',
-  '#signin',
-  '#create-event',
-  '#settings',
-  '#edit-profile',
-  '#admin',
-]);
+
 
 const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [hash, setHash] = useState(() => window.location.hash || '#home');
+  const [_hash, setHash] = useState(() => window.location.hash || '#home');
   const profileWrapRef = useRef<HTMLDivElement>(null);
   const { user, isLoggedIn, logout } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -65,6 +57,7 @@ const Navbar: React.FC = () => {
     { name: 'Home', href: '#home' },
     { name: 'Discover', href: '#discover' },
     { name: 'Events', href: '#events' },
+    { name: 'Clubs', href: '#clubs' },
   ];
 
   const navText = dark ? 'var(--text-primary)' : undefined;

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../lib/api';
-import { Calendar, MapPin, Star, TrendingUp, Bell, Plus, Users, ArrowRight, Edit2, Check, X, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Star, Bell, Plus, Users, ArrowRight, Edit2, Check, X, Loader2 } from 'lucide-react';
 import { darkPageShell } from '../theme/darkShell';
+import { fallbackClubs } from '../data/clubs';
 
 const Dashboard: React.FC = () => {
   const { user, updateProfile } = useAuth();
@@ -39,14 +40,26 @@ const Dashboard: React.FC = () => {
 
   const [dashboardStats, setDashboardStats] = useState({ created: 0, uniEvents: 0 });
   const [dynamicEvents, setDynamicEvents] = useState<any[]>([]);
+  const [clubs, setClubs] = useState<any[]>([]);
 
   useEffect(() => {
     fetchStats();
+    fetchClubs();
   }, []);
+
+  const fetchClubs = async () => {
+    try {
+      const res = await api.get('/clubs');
+      setClubs(res.data.slice(0, 4));
+    } catch (err) {
+      console.error('Failed to fetch clubs, using fallback:', err);
+      setClubs(fallbackClubs.slice(0, 4));
+    }
+  };
 
   const fetchStats = async () => {
     try {
-      const [mineRes, allRes, approvedRes] = await Promise.all([
+      const [mineRes, allRes, _approvedRes] = await Promise.all([
         api.get('/events/mine'),
         api.get('/events'),
         api.get('/events/approved')
@@ -333,22 +346,64 @@ const Dashboard: React.FC = () => {
           </div>
         </section>
 
-        {/* Right Column: Recommended */}
+        {/* Right Column: Initiatives, Organizations & Clubs */}
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Recommended for You</h2>
-            <button onClick={() => window.location.hash = '#discover'} style={{ background: 'none', border: 'none', color: '#ff6f3f', fontWeight: 600, cursor: 'pointer' }}>See all</button>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Initiatives & Clubs</h2>
+            <button onClick={() => window.location.hash = '#clubs'} style={{ background: 'none', border: 'none', color: '#ff6f3f', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              View all <ArrowRight size={16} />
+            </button>
           </div>
 
-          <div style={{ background: 'linear-gradient(135deg, rgba(255,111,63,0.1) 0%, rgba(139,92,246,0.1) 100%)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--border-subtle)', position: 'relative', overflow: 'hidden' }}>
-             <TrendingUp size={100} style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.05, transform: 'rotate(-15deg)' }} />
-             <div style={{ position: 'relative', zIndex: 1 }}>
-                <h3 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '0.75rem' }}>Smart Recommendations</h3>
-                <p style={{ opacity: 0.7, lineHeight: 1.6, marginBottom: '1.5rem' }}>Based on your interests, we found 5 new workshops and 2 hackathons happening next week.</p>
-                <button onClick={() => window.location.hash = '#discover'} style={{ background: '#ff6f3f', color: '#ffffff', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>
-                  Explore Now
-                </button>
-             </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {clubs.length > 0 ? (
+              clubs.map((club, idx) => (
+                <motion.div
+                  key={club.id || idx}
+                  onClick={() => window.location.hash = `#club-detail?id=${club.id}`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    display: 'flex',
+                    gap: '1.5rem',
+                    background: 'var(--bg-card-hover)',
+                    padding: '1rem',
+                    borderRadius: '20px',
+                    border: '1px solid var(--border-subtle)',
+                    alignItems: 'center',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--border-color)' }}>
+                    <img src={club.logo} alt={club.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{club.name}</h3>
+                      <span style={{
+                        fontSize: '0.7rem',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        background: club.type === 'Club' ? 'rgba(59,130,246,0.15)' : club.type === 'Initiative' ? 'rgba(249,115,22,0.15)' : 'rgba(16,185,129,0.15)',
+                        color: club.type === 'Club' ? '#3b82f6' : club.type === 'Initiative' ? '#f97316' : '#10b981',
+                        fontWeight: 600,
+                        flexShrink: 0
+                      }}>
+                        {club.type}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', opacity: 0.6, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0 }}>
+                      {club.description}
+                    </p>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--bg-card-hover)', borderRadius: '20px', border: '1px dashed var(--border-color)' }}>
+                <Users size={40} color="#666" style={{ margin: '0 auto 1rem auto' }} />
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>No clubs found</p>
+              </div>
+            )}
           </div>
         </section>
       </div>

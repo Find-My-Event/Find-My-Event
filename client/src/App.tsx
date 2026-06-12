@@ -9,6 +9,8 @@ import Hero from './components/Hero';
 import Events from './pages/Events';
 import Discover from './pages/Discover';
 import Auth from './pages/Auth';
+import Clubs from './pages/Clubs';
+import ClubDetail from './pages/ClubDetail';
 import Dashboard from './pages/Dashboard';
 import CreateEvent from './pages/CreateEvent';
 import GeneralSettings from './pages/GeneralSettings';
@@ -78,6 +80,8 @@ function AppContent() {
     if (
       currentRoute === '#events' ||
       currentRoute === '#discover' ||
+      currentRoute === '#clubs' ||
+      currentRoute.startsWith('#club-detail') ||
       currentRoute === '#signin' ||
       currentRoute === '#create-event' ||
       currentRoute === '#settings' ||
@@ -158,6 +162,8 @@ function AppContent() {
   const renderContent = () => {
     if (currentRoute === '#events') return <Events isLoggedIn={isLoggedIn} />;
     if (currentRoute === '#discover') return <Discover />;
+    if (currentRoute === '#clubs') return <Clubs />;
+    if (currentRoute.startsWith('#club-detail')) return <ClubDetail hash={currentRoute} />;
     if (currentRoute === '#signin') return <Auth />;
     if (currentRoute === '#your-events') return <YourEvents />;
     if (currentRoute === '#registered-events') return <RegisteredEvents />;

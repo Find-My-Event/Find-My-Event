@@ -341,8 +341,8 @@ export default function Events({ isLoggedIn }: { isLoggedIn: boolean }) {
     return matchCategory;
   }).sort((a, b) => {
     if (!user) return 0;
-    const aIsMine = a.organizer === user.name || String(a.organizerId || a.organizer) === String(user.id || user._id);
-    const bIsMine = b.organizer === user.name || String(b.organizerId || b.organizer) === String(user.id || user._id);
+    const aIsMine = a.organizer === user.name || String(a.organizerId || a.organizer) === String(user.id);
+    const bIsMine = b.organizer === user.name || String(b.organizerId || b.organizer) === String(user.id);
     
     if (aIsMine && !bIsMine) return -1;
     if (!aIsMine && bIsMine) return 1;

@@ -49,15 +49,19 @@ type ApiApproved = {
   _id: string;
   title: string;
   description?: string;
-  startDate: string;
-  endDate: string;
-  mode: string;
-  location: string;
+  startDate?: string;
+  endDate?: string;
+  mode?: string;
+  location?: string;
   capacity?: number;
   imageUrl?: string;
   organizer?: { name?: string };
   isRegistered?: boolean;
   pricing?: any;
+  date?: string;
+  venue?: string;
+  category?: string;
+  tag?: string;
 };
 
 function mapApprovedToCard(s: ApiApproved) {

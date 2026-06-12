@@ -294,14 +294,6 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
       handler: async (response: any) => {
         setLoading(true);
         try {
-          const verifyData = {
-            ...response,
-            eventId: event._id || (event.id.startsWith('api-') ? event.id.replace('api-', '') : event.id),
-            eventModel: event.id?.startsWith('api-') || event._id ? 'EventSubmission' : 'Event' // Adjust based on how IDs are mapped
-          };
-          
-          // Re-evaluate eventModel logic based on Discover.tsx mapApprovedToCard
-          // If id starts with 'api-', it's an EventSubmission
           const actualEventId = event._id || (String(event.id).startsWith('api-') ? event.id.replace('api-', '') : event.id);
           const actualModel = (event._id || String(event.id).startsWith('api-')) ? 'EventSubmission' : 'Event';
 
@@ -311,9 +303,10 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
             eventModel: actualModel
           });
           setStep(2);
-        const errorMessage = err.response?.data?.details || err.response?.data?.message || 'Payment verification failed. Please contact support.';
-        alert(errorMessage);
-      } finally {
+        } catch (err: any) {
+          const errorMessage = err.response?.data?.details || err.response?.data?.message || 'Payment verification failed. Please contact support.';
+          alert(errorMessage);
+        } finally {
           setLoading(false);
         }
       },
