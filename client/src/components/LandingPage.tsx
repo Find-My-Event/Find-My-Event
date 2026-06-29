@@ -1223,10 +1223,11 @@ const FEATURE_TAGS = [
 
 const MarqueeStrip = () => (
   <div style={{
-    background: 'linear-gradient(135deg,#F7F2FF,#EEE5FF)',
+    background: '#ffffff', // Changed to white
     padding: '1.5rem 0',
     overflow: 'hidden',
     position: 'relative',
+    borderBottom: '1px solid rgba(0,0,0,0.05)',
   }}>
     <div style={{
       display: 'flex',
@@ -1235,17 +1236,29 @@ const MarqueeStrip = () => (
       width: 'max-content',
     }}>
       {[...FEATURE_TAGS, ...FEATURE_TAGS].map((tag, i) => (
-        <div key={i} style={{
-          display: 'flex', alignItems: 'center', gap: '0.5rem',
-          background: 'rgba(255,255,255,0.8)',
-          border: '1px solid rgba(139,92,246,0.12)',
-          borderRadius: '9999px',
-          padding: '0.45rem 1rem',
-          whiteSpace: 'nowrap',
-          color: '#111',
-          fontSize: '0.82rem',
-          fontWeight: 600,
-        }}>
+        <div 
+          key={i} 
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            background: '#ffffff',
+            border: '1px solid rgba(0,0,0,0.1)',
+            borderRadius: '9999px',
+            padding: '0.45rem 1rem',
+            whiteSpace: 'nowrap',
+            color: '#111',
+            fontSize: '0.82rem',
+            fontWeight: 600,
+            cursor: 'default'
+          }}
+          onMouseEnter={(e) => {
+            gsap.to(e.currentTarget, { background: '#111', color: '#fff', borderColor: '#111', duration: 0.3, ease: 'power2.out' });
+            gsap.to(e.currentTarget.querySelector('svg'), { stroke: '#fff', duration: 0.3, ease: 'power2.out' });
+          }}
+          onMouseLeave={(e) => {
+            gsap.to(e.currentTarget, { background: '#ffffff', color: '#111', borderColor: 'rgba(0,0,0,0.1)', duration: 0.3, ease: 'power2.out' });
+            gsap.to(e.currentTarget.querySelector('svg'), { stroke: '#8B5CF6', duration: 0.3, ease: 'power2.out' });
+          }}
+        >
           <tag.icon size={14} color="#8B5CF6" strokeWidth={2.5} />
           {tag.label}
         </div>

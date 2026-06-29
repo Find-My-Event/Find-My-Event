@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Heart, Home, Award, Command, LayoutGrid } from 'lucide-react';
+import { Search, Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Heart, Home, Globe, LayoutGrid } from 'lucide-react';
 import gsap from 'gsap';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
@@ -10,20 +10,14 @@ import darkLogo from '../logo/dark logo.png';
 const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen]       = useState(false);
-  const [scrolled, setScrolled]                 = useState(false);
-  const [hash, setHash]                         = useState(() => window.location.hash || '#home');
+  const [hash, setHash]                         = useState(() => window.location.hash || '');
   const profileWrapRef                          = useRef<HTMLDivElement>(null);
   const navRef                                  = useRef<HTMLElement>(null);
   const { user, isLoggedIn, logout }            = useAuth();
   const [notifications, setNotifications]       = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  /* ── Scroll shrink ── */
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+
 
   /* ── GSAP entry: slide down from -40px (Step 1 of global intro timeline) ── */
   useEffect(() => {
@@ -39,7 +33,7 @@ const Navbar: React.FC = () => {
 
   /* ── Hash tracking ── */
   useEffect(() => {
-    const onHash = () => setHash(window.location.hash || '#home');
+    const onHash = () => setHash(window.location.hash || '');
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
@@ -60,84 +54,96 @@ const Navbar: React.FC = () => {
     }
   }, [isLoggedIn]);
 
+  // Determine which links to show based on login status
+  const isLoggedInState = isLoggedIn;
 
-  const navLinks = isLoggedIn
+  const navLinks: Array<{ name: string; href: string; icon?: string }> = !isLoggedInState
     ? [
-        { name: 'Home',      href: '#home2',       icon: <Home size={16} /> },
-        { name: 'Clubs',     href: '#clubs',       icon: <Award size={16} /> },
-        { name: 'My Events', href: '#your-events', icon: <Command size={16} /> },
-        { name: 'Gallery',   href: '#gallery',     icon: <LayoutGrid size={16} /> },
+        { name: 'Home',    href: '#home2',   icon: 'Home' },
+        { name: 'Clubs',   href: '#clubs',   icon: 'Globe' },
+        { name: 'Gallery', href: '#gallery', icon: 'LayoutGrid' },
       ]
     : [
-        { name: 'Home',      href: '#home2',   icon: <Home size={16} /> },
-        { name: 'Clubs',     href: '#clubs',   icon: <Award size={16} /> },
-        { name: 'Gallery',   href: '#gallery', icon: <LayoutGrid size={16} /> },
+        { name: 'Home',     href: '#home2' },
+        { name: 'Discover', href: '#discover' },
+        { name: 'Events',   href: '#events' },
+        { name: 'Clubs',    href: '#clubs' },
       ];
 
-  /* ── Theming — navbar always looks white on landing, dark on inner pages ── */
-  const isInnerPage = isLoggedIn || (hash !== '#home' && hash !== '');
+  // User requested landing page navbar styling globally across the entire website
+  const isInnerPage = false;
 
-  const pillBg      = isInnerPage ? 'rgba(20,20,24,0.88)' : undefined;
-  const borderColor = isInnerPage ? 'rgba(255,255,255,0.12)' : undefined;
   const textColor   = isInnerPage ? '#ffffff' : '#222';
   const logoSrc     = isInnerPage ? (darkLogo) : darkLogo;
 
   return (
     <>
-      <nav
-        ref={navRef as React.Ref<HTMLElement>}
-        className={`navbar-pill${scrolled ? ' scrolled' : ''}`}
+      <div
+        ref={navRef as React.Ref<HTMLDivElement>}
         style={{
-          background:     pillBg,
-          border:         borderColor ? `1px solid ${borderColor}` : undefined,
-          boxShadow:      isInnerPage
-            ? '0 12px 40px rgba(0,0,0,0.45)'
-            : scrolled ? '0 8px 32px rgba(0,0,0,0.1)' : '0 4px 24px rgba(0,0,0,0.06)',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: isInnerPage ? '64px' : '140px', // Tall wrapper for the gradient
+          zIndex: 1000,
+          pointerEvents: 'none', // Let clicks pass through the invisible part of the gradient
+          background: isInnerPage 
+            ? 'var(--bg-card)' 
+            : 'linear-gradient(180deg, #E9D5FF 0%, rgba(233,213,255,0) 100%)',
+          borderBottom: isInnerPage ? '1px solid rgba(255,255,255,0.1)' : 'none',
         }}
       >
-        {/* ── Logo ── */}
-        <div
-          className="navbar-brand"
+        <nav
           style={{
-            fontWeight: 800,
-            fontSize: '1rem',
-            letterSpacing: '-0.02em',
-            cursor: 'none',
+            height: '64px',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
-            paddingRight: '0.75rem',
-            borderRight: `1px solid ${isInnerPage ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'}`,
+            justifyContent: 'space-between',
+            padding: '0 3rem',
+            pointerEvents: 'auto', // Re-enable clicks for the actual navbar
+          }}
+        >
+        {/* ── Logo ── */}
+        <div
+          style={{
+            fontWeight: 600,
+            fontSize: '20px',
+            fontFamily: 'Inter, sans-serif',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
             color: textColor,
           }}
-          onClick={() => { window.location.hash = '#home'; setIsMobileMenuOpen(false); }}
+          onClick={() => { window.location.hash = ''; setIsMobileMenuOpen(false); }}
         >
-          <img src={logoSrc} alt="Eventum Logo" style={{ height: '28px', width: 'auto' }} />
-          <span style={{ color: textColor }}>Eventum.</span>
+          <img src={logoSrc} alt="Eventum Logo" style={{ height: '32px', width: 'auto' }} />
+          <span>Eventum<span style={{ color: '#EC4899' }}>.</span></span>
         </div>
 
         {/* ── Nav links ── */}
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }} className="mobile-hidden">
-          {navLinks.map(link => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="nav-link"
-              style={{ color: textColor, opacity: hash === link.href ? 1 : 0.75, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-            >
-              {link.icon}
-              {link.name}
-            </a>
-          ))}
+        <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} className="mobile-hidden">
+          {navLinks.map(link => {
+            const IconComponent = link.icon === 'Home' ? Home : link.icon === 'Globe' ? Globe : link.icon === 'LayoutGrid' ? LayoutGrid : null;
+            return (
+              <a
+                key={link.name}
+                href={link.href}
+                style={{ textDecoration: 'none', color: textColor, opacity: hash === link.href ? 1 : 0.75, display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '16px', fontWeight: 600, fontFamily: 'Inter, sans-serif' }}
+              >
+                {IconComponent && <IconComponent size={18} />}
+                {link.name}
+              </a>
+            );
+          })}
         </div>
 
         {/* ── Right actions ── */}
-        <div className="mobile-hidden" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.25rem' }}>
-          <div className="nav-divider" style={{ background: isInnerPage ? 'rgba(255,255,255,0.12)' : undefined }} />
-
+        <div className="mobile-hidden" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           {/* Search */}
-          <button className="nav-search-btn" style={{ color: isInnerPage ? 'rgba(255,255,255,0.6)' : undefined }} aria-label="Search">
-            <Search size={17} strokeWidth={2} />
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: isInnerPage ? 'rgba(255,255,255,0.6)' : '#333' }} aria-label="Search">
+            <Search size={20} strokeWidth={2} />
           </button>
 
           {isLoggedIn ? (
@@ -264,8 +270,18 @@ const Navbar: React.FC = () => {
           ) : (
             /* Logged-out CTA */
             <button
-              className="nav-cta-btn"
               onClick={() => window.location.hash = '#signin'}
+              style={{
+                background: '#000',
+                color: '#fff',
+                border: 'none',
+                padding: '10px 24px',
+                borderRadius: '999px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif'
+              }}
             >
               Get Started
             </button>
@@ -282,6 +298,7 @@ const Navbar: React.FC = () => {
           </button>
         </div>
       </nav>
+      </div>
 
       {/* ── Mobile Menu ── */}
       <AnimatePresence>
