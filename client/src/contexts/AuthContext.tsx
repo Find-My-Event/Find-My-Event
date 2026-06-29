@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     localStorage.removeItem('token');
     delete api.defaults.headers.common['Authorization'];
-    window.location.hash = '#home2';
+    window.location.hash = '#home';
   };
 
   const isLoggedIn = !!user;

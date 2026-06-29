@@ -59,12 +59,12 @@ const Navbar: React.FC = () => {
 
   const navLinks: Array<{ name: string; href: string; icon?: string }> = !isLoggedInState
     ? [
-        { name: 'Home',    href: '#home2',   icon: 'Home' },
+        { name: 'Home',    href: '#home',   icon: 'Home' },
         { name: 'Clubs',   href: '#clubs',   icon: 'Globe' },
         { name: 'Gallery', href: '#gallery', icon: 'LayoutGrid' },
       ]
     : [
-        { name: 'Home',     href: '#home2' },
+        { name: 'Home',     href: '#home' },
         { name: 'Discover', href: '#discover' },
         { name: 'Events',   href: '#events' },
         { name: 'Clubs',    href: '#clubs' },

@@ -122,7 +122,7 @@ function AppContent() {
 
   /* ── Render ── */
   const renderContent = () => {
-    if (currentRoute === '#home2')            return <Home2 />;
+    if (currentRoute === '#home')            return <Home2 />;
     if (currentRoute === '#events')           return <Events isLoggedIn={isLoggedIn} />;
     if (currentRoute === '#discover')         return <Discover />;
     if (currentRoute === '#clubs')            return <Clubs />;

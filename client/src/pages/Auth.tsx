@@ -33,7 +33,7 @@ const Auth: React.FC = () => {
     try {
       if (step === 'login') {
         await handleLogin(formData.email, formData.password);
-        window.location.hash = '#home2';
+        window.location.hash = '#home';
       } else if (step === 'signup') {
         await register(formData.name, formData.email, formData.password);
         setStep('otp');
@@ -71,7 +71,7 @@ const Auth: React.FC = () => {
         hobbies: profileData.hobbies.split(',').map(h => h.trim()).filter(h => h !== '')
       });
       setStep('welcome');
-      setTimeout(() => { window.location.hash = '#home2'; }, 3000);
+      setTimeout(() => { window.location.hash = '#home'; }, 3000);
     } catch { setError('Failed to setup profile'); }
     finally { setIsSubmitting(false); }
   };

@@ -42,7 +42,7 @@ const Footer = () => (
           {
             label: 'Product',
             links: [
-              { name: 'Home',     href: '#home2' },
+              { name: 'Home',     href: '#home' },
               { name: 'Events',   href: '#events' },
               { name: 'Discover', href: '#discover' },
               { name: 'Clubs',    href: '#clubs' },

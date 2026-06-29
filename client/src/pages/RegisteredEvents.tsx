@@ -37,7 +37,7 @@ export default function RegisteredEvents() {
         <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, opacity: 0.2, backgroundImage: 'radial-gradient(circle at top right, rgba(236,72,153,0.15) 0%, transparent 40%)' }} />
       
         <button
-          onClick={() => { window.location.hash = '#home2'; }}
+          onClick={() => { window.location.hash = '#home'; }}
           style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '2rem', fontSize: '0.9rem', fontWeight: 600 }}
         >
           <ArrowLeft size={16} /> Back
