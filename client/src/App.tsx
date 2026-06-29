@@ -2,20 +2,21 @@ import { useEffect, useState } from 'react';
 import Lenis from '@studio-freight/lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { AnimatePresence } from 'framer-motion';
 
 /* ── Components ── */
+import Preloader from './components/Preloader';
 import Navbar    from './components/Navbar';
 import Hero      from './components/Hero';
 import Footer    from './components/Footer';
-import ServiceShowcase from './components/ServiceShowcase';
-import GallerySection  from './components/GallerySection';
+
+import ProblemStory    from './components/ProblemStory';
+import LaunchSteps     from './components/LaunchSteps';
+import FeatureTabs     from './components/FeatureTabs';
+import BuildForBoth    from './components/BuildForBoth';
+import GalleryCta      from './components/GalleryCta';
 import {
-  ProblemSection,
-  SolutionSection,
-  HowItWorksSection,
-  StatsStrip,
-  CtaSection,
-  TestimonialsSection,
+
   MarqueeStrip,
 } from './components/LandingPage';
 import PendingApprovalListener from './components/PendingApprovalListener';
@@ -36,6 +37,7 @@ import ManageEvent    from './pages/ManageEvent';
 import YourEvents     from './pages/YourEvents';
 import RegisteredEvents from './pages/RegisteredEvents';
 import Favourites     from './pages/Favourites';
+import Gallery        from './pages/Gallery';
 import AdminDashboard from './pages/AdminDashboard';
 
 /* ── Context ── */
@@ -50,17 +52,37 @@ gsap.registerPlugin(ScrollTrigger);
    App Content
 ══════════════════════════════════════════════ */
 function AppContent() {
-  const [currentRoute, setCurrentRoute] = useState(window.location.hash || '#home');
+  const [currentRoute, setCurrentRoute] = useState(window.location.hash || '');
   const { user, isLoggedIn, loading }   = useAuth();
 
-  /* ── Hash routing ── */
+  /* ── Hash routing & Scroll Reset ── */
   useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    
+    // Aggressively force absolute top on load (fights browser delayed scroll restoration)
+    window.scrollTo(0, 0);
+    const scrollInterval = setInterval(() => {
+      window.scrollTo(0, 0);
+    }, 10);
+    setTimeout(() => clearInterval(scrollInterval), 1000);
+
+    // Force absolute top before refresh so browser doesn't save scroll position
+    const onBeforeUnload = () => {
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+
     const onHash = () => {
-      setCurrentRoute(window.location.hash || '#home');
+      setCurrentRoute(window.location.hash || '');
       window.scrollTo(0, 0);
     };
     window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
+    return () => {
+      window.removeEventListener('hashchange', onHash);
+      window.removeEventListener('beforeunload', onBeforeUnload);
+    };
   }, []);
 
   /* ── Auth guard ── */
@@ -87,6 +109,10 @@ function AppContent() {
     if (isInner) return;
 
     const lenis = new Lenis({ duration: 1.2, smoothWheel: true, wheelMultiplier: 0.9, touchMultiplier: 1.8 });
+    
+    // Crucial: Lenis reads the browser scroll position on mount. We MUST force it to 0.
+    lenis.scrollTo(0, { immediate: true });
+
     let raf: number;
     const tick = (t: number) => { lenis.raf(t); raf = requestAnimationFrame(tick); };
     raf = requestAnimationFrame(tick);
@@ -106,6 +132,7 @@ function AppContent() {
     if (currentRoute === '#your-events')      return <YourEvents />;
     if (currentRoute === '#registered-events') return <RegisteredEvents />;
     if (currentRoute === '#favourites')       return <Favourites />;
+    if (currentRoute === '#gallery')          return <Gallery />;
 
     if (currentRoute === '#create-event') {
       if (!isLoggedIn) return null;
@@ -125,7 +152,7 @@ function AppContent() {
     }
     if (currentRoute === '#admin') {
       if (isLoggedIn && user?.role === 'admin') return <AdminDashboard />;
-      window.location.hash = '#home';
+      window.location.hash = '';
       return null;
     }
 
@@ -143,31 +170,22 @@ function AppContent() {
         {/* 2. Marquee feature strip */}
         <MarqueeStrip />
 
-        {/* 3. Problem Section */}
-        <ProblemSection />
+        {/* 3. Story Scroll Animation Section */}
+        <ProblemStory />
 
-        {/* 4. Solution Section */}
-        <SolutionSection />
+        {/* 4. 3 Steps to LAUNCH */}
+        <LaunchSteps />
 
-        {/* 5. Stats Strip */}
-        <StatsStrip />
+        {/* 5. Feature Tabs (Replaces ServiceShowcase) */}
+        <FeatureTabs />
 
-        {/* 6. How It Works */}
-        <HowItWorksSection />
+        {/* 6. Build for Both */}
+        <BuildForBoth />
 
-        {/* 7. Service Showcase */}
-        <ServiceShowcase />
+        {/* 7. Gallery CTA */}
+        <GalleryCta />
 
-        {/* 8. Gallery */}
-        <GallerySection />
-
-        {/* 9. Testimonials */}
-        <TestimonialsSection />
-
-        {/* 10. CTA */}
-        <CtaSection />
-
-        {/* 11. Footer */}
+        {/* Footer */}
         <Footer />
       </div>
     );
@@ -193,9 +211,14 @@ function AppContent() {
    Root
 ══════════════════════════════════════════════ */
 export default function App() {
+  const [showPreloader, setShowPreloader] = useState(true);
+
   return (
     <ThemeProvider>
       <AuthProvider>
+        <AnimatePresence>
+          {showPreloader && <Preloader key="preloader" onComplete={() => setShowPreloader(false)} />}
+        </AnimatePresence>
         <AppContent />
       </AuthProvider>
     </ThemeProvider>

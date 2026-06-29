@@ -42,7 +42,7 @@ const Footer = () => (
           {
             label: 'Product',
             links: [
-              { name: 'Home',     href: '#home' },
+              { name: 'Home',     href: '#home2' },
               { name: 'Events',   href: '#events' },
               { name: 'Discover', href: '#discover' },
               { name: 'Clubs',    href: '#clubs' },
@@ -97,14 +97,15 @@ const Footer = () => (
     {/* Giant watermark */}
     <motion.div
       initial={{ opacity: 0 }}
-      whileInView={{ opacity: 0.025 }}
+      whileInView={{ opacity: 0.08 }}
       viewport={{ once: true }}
       style={{
         textAlign: 'center', marginTop: '3rem',
-        fontSize: 'clamp(3rem,10vw,9rem)', fontWeight: 900,
-        letterSpacing: '-0.05em', lineHeight: 0.9,
+        fontSize: 'clamp(5rem,15vw,14rem)', fontWeight: 900,
+        letterSpacing: '-0.03em', lineHeight: 0.9,
         userSelect: 'none', pointerEvents: 'none',
         color: '#fff',
+        width: '100%',
       }}
     >
       EVENTUM
