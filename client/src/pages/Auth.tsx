@@ -158,6 +158,13 @@ const Auth: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <button style={btnDark}><GoogleIcon /> Sign In with Google</button>
               <button style={btnDark}><span style={{ fontSize: '1.1rem' }}>&#63743;</span> Sign In with Apple</button>
+              
+              <button 
+                onClick={() => window.location.hash = '#organizer-dashboard/my-events'} 
+                style={{ background: 'none', border: 'none', color: '#888', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', marginTop: '0.5rem', textDecoration: 'underline' }}
+              >
+                Organizer Login
+              </button>
             </div>
           </>
         )}

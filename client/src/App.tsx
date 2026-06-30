@@ -39,6 +39,7 @@ import RegisteredEvents from './pages/RegisteredEvents';
 import Favourites     from './pages/Favourites';
 import Gallery        from './pages/Gallery';
 import AdminDashboard from './pages/AdminDashboard';
+import OrganizerDashboard from './pages/OrganizerDashboard';
 
 /* ── Context ── */
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -133,6 +134,7 @@ function AppContent() {
     if (currentRoute === '#registered-events') return <RegisteredEvents />;
     if (currentRoute === '#favourites')       return <Favourites />;
     if (currentRoute === '#gallery')          return <Gallery />;
+    if (currentRoute.startsWith('#organizer-dashboard')) return <OrganizerDashboard />;
 
     if (currentRoute === '#create-event') {
       if (!isLoggedIn) return null;
@@ -193,8 +195,8 @@ function AppContent() {
 
   return (
     <div className="App">
-      {/* Navbar */}
-      <Navbar />
+      {/* Navbar (Hidden on specific full-page dashboards) */}
+      {!currentRoute.startsWith('#organizer-dashboard') && currentRoute !== '#admin' && <Navbar />}
 
       {/* Page content */}
       <main>
