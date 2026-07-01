@@ -24,18 +24,18 @@
   --lp-shadow-xl:    0 40px 100px rgba(0,0,0,0.12);
   --lp-shadow-glow:  0 0 40px rgba(139,92,246,0.2);
 
-  /* Inner pages (dark theme) */
-  --bg-primary:      #09090b;
-  --bg-card:         #151518;
-  --bg-card-hover:   rgba(255,255,255,0.05);
-  --text-primary:    #ffffff;
-  --text-secondary:  #a1a1aa;
-  --text-muted:      #888888;
-  --accent-orange:   #ff6f3f;
-  --border-color:    rgba(255,255,255,0.1);
-  --border-subtle:   rgba(255,255,255,0.05);
-  --input-bg:        rgba(0,0,0,0.3);
-  --dot-color:       rgba(255,255,255,0.05);
+  /* Inner pages (light theme default) */
+  --bg-primary:      #f9fafb;
+  --bg-card:         #ffffff;
+  --bg-card-hover:   rgba(0,0,0,0.03);
+  --text-primary:    #18181b;
+  --text-secondary:  #52525b;
+  --text-muted:      #71717a;
+  --accent-orange:   #8B5CF6; /* Preserved variable name for compatibility, but color is purple */
+  --border-color:    rgba(0,0,0,0.1);
+  --border-subtle:   rgba(0,0,0,0.05);
+  --input-bg:        #ffffff;
+  --dot-color:       rgba(0,0,0,0.05);
 }
 
 [data-theme="light"] {
@@ -45,7 +45,7 @@
   --text-primary:  #18181b;
   --text-secondary:#52525b;
   --text-muted:    #71717a;
-  --accent-orange: #ff6f3f;
+  --accent-orange: #8B5CF6;
   --border-color:  rgba(0,0,0,0.1);
   --border-subtle: rgba(0,0,0,0.05);
   --input-bg:      #fff;
@@ -106,7 +106,6 @@ h1, h2, h3 { font-weight: 700; line-height: 1.1; }
   z-index: 99999;
   transform: translate(-50%, -50%);
   transition: opacity 0.2s;
-  mix-blend-mode: multiply;
 }
 
 .cursor-ring {

@@ -4,6 +4,7 @@ import { Calendar, MapPin, Users, Edit, Loader2 } from 'lucide-react';
 import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
+import { RegisterView } from '../components/SharedViews';
 
 const EventDetail = ({ hash }: { hash?: string }) => {
   const { user, isLoggedIn } = useAuth();
@@ -11,7 +12,9 @@ const EventDetail = ({ hash }: { hash?: string }) => {
   const eventId = hash?.replace('#event-detail-', '') || '1';
   
   const [currentEvent, setCurrentEvent] = useState<any>(null);
+  const [rawEvent, setRawEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showRegister, setShowRegister] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -19,7 +22,7 @@ const EventDetail = ({ hash }: { hash?: string }) => {
       try {
         if (eventId.startsWith('c') || eventId.length < 10) {
           // Dummy fallback for hero images or old hardcoded links
-          setCurrentEvent({
+          const dummyEvent = {
             id: eventId,
             title: 'Discover events worth showing up for.',
             img: eventId.startsWith('c') ? `/hero-images/Rectangle 3${eventId.replace('c', '')}.png` : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80',
@@ -31,13 +34,16 @@ const EventDetail = ({ hash }: { hash?: string }) => {
             price: 'Free',
             seats: 'Limited',
             isRegistered: false
-          });
+          };
+          setCurrentEvent(dummyEvent);
+          setRawEvent(dummyEvent);
           setLoading(false);
           return;
         }
 
         const res = await api.get(`/events/${eventId}`);
         const data = res.data;
+        setRawEvent(data);
         setCurrentEvent({
           id: data._id,
           title: data.title,
@@ -94,6 +100,11 @@ const EventDetail = ({ hash }: { hash?: string }) => {
         opacity: 0.7
       }} />
 
+      {showRegister ? (
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <RegisterView event={rawEvent} onBack={() => setShowRegister(false)} />
+        </div>
+      ) : (
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '6rem 2rem 6rem', position: 'relative', zIndex: 1 }}>
         <div className="event-detail-grid">
           
@@ -220,6 +231,13 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                   <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#111' }}>{currentEvent.price}</div>
                 </div>
                 <button 
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      window.location.hash = '#signin';
+                      return;
+                    }
+                    if (!currentEvent.isRegistered) setShowRegister(true);
+                  }}
                   style={{ background: currentEvent.isRegistered ? '#10b981' : '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.75rem 2rem', fontSize: '0.9rem', fontWeight: 700, cursor: currentEvent.isRegistered ? 'default' : 'pointer', transition: 'background 0.2s' }}
                 >
                   {currentEvent.isRegistered ? 'Registered' : 'Register Now'}
@@ -241,6 +259,7 @@ const EventDetail = ({ hash }: { hash?: string }) => {
           </div>
         </div>
       </main>
+      )}
       
       <Footer />
     </div>

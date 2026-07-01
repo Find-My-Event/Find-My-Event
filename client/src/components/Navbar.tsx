@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Heart, Home, Globe, LayoutGrid } from 'lucide-react';
+import { Search, Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Heart, Home, Globe, LayoutGrid, Command, Award } from 'lucide-react';
 import gsap from 'gsap';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
@@ -60,14 +60,14 @@ const Navbar: React.FC = () => {
   const navLinks: Array<{ name: string; href: string; icon?: string }> = !isLoggedInState
     ? [
         { name: 'Home',    href: '#home',   icon: 'Home' },
-        { name: 'Clubs',   href: '#clubs',   icon: 'Globe' },
+        { name: 'Clubs',   href: '#clubs',   icon: 'Award' },
         { name: 'Gallery', href: '#gallery', icon: 'LayoutGrid' },
       ]
     : [
-        { name: 'Home',     href: '#home' },
-        { name: 'Discover', href: '#discover' },
-        { name: 'Events',   href: '#events' },
-        { name: 'Clubs',    href: '#clubs' },
+        { name: 'Home',      href: '#home',        icon: 'Home' },
+        { name: 'Clubs',     href: '#clubs',       icon: 'Award' },
+        { name: 'My Events', href: '#registered-events', icon: 'Command' },
+        { name: 'Gallery',   href: '#gallery',     icon: 'LayoutGrid' },
       ];
 
   // User requested landing page navbar styling globally across the entire website
@@ -125,7 +125,7 @@ const Navbar: React.FC = () => {
         {/* ── Nav links ── */}
         <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} className="mobile-hidden">
           {navLinks.map(link => {
-            const IconComponent = link.icon === 'Home' ? Home : link.icon === 'Globe' ? Globe : link.icon === 'LayoutGrid' ? LayoutGrid : null;
+            const IconComponent = link.icon === 'Home' ? Home : link.icon === 'Award' ? Award : link.icon === 'Command' ? Command : link.icon === 'LayoutGrid' ? LayoutGrid : link.icon === 'Globe' ? Globe : null;
             return (
               <a
                 key={link.name}
@@ -165,7 +165,7 @@ const Navbar: React.FC = () => {
                 <motion.div
                   whileHover={{ scale: 1.1 }}
                   className="nav-icon-button"
-                  style={{ cursor: 'none', color: isInnerPage ? 'rgba(255,255,255,0.6)' : '#666' }}
+                  style={{ cursor: 'pointer', color: isInnerPage ? 'rgba(255,255,255,0.6)' : '#666' }}
                   onClick={() => setShowNotifications(!showNotifications)}
                 >
                   <Bell size={18} strokeWidth={2} />
@@ -201,22 +201,12 @@ const Navbar: React.FC = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Create Event */}
-              <motion.button
-                whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                className="nav-button"
-                onClick={() => { window.location.hash = '#create-event'; setIsMobileMenuOpen(false); }}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem' }}
-              >
-                <Plus size={14} /> Create
-              </motion.button>
-
               {/* Avatar */}
               <div style={{ position: 'relative' }} ref={profileWrapRef}>
                 <motion.div
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   whileHover={{ scale: 1.05 }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', cursor: 'none', background: 'rgba(0,0,0,0.04)', padding: '2px 4px 2px 2px', borderRadius: '999px', border: '1px solid rgba(0,0,0,0.06)' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', cursor: 'pointer', background: 'rgba(0,0,0,0.04)', padding: '2px 4px 2px 2px', borderRadius: '999px', border: '1px solid rgba(0,0,0,0.06)' }}
                 >
                   <img src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'} alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
                   <ChevronDown size={12} color="#888" />
@@ -291,7 +281,7 @@ const Navbar: React.FC = () => {
         {/* ── Mobile toggle ── */}
         <div className="mobile-only" style={{ display: 'none', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
           <button
-            style={{ background: 'transparent', border: 'none', cursor: 'none', color: isInnerPage ? '#fff' : '#222', display: 'flex', alignItems: 'center' }}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: isInnerPage ? '#fff' : '#222', display: 'flex', alignItems: 'center' }}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -326,13 +316,13 @@ const Navbar: React.FC = () => {
             ))}
             {isLoggedIn && (
               <>
-                <button type="button" onClick={() => { window.location.hash = '#create-event'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1rem', cursor: 'none', padding: '0.4rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button type="button" onClick={() => { window.location.hash = '#create-event'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', padding: '0.4rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Plus size={16} /> Create Event
                 </button>
-                <button type="button" onClick={() => { window.location.hash = '#settings'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1rem', cursor: 'none', padding: '0.4rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button type="button" onClick={() => { window.location.hash = '#settings'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', padding: '0.4rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Settings size={16} /> Settings
                 </button>
-                <button type="button" onClick={() => { window.location.hash = '#your-events'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1rem', cursor: 'none', padding: '0.4rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button type="button" onClick={() => { window.location.hash = '#your-events'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', padding: '0.4rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Calendar size={16} /> Your Events
                 </button>
               </>
@@ -340,12 +330,12 @@ const Navbar: React.FC = () => {
             <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '0.85rem', marginTop: '0.25rem' }}>
               {isLoggedIn ? (
                 <button type="button" onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                  style={{ width: '100%', background: '#ef4444', color: '#fff', border: 'none', padding: '0.85rem', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'none', fontFamily: 'inherit' }}>
+                  style={{ width: '100%', background: '#ef4444', color: '#fff', border: 'none', padding: '0.85rem', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', fontFamily: 'inherit' }}>
                   <LogOut size={18} /> Sign Out
                 </button>
               ) : (
                 <button type="button" onClick={() => { window.location.hash = '#signin'; setIsMobileMenuOpen(false); }}
-                  style={{ width: '100%', background: '#111', color: '#fff', border: 'none', padding: '0.85rem', borderRadius: '12px', fontWeight: 700, cursor: 'none', fontFamily: 'inherit' }}>
+                  style={{ width: '100%', background: '#111', color: '#fff', border: 'none', padding: '0.85rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   Get Started
                 </button>
               )}

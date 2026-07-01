@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, ArrowLeft, Heart, Share2, Ticket, Sparkles, User as UserIcon, Mail, Phone, Users, CheckCircle, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, Heart, Share2, Ticket, Sparkles, User as UserIcon, Mail, Phone, Users, CheckCircle, Loader2, X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -110,9 +110,9 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
              <span style={{
-                background: 'linear-gradient(135deg, #FF6F3F, #ff4c1a)', color: '#ffffff',
+                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)', color: '#ffffff',
                 padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.05em', boxShadow: '0 4px 15px rgba(255,111,63,0.4)'
+                textTransform: 'uppercase', letterSpacing: '0.05em', boxShadow: '0 4px 15px rgba(139,92,246,0.4)'
              }}>
                {event?.category || 'Special'}
              </span>
@@ -152,8 +152,7 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
           </div>
           <div>
             <p style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: '6px' }}>Date & Time</p>
-            <p style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 600 }}>{event?.date?.split('•')[0] || 'TBD'}</p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '2px' }}>{event?.date?.split('•')[1] || ''}</p>
+            <p style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 600 }}>{event?.date || event?.startDate || 'TBD'}</p>
           </div>
         </div>
 
@@ -177,7 +176,7 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
       <div className="sv-main-content-gap" style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} style={{ flex: '1 1 500px', minWidth: 0 }}>
             <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-               <div style={{ width: '4px', height: '24px', background: '#FF6F3F', borderRadius: '4px' }} />
+               <div style={{ width: '4px', height: '24px', background: '#8B5CF6', borderRadius: '4px' }} />
                About This Event
             </h3>
             <div style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: 1.8 }}>
@@ -242,11 +241,11 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
 
                <motion.button
                   onClick={event.isRegistered ? undefined : onRegister}
-                  whileHover={!event.isRegistered ? { scale: 1.03, boxShadow: '0 8px 30px rgba(255,111,63,0.4)' } : {}}
+                  whileHover={!event.isRegistered ? { scale: 1.03, boxShadow: '0 8px 30px rgba(139,92,246,0.4)' } : {}}
                   whileTap={!event.isRegistered ? { scale: 0.97 } : {}}
                   style={{
                      width: '100%', 
-                     background: event.isRegistered ? '#10b981' : 'linear-gradient(135deg, #FF6F3F, #dc5022)',
+                     background: event.isRegistered ? '#10b981' : 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
                      color: '#ffffff', border: 'none', padding: '1rem', borderRadius: '14px',
                      fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                      cursor: event.isRegistered ? 'default' : 'pointer', fontFamily: "'Outfit', sans-serif"
@@ -277,9 +276,58 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
 export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', team: '' });
   const [ticketsCount, setTicketsCount] = useState(1);
+
+  const renderTicket = (isAlreadyRegistered: boolean) => (
+    <motion.div key={isAlreadyRegistered ? "is-registered" : "success"} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '1rem 0' }}>
+      <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#111', marginBottom: '1.5rem', marginTop: 0 }}>You're In</h2>
+      
+      <div style={{ background: '#8B5CF6', borderRadius: '16px', width: '100%', maxWidth: '350px', color: '#fff', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 40px rgba(139, 92, 246, 0.3)' }}>
+        <div style={{ padding: '2rem 1.5rem 1.5rem 1.5rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>🎉</div>
+          <h3 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>Thank you!</h3>
+          <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', margin: 0, lineHeight: 1.4 }}>{isAlreadyRegistered ? 'You are registered for this event.' : 'Your ticket has been issued successfully'}</p>
+        </div>
+
+        <div style={{ position: 'relative', height: '20px', display: 'flex', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', left: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#fff' }} />
+          <div style={{ width: '100%', borderTop: '2px dashed rgba(255,255,255,0.4)', margin: '0 15px' }} />
+          <div style={{ position: 'absolute', right: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#fff' }} />
+        </div>
+
+        <div style={{ padding: '1.5rem', textAlign: 'left', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.2rem 0' }}>Participant</p>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>{formData?.name || user?.name || 'Participant'}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.2rem 0' }}>Team Name</p>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>{formData?.team || 'N/A'}</p>
+          </div>
+          <div style={{ gridColumn: 'span 2' }}>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.2rem 0' }}>Event Name</p>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>{event?.title || 'Event'}</p>
+          </div>
+          <div style={{ gridColumn: 'span 2' }}>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.2rem 0' }}>Date & Time</p>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>{event?.date || event?.startDate || 'TBA'}</p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 5px', marginBottom: '-10px' }}>
+           {[1,2,3,4,5,6,7,8].map(i => (
+             <div key={i} style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#fff' }} />
+           ))}
+        </div>
+      </div>
+
+      <motion.button onClick={() => { window.location.hash = '#registered-events'; window.location.reload(); }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} style={{ background: '#2E1065', color: '#fff', border: 'none', padding: '0.85rem 2rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginTop: '2rem', width: '100%', maxWidth: '350px', fontSize: '1.05rem', boxShadow: '0 10px 20px rgba(46, 16, 101, 0.2)' }}>
+         Go to My Events
+      </motion.button>
+    </motion.div>
+  );
 
   const isFormValid = formData.name && formData.email && formData.phone;
 
@@ -315,7 +363,7 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
         email: formData.email,
         contact: formData.phone
       },
-      theme: { color: "#FF6F3F" }
+      theme: { color: "#8B5CF6" }
     };
 
     const rzp1 = new (window as any).Razorpay(options);
@@ -373,110 +421,100 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
 
       <motion.div 
         initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-        className="sv-form-padding"
         style={{
-           width: '100%', maxWidth: '600px', background: 'var(--bg-card)',
-           backdropFilter: 'blur(20px)', border: '1px solid var(--border-subtle)',
-           borderRadius: '24px', padding: '2.5rem', boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
-           position: 'relative', overflow: 'hidden'
+           width: '100%', maxWidth: '500px',
+           padding: '2.5rem',
+           position: 'relative',
+           background: '#ffffff',
+           borderRadius: '20px',
+           boxShadow: '0 15px 40px rgba(139, 92, 246, 0.12)',
+           border: '1px solid rgba(0, 0, 0, 0.04)'
         }}
       >
-        <motion.div
-           onClick={onBack}
-           whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-           style={{
-             position: 'absolute', top: '2rem', left: '2rem',
-             width: '40px', height: '40px', background: 'var(--border-subtle)', borderRadius: '50%',
-             display: 'flex', justifyContent: 'center', alignItems: 'center',
-             cursor: 'pointer', border: '1px solid var(--border-color)'
-           }}
-        >
-          <ArrowLeft size={18} color='var(--text-primary)' />
-        </motion.div>
-
-        <div style={{ textAlign: 'center', marginTop: '1rem', marginBottom: '2.5rem', padding: '0 3rem' }}>
-           <h2 style={{ color: 'var(--text-primary)', fontSize: '2rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '0.5rem' }}>
-              {event.isRegistered ? 'Already Registered' : 'Reserve Your Seat'}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+           <h2 style={{ color: '#2E1065', fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>
+              Registration form
            </h2>
-           <p style={{ color: '#94a3b8', fontSize: '1rem' }}>For <span style={{ color: '#FF6F3F', fontWeight: 600 }}>{event?.title}</span></p>
+           <button type="button" onClick={onBack} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
+             <X size={24} color="#6b7280" style={{ strokeWidth: 2.5 }} />
+           </button>
         </div>
 
         <AnimatePresence mode="wait">
-        {event.isRegistered ? (
-          <motion.div key="is-registered" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', padding: '2rem 0' }}>
-             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200, delay: 0.2 }} style={{ width: '80px', height: '80px', background: 'rgba(52,211,153,0.2)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 1.5rem auto' }}>
-                <CheckCircle size={40} color="#34d399" />
-             </motion.div>
-             <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem' }}>You're in!</h3>
-             <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: '2rem' }}>You have already registered for this event. Check your email for ticket details.</p>
-             <motion.button onClick={onBack} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ background: 'var(--border-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Outfit', sans-serif" }}>
-                Back to Details
-             </motion.button>
-          </motion.div>
-        ) : step === 1 ? (
+        {event.isRegistered ? renderTicket(true) : step === 1 ? (
         <motion.form key="form" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
           <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
              {/* Name */}
-             <div style={{ position: 'relative' }}>
-                <UserIcon size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6D28D9' }}>Full Name</label>
                 <input required type="text" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'var(--border-color)')} />
-             </div>
-
-             {/* Email */}
-             <div style={{ position: 'relative' }}>
-                <Mail size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input required type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'var(--border-color)')} />
+                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.name ? '#ffffff' : '#F5F3FF', border: formData.name ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
              </div>
 
              {/* Phone */}
-             <div style={{ position: 'relative' }}>
-                <Phone size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input required type="text" placeholder="Phone Number" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
-                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'var(--border-color)')} />
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6D28D9' }}>Mobile Number</label>
+                <input required type="text" placeholder="+91 98765-12345" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
+                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.phone ? '#ffffff' : '#F5F3FF', border: formData.phone ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
              </div>
 
-             {/* Team Name */}
-             <div style={{ position: 'relative' }}>
-                <Users size={18} color="#64748b" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input type="text" placeholder="Team Name (Optional)" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}
-                  style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'border-color 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}
-                  onFocus={e => (e.target.style.borderColor = '#FF6F3F')} onBlur={e => (e.target.style.borderColor = 'var(--border-color)')} />
+             {/* Email */}
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6D28D9' }}>Email Address</label>
+                <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.email ? '#ffffff' : '#F5F3FF', border: formData.email ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
+             </div>
+
+             {/* Course */}
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', position: 'relative' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6D28D9' }}>Course</label>
+                <select value={(formData as any).course || ''} onChange={e => setFormData({...formData, course: e.target.value} as any)}
+                  style={{ width: '100%', padding: '0.85rem 1rem', background: (formData as any).course ? '#ffffff' : '#F5F3FF', border: (formData as any).course ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: (formData as any).course ? '#111' : '#8B5CF6', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s', appearance: 'none' }}>
+                  <option value="" disabled>Select an option</option>
+                  <option value="btech">B.Tech</option>
+                  <option value="bca">BCA</option>
+                  <option value="mca">MCA</option>
+                </select>
+                <ChevronDown size={16} color="#8B5CF6" style={{ position: 'absolute', right: '1rem', top: '2.4rem', pointerEvents: 'none' }} />
+             </div>
+
+             {/* Invite Team Member */}
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', position: 'relative' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6D28D9' }}>Invite Team Member</label>
+                <input type="email" placeholder="Team Member Email Address" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}
+                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.team ? '#ffffff' : '#F5F3FF', border: formData.team ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
+                <ChevronDown size={16} color="#6b7280" style={{ position: 'absolute', right: '1rem', top: '2.4rem', pointerEvents: 'none' }} />
              </div>
 
              {/* Paid Event: Quantity Selector */}
              {event.pricing?.isPaid && (
                <div style={{ 
-                 background: 'rgba(255,111,63,0.05)', padding: '1.25rem', borderRadius: '16px', 
-                 border: '1px solid rgba(255,111,63,0.15)', marginTop: '0.5rem' 
+                 background: '#F5F3FF', padding: '1.25rem', borderRadius: '12px', 
+                 border: '1px solid rgba(139, 92, 246, 0.2)', marginTop: '0.5rem' 
                }}>
                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                    <div>
-                     <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem' }}>Select Tickets</p>
-                     <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Max {event.pricing.maxTicketsPerUser} per user</p>
+                     <p style={{ color: '#2E1065', fontWeight: 700, fontSize: '0.95rem', margin: 0 }}>Select Tickets</p>
+                     <p style={{ color: '#6b7280', fontSize: '0.8rem', margin: '0.2rem 0 0 0' }}>Max {event.pricing?.maxTicketsPerUser || 10} per user</p>
                    </div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-primary)', borderRadius: '10px', padding: '0.4rem 0.8rem', border: '1px solid var(--border-color)' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#111', borderRadius: '10px', padding: '0.4rem 1rem' }}>
                      <button 
                        type="button"
                        onClick={() => setTicketsCount(Math.max(1, ticketsCount - 1))}
-                       style={{ background: 'none', border: 'none', color: '#FF6F3F', fontSize: '1.5rem', cursor: 'pointer', display: 'flex' }}
-                     >−</button>
-                     <span style={{ color: 'var(--text-primary)', fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{ticketsCount}</span>
+                       style={{ background: 'none', border: 'none', color: '#8B5CF6', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', padding: 0 }}
+                     >-</button>
+                     <span style={{ color: '#ffffff', fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{ticketsCount}</span>
                      <button 
                        type="button"
-                       onClick={() => setTicketsCount(Math.min(event.pricing.maxTicketsPerUser, ticketsCount + 1))}
-                       style={{ background: 'none', border: 'none', color: '#FF6F3F', fontSize: '1.2rem', cursor: 'pointer', display: 'flex' }}
+                       onClick={() => setTicketsCount(Math.min(event.pricing?.maxTicketsPerUser || 10, ticketsCount + 1))}
+                       style={{ background: 'none', border: 'none', color: '#8B5CF6', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', padding: 0 }}
                      >+</button>
                    </div>
                  </div>
-                 <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px dashed rgba(255,111,63,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Total Amount</span>
-                   <span style={{ color: '#FF6F3F', fontSize: '1.25rem', fontWeight: 800 }}>₹{event.pricing.ticketPrice * ticketsCount}</span>
+                 <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed rgba(139, 92, 246, 0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <span style={{ color: '#6D28D9', fontSize: '0.9rem', fontWeight: 600 }}>Total Amount</span>
+                   <span style={{ color: '#8B5CF6', fontSize: '1.25rem', fontWeight: 800 }}>₹{event.pricing.ticketPrice * ticketsCount}</span>
                  </div>
                </div>
              )}
@@ -484,31 +522,23 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
           
           <motion.button 
             type="submit"
-            disabled={loading}
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            disabled={loading || !isFormValid}
+            whileHover={{ scale: (isFormValid && !loading) ? 1.02 : 1 }} 
+            whileTap={{ scale: (isFormValid && !loading) ? 0.98 : 1 }}
             style={{ 
-               background: isFormValid ? 'linear-gradient(135deg, #FF6F3F, #dc5022)' : 'var(--border-color)',
-               color: isFormValid ? '#ffffff' : '#64748b',
-               padding: '1.2rem', borderRadius: '12px', fontWeight: 700, border: 'none', cursor: (isFormValid && !loading) ? 'pointer' : 'not-allowed',
-               marginTop: '1rem', fontSize: '1.1rem', fontFamily: "'Outfit', sans-serif",
-               transition: 'all 0.3s', boxShadow: isFormValid ? '0 8px 25px rgba(255,111,63,0.3)' : 'none',
-               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+               background: '#8B5CF6',
+               color: '#ffffff',
+               padding: '1rem', borderRadius: '12px', fontWeight: 600, border: 'none', cursor: (isFormValid && !loading) ? 'pointer' : 'not-allowed',
+               marginTop: '1.5rem', fontSize: '1.05rem', fontFamily: 'inherit',
+               transition: 'all 0.3s',
+               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+               opacity: (isFormValid && !loading) ? 1 : 0.5,
+               boxShadow: (isFormValid && !loading) ? '0 10px 25px rgba(139, 92, 246, 0.4)' : 'none'
             }}>
-            {loading ? <Loader2 size={24} className="spin" /> : (event.pricing?.isPaid ? 'Pay & Register' : 'Confirm Registration')}
+            {loading ? <Loader2 size={24} className="spin" /> : 'Pay Now / Register'}
           </motion.button>
         </motion.form>
-        ) : (
-        <motion.div key="success" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', padding: '2rem 0' }}>
-           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200, delay: 0.2 }} style={{ width: '80px', height: '80px', background: 'rgba(52,211,153,0.2)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 1.5rem auto' }}>
-              <CheckCircle size={40} color="#34d399" />
-           </motion.div>
-           <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem' }}>Registration Successful!</h3>
-           <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: '2rem' }}>We've sent the ticket details to your email.</p>
-           <motion.button onClick={onBack} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ background: 'var(--border-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Outfit', sans-serif" }}>
-              Back to Events
-           </motion.button>
-        </motion.div>
-        )}
+        ) : renderTicket(false)}
         </AnimatePresence>
 
       </motion.div>

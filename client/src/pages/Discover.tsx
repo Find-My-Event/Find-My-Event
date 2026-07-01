@@ -325,11 +325,19 @@ export default function Discover({ isLoggedIn: propIsLoggedIn }: { isLoggedIn?: 
   };
 
   const handleRegisterClick = () => {
+    if (!isLoggedIn) {
+      window.location.hash = '#signin';
+      return;
+    }
     setCurrentView('register');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const openRegisterForEvent = (event: any) => {
+    if (!isLoggedIn) {
+      window.location.hash = '#signin';
+      return;
+    }
     setSelectedEvent(event);
     setCurrentView('register');
     window.scrollTo({ top: 0, behavior: 'smooth' });

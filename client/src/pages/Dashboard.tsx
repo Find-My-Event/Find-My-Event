@@ -91,7 +91,7 @@ const Dashboard: React.FC = () => {
   };
 
   const stats = [
-    { label: 'Your Events', value: dashboardStats.created, icon: Calendar, color: '#ff6f3f' },
+    { label: 'Your Events', value: dashboardStats.created, icon: Calendar, color: '#8B5CF6' },
     { label: 'University Events', value: dashboardStats.uniEvents, icon: Users, color: '#3b82f6' },
     { label: 'Saved', value: user?.favEvents?.length || 0, icon: Star, color: '#facc15' },
   ];
@@ -108,7 +108,7 @@ const Dashboard: React.FC = () => {
       >
         <div>
           <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-            Hello, <span style={{ color: '#ff6f3f' }}>{user?.name ? user.name.split(' ')[0] : 'User'}!</span>
+            Hello, <span style={{ color: '#8B5CF6' }}>{user?.name ? user.name.split(' ')[0] : 'User'}!</span>
           </h1>
           <p style={{ opacity: 0.6, fontSize: '1.1rem' }}>Welcome back to your personalized campus hub.</p>
         </div>
@@ -123,7 +123,7 @@ const Dashboard: React.FC = () => {
             border: '1px solid rgba(255,111,63,0.2)',
             padding: '0.8rem 1.5rem',
             borderRadius: '16px',
-            color: isEditing ? 'var(--text-primary)' : '#ff6f3f',
+            color: isEditing ? 'var(--text-primary)' : '#8B5CF6',
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
@@ -216,7 +216,7 @@ const Dashboard: React.FC = () => {
               <button 
                 onClick={handleUpdate}
                 disabled={isSaving}
-                style={{ background: '#ff6f3f', color: '#ffffff', border: 'none', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                style={{ background: '#8B5CF6', color: '#ffffff', border: 'none', padding: '0.8rem 2rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
                 {isSaving ? <Loader2 className="spin" size={18} /> : <><Check size={18} /> Save Changes</>}
               </button>
@@ -298,7 +298,7 @@ const Dashboard: React.FC = () => {
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Upcoming Schedule & Events</h2>
-            <button onClick={() => window.location.hash = '#events'} style={{ background: 'none', border: 'none', color: '#ff6f3f', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button onClick={() => window.location.hash = '#events'} style={{ background: 'none', border: 'none', color: '#8B5CF6', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               View all <ArrowRight size={16} />
             </button>
           </div>
@@ -317,7 +317,7 @@ const Dashboard: React.FC = () => {
                     background: event.isMine ? 'rgba(255,111,63,0.05)' : 'var(--bg-card-hover)',
                     padding: '1rem',
                     borderRadius: '20px',
-                    border: event.isMine ? '1px solid rgba(255,111,63,0.3)' : '1px solid var(--border-subtle)',
+                    border: event.isMine ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid var(--border-subtle)',
                     alignItems: 'center'
                   }}
                 >
@@ -327,7 +327,7 @@ const Dashboard: React.FC = () => {
                   <div style={{ flex: 1 }}>
                     <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       {event.title}
-                      {event.isMine && <span style={{ marginLeft: 8, fontSize: '0.7rem', padding: '2px 6px', background: '#ff6f3f', color: '#fff', borderRadius: 4 }}>Created by You</span>}
+                      {event.isMine && <span style={{ marginLeft: 8, fontSize: '0.7rem', padding: '2px 6px', background: '#8B5CF6', color: '#fff', borderRadius: 4 }}>Created by You</span>}
                     </h3>
                     <div style={{ display: 'flex', gap: '1rem', opacity: 0.5, fontSize: '0.85rem' }}>
                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={14} /> {event.date || event.startDate}</span>
@@ -350,7 +350,7 @@ const Dashboard: React.FC = () => {
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Initiatives & Clubs</h2>
-            <button onClick={() => window.location.hash = '#clubs'} style={{ background: 'none', border: 'none', color: '#ff6f3f', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button onClick={() => window.location.hash = '#clubs'} style={{ background: 'none', border: 'none', color: '#8B5CF6', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               View all <ArrowRight size={16} />
             </button>
           </div>
@@ -410,7 +410,7 @@ const Dashboard: React.FC = () => {
 
       {/* Action shortcuts */}
       <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', display: 'flex', gap: '1rem', zIndex: 100 }}>
-        <motion.button onClick={() => window.location.hash = '#create-event'} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#ff6f3f', border: 'none', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(255,111,63,0.3)', cursor: 'pointer' }}>
+        <motion.button onClick={() => window.location.hash = '#create-event'} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#8B5CF6', border: 'none', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(139, 92, 246, 0.3)', cursor: 'pointer' }}>
           <Plus size={24} />
         </motion.button>
         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(0,0,0,0.3)', cursor: 'pointer' }}>

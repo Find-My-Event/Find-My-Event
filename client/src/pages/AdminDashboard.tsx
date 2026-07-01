@@ -266,7 +266,7 @@ const AdminDashboard: React.FC = () => {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-        <Loader2 className="spin" size={48} color="#ff6f3f" />
+        <Loader2 className="spin" size={48} color="#8B5CF6" />
       </div>
     );
   }
@@ -276,7 +276,7 @@ const AdminDashboard: React.FC = () => {
       {/* Sidebar */}
       <div className="admin-sidebar" style={{ width: '280px', borderRight: '1px solid var(--border-subtle)', padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-          <div style={{ width: '40px', height: '40px', background: '#ff6f3f', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '40px', height: '40px', background: '#8B5CF6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TrendingUp size={24} color='var(--text-primary)' />
           </div>
           <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>Admin Portal</span>
@@ -297,8 +297,8 @@ const AdminDashboard: React.FC = () => {
               onClick={() => setActiveTab(item.id as Tab)}
               style={{
                 display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '12px',
-                background: activeTab === item.id ? 'rgba(255,111,63,0.1)' : 'transparent',
-                color: activeTab === item.id ? '#ff6f3f' : 'var(--text-secondary)',
+                background: activeTab === item.id ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
+                color: activeTab === item.id ? '#8B5CF6' : 'var(--text-secondary)',
                 border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600, textAlign: 'left'
               }}
             >
@@ -319,7 +319,7 @@ const AdminDashboard: React.FC = () => {
           {activeTab === 'events' && (
             <button
               onClick={() => { setEditingEvent(null); setEventFormData({ title: '', description: '', organizer: '', date: '', venue: '', category: 'Tech', price: 'Free', seats: 'Limited', tag: '' }); setIsEventModalOpen(true); }}
-              style={{ background: '#ff6f3f', color: 'var(--text-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+              style={{ background: '#8B5CF6', color: 'var(--text-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
             >
               <Plus size={20} /> Create Event
             </button>
@@ -327,7 +327,7 @@ const AdminDashboard: React.FC = () => {
           {activeTab === 'clubs' && (
             <button
               onClick={() => { setEditingClub(null); setClubFormData({ name: '', type: 'Club', description: '', aboutUs: '', tags: '' }); setIsClubModalOpen(true); }}
-              style={{ background: '#ff6f3f', color: 'var(--text-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+              style={{ background: '#8B5CF6', color: 'var(--text-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
             >
               <Plus size={20} /> Create Club
             </button>
@@ -339,7 +339,7 @@ const AdminDashboard: React.FC = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
             {[
               { label: 'Total Users', value: stats.totalUsers, icon: Users, color: '#3b82f6' },
-              { label: 'Active Events', value: stats.totalEvents, icon: Calendar, color: '#ff6f3f' },
+              { label: 'Active Events', value: stats.totalEvents, icon: Calendar, color: '#8B5CF6' },
               { label: 'Active Clubs', value: stats.totalClubs, icon: Users, color: '#a855f7' },
               { label: 'Global Alerts', value: stats.activeNotifications, icon: Bell, color: '#facc15' },
             ].map((stat, idx) => (
@@ -528,7 +528,7 @@ const AdminDashboard: React.FC = () => {
                       </div>
                     </td>
                     <td>
-                      <span style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: '99px', background: u.role === 'admin' ? '#ff6f3f33' : 'var(--border-subtle)', color: u.role === 'admin' ? '#ff6f3f' : 'inherit' }}>
+                      <span style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: '99px', background: u.role === 'admin' ? '#8B5CF633' : 'var(--border-subtle)', color: u.role === 'admin' ? '#8B5CF6' : 'inherit' }}>
                         {u.role.toUpperCase()}
                       </span>
                     </td>
@@ -567,7 +567,7 @@ const AdminDashboard: React.FC = () => {
                      <option value="error">Error (Red)</option>
                   </select>
                </div>
-               <button type="submit" disabled={isSubmitting} style={{ background: '#ff6f3f', color: 'var(--text-primary)', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>
+               <button type="submit" disabled={isSubmitting} style={{ background: '#8B5CF6', color: 'var(--text-primary)', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>
                   {isSubmitting ? <Loader2 className="spin" size={20} /> : 'Post Notification'}
                </button>
             </form>
@@ -639,7 +639,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
-                  <button type="submit" disabled={isSubmitting} style={{ width: '100%', background: '#ff6f3f', color: 'var(--text-primary)', border: 'none', padding: '18px', borderRadius: '16px', fontWeight: 800, fontSize: '1.1rem', cursor: 'pointer' }}>
+                  <button type="submit" disabled={isSubmitting} style={{ width: '100%', background: '#8B5CF6', color: 'var(--text-primary)', border: 'none', padding: '18px', borderRadius: '16px', fontWeight: 800, fontSize: '1.1rem', cursor: 'pointer' }}>
                     {isSubmitting ? <Loader2 className="spin" size={24} /> : (editingEvent ? 'Update Event' : 'Create Event')}
                   </button>
                 </div>
@@ -694,7 +694,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
-                  <button type="submit" disabled={isSubmitting} style={{ width: '100%', background: '#ff6f3f', color: 'var(--text-primary)', border: 'none', padding: '18px', borderRadius: '16px', fontWeight: 800, fontSize: '1.1rem', cursor: 'pointer' }}>
+                  <button type="submit" disabled={isSubmitting} style={{ width: '100%', background: '#8B5CF6', color: 'var(--text-primary)', border: 'none', padding: '18px', borderRadius: '16px', fontWeight: 800, fontSize: '1.1rem', cursor: 'pointer' }}>
                     {isSubmitting ? <Loader2 className="spin" size={24} /> : (editingClub ? 'Update Club' : 'Create Club')}
                   </button>
                 </div>
