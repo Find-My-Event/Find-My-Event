@@ -505,6 +505,37 @@ function OverviewTab() {
 // REGISTRATION TAB
 // -------------------------------------------------------------
 function RegistrationTab() {
+  const [capacity] = useState('100');
+  const [partType] = useState('Team');
+
+  const [tickets, setTickets] = useState([{ id: 1, category: 'General Pass', price: 'Free' }]);
+  const [isAddingTicket, setIsAddingTicket] = useState(false);
+  const [newTicket, setNewTicket] = useState({ category: '', price: '' });
+
+  const [personalInfo, setPersonalInfo] = useState([
+    { id: 1, name: 'Name', required: 'Required' },
+    { id: 2, name: 'Email', required: 'Required' },
+    { id: 3, name: 'Mobile Number', required: 'Optional' }
+  ]);
+  const [isAddingPersonal, setIsAddingPersonal] = useState(false);
+  const [newPersonalField, setNewPersonalField] = useState('');
+
+  const [eduInfo, setEduInfo] = useState([
+    { id: 1, name: 'Roll Number', required: 'Optional' },
+    { id: 2, name: 'Course', required: 'Optional' },
+    { id: 3, name: 'Branch', required: 'Optional' },
+    { id: 4, name: 'Year', required: 'Off' }
+  ]);
+  const [isAddingEdu, setIsAddingEdu] = useState(false);
+  const [newEduField, setNewEduField] = useState('');
+
+  const [customQuestions, setCustomQuestions] = useState([
+    { id: 1, question: 'Why do you want to join?', type: 'Text', required: 'Required' },
+    { id: 2, question: 'Do you need accommodation?', type: 'Checkbox', required: 'Optional' }
+  ]);
+  const [isAddingQuestion, setIsAddingQuestion] = useState(false);
+  const [newQuestion, setNewQuestion] = useState({ question: '', type: 'Text', required: 'Optional' });
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
        {/* Top Metrics */}
@@ -520,14 +551,14 @@ function RegistrationTab() {
              <div style={{ width: '40px', height: '40px', background: '#eff6ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={20} color="#3b82f6" /></div>
              <div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111' }}>Event Capacity</div>
-                <div style={{ fontSize: '0.8rem', color: '#666' }}>Unlimited</div>
+                <div style={{ fontSize: '0.8rem', color: '#666' }}>{capacity}</div>
              </div>
           </div>
           <div style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
              <div style={{ width: '40px', height: '40px', background: '#f3e8ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={20} color="#a855f7" /></div>
              <div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111' }}>Participation type</div>
-                <div style={{ fontSize: '0.8rem', color: '#666' }}>Individual / Team</div>
+                <div style={{ fontSize: '0.8rem', color: '#666' }}>{partType}</div>
              </div>
           </div>
        </div>
@@ -536,11 +567,30 @@ function RegistrationTab() {
        <div>
          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: '#111' }}>Tickets</h3>
-            <button style={{ background: '#eaeaea', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><Plus size={14}/> Add Ticket</button>
+            <button onClick={() => setIsAddingTicket(!isAddingTicket)} style={{ background: '#eaeaea', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><Plus size={14}/> Add Ticket</button>
          </div>
-         <div style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem 1.5rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontWeight: 600, color: '#111', fontSize: '0.95rem' }}>General Pass</div>
-            <div style={{ color: '#666', fontSize: '0.9rem' }}>Free</div>
+         
+         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {tickets.map(t => (
+               <div key={t.id} style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem 1.5rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 600, color: '#111', fontSize: '0.95rem' }}>{t.category}</div>
+                  <div style={{ color: '#666', fontSize: '0.9rem' }}>{t.price}</div>
+               </div>
+            ))}
+            
+            {isAddingTicket && (
+               <div style={{ background: '#fff', border: '1px dashed #ccc', padding: '1rem 1.5rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input type="text" placeholder="Category Name" value={newTicket.category} onChange={e => setNewTicket({...newTicket, category: e.target.value})} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }} />
+                  <input type="text" placeholder="Price (e.g. Free, $10)" value={newTicket.price} onChange={e => setNewTicket({...newTicket, price: e.target.value})} style={{ width: '150px', padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }} />
+                  <button onClick={() => {
+                     if(newTicket.category) {
+                        setTickets([...tickets, { id: Date.now(), ...newTicket }]);
+                        setNewTicket({ category: '', price: '' });
+                        setIsAddingTicket(false);
+                     }
+                  }} style={{ background: '#111', color: '#fff', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Save</button>
+               </div>
+            )}
          </div>
        </div>
 
@@ -553,47 +603,73 @@ function RegistrationTab() {
             
             {/* Personal Info */}
             <div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', fontWeight: 700, color: '#111', marginBottom: '1rem' }}>
-                 <User size={16} color="#ec4899" /> Personal Information
+               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', fontWeight: 700, color: '#111' }}>
+                    <User size={16} color="#ec4899" /> Personal Information
+                  </div>
+                  <button onClick={() => setIsAddingPersonal(!isAddingPersonal)} className="add-btn"><Plus size={14}/> Add Field</button>
                </div>
+               
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                  <div style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Name</span>
-                    <span style={{ fontSize: '0.8rem', color: '#888' }}>Full Name</span>
-                  </div>
-                  <div style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Email</span>
-                    <span style={{ fontSize: '0.8rem', color: '#888' }}>Required</span>
-                  </div>
-                  <div style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Mobile Number</span>
-                    <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#888' }}><option>Optional</option><option>Required</option><option>Off</option></select>
-                  </div>
+                  {personalInfo.map(info => (
+                     <div key={info.id} style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>{info.name}</span>
+                       <select value={info.required} onChange={e => setPersonalInfo(personalInfo.map(i => i.id === info.id ? {...i, required: e.target.value} : i))} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#888', cursor: 'pointer' }}>
+                          <option value="Required">Required</option>
+                          <option value="Optional">Optional</option>
+                          <option value="Off">Off</option>
+                       </select>
+                     </div>
+                  ))}
+                  
+                  {isAddingPersonal && (
+                     <div style={{ border: '1px dashed #ccc', padding: '12px', borderRadius: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input type="text" placeholder="Field name" value={newPersonalField} onChange={e => setNewPersonalField(e.target.value)} style={{ width: '100%', padding: '4px', border: 'none', outline: 'none', fontSize: '0.9rem' }} autoFocus />
+                        <button onClick={() => {
+                           if(newPersonalField) {
+                              setPersonalInfo([...personalInfo, { id: Date.now(), name: newPersonalField, required: 'Optional' }]);
+                              setNewPersonalField('');
+                              setIsAddingPersonal(false);
+                           }
+                        }} style={{ background: '#111', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Add</button>
+                     </div>
+                  )}
                </div>
             </div>
 
             {/* Educational Info */}
             <div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', fontWeight: 700, color: '#111', marginBottom: '1rem' }}>
-                 <CheckCircle size={16} color="#3b82f6" /> Educational Information
+               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', fontWeight: 700, color: '#111' }}>
+                    <CheckCircle size={16} color="#3b82f6" /> Educational Information
+                  </div>
+                  <button onClick={() => setIsAddingEdu(!isAddingEdu)} className="add-btn"><Plus size={14}/> Add Field</button>
                </div>
+               
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                  <div style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Roll Number</span>
-                    <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#888' }}><option>Optional</option><option>Required</option><option>Off</option></select>
-                  </div>
-                  <div style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Course</span>
-                    <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#888' }}><option>Optional</option><option>Required</option><option>Off</option></select>
-                  </div>
-                  <div style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Branch</span>
-                    <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#888' }}><option>Optional</option><option>Required</option><option>Off</option></select>
-                  </div>
-                  <div style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Year</span>
-                    <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#888' }}><option>Off</option><option>Required</option><option>Optional</option></select>
-                  </div>
+                  {eduInfo.map(info => (
+                     <div key={info.id} style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>{info.name}</span>
+                       <select value={info.required} onChange={e => setEduInfo(eduInfo.map(i => i.id === info.id ? {...i, required: e.target.value} : i))} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#888', cursor: 'pointer' }}>
+                          <option value="Required">Required</option>
+                          <option value="Optional">Optional</option>
+                          <option value="Off">Off</option>
+                       </select>
+                     </div>
+                  ))}
+                  
+                  {isAddingEdu && (
+                     <div style={{ border: '1px dashed #ccc', padding: '12px', borderRadius: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input type="text" placeholder="Field name" value={newEduField} onChange={e => setNewEduField(e.target.value)} style={{ width: '100%', padding: '4px', border: 'none', outline: 'none', fontSize: '0.9rem' }} autoFocus />
+                        <button onClick={() => {
+                           if(newEduField) {
+                              setEduInfo([...eduInfo, { id: Date.now(), name: newEduField, required: 'Optional' }]);
+                              setNewEduField('');
+                              setIsAddingEdu(false);
+                           }
+                        }} style={{ background: '#111', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Add</button>
+                     </div>
+                  )}
                </div>
             </div>
             
@@ -603,28 +679,51 @@ function RegistrationTab() {
                  <Edit2 size={16} color="#a855f7" /> Custom Questions
                </div>
                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ border: '1px solid #eaeaea', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        <LayoutGrid size={16} color="#888" />
-                        <div>
-                           <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Question</div>
-                           <div style={{ fontSize: '0.75rem', color: '#888' }}>Text</div>
+                  {customQuestions.map(q => (
+                     <div key={q.id} style={{ border: '1px solid #eaeaea', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                           <LayoutGrid size={16} color="#888" />
+                           <div>
+                              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>{q.question}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#888' }}>{q.type} | {q.required}</div>
+                           </div>
+                        </div>
+                        <Trash2 onClick={() => setCustomQuestions(customQuestions.filter(c => c.id !== q.id))} size={16} color="#888" style={{ cursor: 'pointer' }} />
+                     </div>
+                  ))}
+                  
+                  {isAddingQuestion && (
+                     <div style={{ border: '1px dashed #ccc', padding: '1rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <input type="text" placeholder="Type your question here" value={newQuestion.question} onChange={e => setNewQuestion({...newQuestion, question: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }} />
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                           <select value={newQuestion.type} onChange={e => setNewQuestion({...newQuestion, type: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ccc', flex: 1 }}>
+                              <option value="Text">Text</option>
+                              <option value="Checkbox">Checkbox</option>
+                              <option value="Dropdown">Dropdown</option>
+                              <option value="File Upload">File Upload</option>
+                           </select>
+                           <select value={newQuestion.required} onChange={e => setNewQuestion({...newQuestion, required: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ccc', flex: 1 }}>
+                              <option value="Required">Required</option>
+                              <option value="Optional">Optional</option>
+                           </select>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                           <button onClick={() => setIsAddingQuestion(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+                           <button onClick={() => {
+                              if(newQuestion.question) {
+                                 setCustomQuestions([...customQuestions, { id: Date.now(), ...newQuestion }]);
+                                 setNewQuestion({ question: '', type: 'Text', required: 'Optional' });
+                                 setIsAddingQuestion(false);
+                              }
+                           }} style={{ background: '#111', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Save Question</button>
                         </div>
                      </div>
-                     <Trash2 size={16} color="#888" style={{ cursor: 'pointer' }} />
-                  </div>
-                  <div style={{ border: '1px solid #eaeaea', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        <LayoutGrid size={16} color="#888" />
-                        <div>
-                           <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Question</div>
-                           <div style={{ fontSize: '0.75rem', color: '#888' }}>Checkbox | Required</div>
-                        </div>
-                     </div>
-                     <Trash2 size={16} color="#888" style={{ cursor: 'pointer' }} />
-                  </div>
+                  )}
                </div>
-               <button style={{ marginTop: '1rem', background: '#eaeaea', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><Plus size={14}/> Add Question</button>
+               
+               {!isAddingQuestion && (
+                  <button onClick={() => setIsAddingQuestion(true)} style={{ marginTop: '1rem', background: '#eaeaea', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><Plus size={14}/> Add Question</button>
+               )}
             </div>
 
          </div>
@@ -791,6 +890,27 @@ function AnnouncementTab() {
 // SETTINGS TAB
 // -------------------------------------------------------------
 function SettingsTab() {
+  const [visibility, setVisibility] = useState('Public');
+  const [regControl, setRegControl] = useState('Require Approval');
+
+  const [teamMembers, setTeamMembers] = useState([
+    { id: 1, name: 'Ninja Hatori', email: 'user@example.edu.in', phone: '98765-12345', role: 'Admin', color: '#ec4899' }
+  ]);
+  const [isAddingMember, setIsAddingMember] = useState(false);
+  const [newMember, setNewMember] = useState({ name: '', email: '', phone: '', role: 'Coordinator' });
+
+  const handleCancelEvent = () => {
+    if(window.confirm('Are you sure you want to cancel this event? This action cannot be undone.')) {
+      alert('Event Cancelled Successfully');
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    if(role === 'Admin') return '#ec4899';
+    if(role === 'Coordinator') return '#3b82f6';
+    return '#a855f7';
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
        {/* Visibility */}
@@ -800,8 +920,10 @@ function SettingsTab() {
          </div>
          <div style={{ border: '1px solid #eaeaea', padding: '12px 1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Visibility</span>
-            <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', color: '#888' }}>
-               <option>Public / Private / Unlisted</option>
+            <select value={visibility} onChange={e => setVisibility(e.target.value)} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', color: '#888', cursor: 'pointer' }}>
+               <option value="Public">Public</option>
+               <option value="Private">Private</option>
+               <option value="Unlisted">Unlisted</option>
             </select>
          </div>
        </div>
@@ -813,28 +935,44 @@ function SettingsTab() {
                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0 0 0.25rem 0', color: '#111' }}>Team Management</h3>
                <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>Invite your organizing team</p>
             </div>
-            <button style={{ background: '#eaeaea', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><Plus size={14}/> Add Team Member</button>
+            <button onClick={() => setIsAddingMember(!isAddingMember)} style={{ background: '#eaeaea', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><Plus size={14}/> Add Team Member</button>
          </div>
          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {[
-              { role: 'Admin', color: '#ec4899' },
-              { role: 'Coordinator', color: '#3b82f6' },
-              { role: 'Volunteer', color: '#a855f7' }
-            ].map((m, i) => (
-               <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', padding: '12px 1rem', borderRadius: '8px', border: '1px solid #eaeaea', flexWrap: 'wrap', gap: '1rem' }}>
+            {teamMembers.map((m) => (
+               <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', padding: '12px 1rem', borderRadius: '8px', border: '1px solid #eaeaea', flexWrap: 'wrap', gap: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '150px' }}>
-                     <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ninja" alt="" style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid #ccc' }} />
-                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Ninja Hatori</span>
+                     <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${m.name}`} alt="" style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid #ccc' }} />
+                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{m.name}</span>
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: '#666', minWidth: '150px' }}>user@example.edu.in</div>
-                  <div style={{ fontSize: '0.85rem', color: '#666' }}>98765-12345</div>
+                  <div style={{ fontSize: '0.85rem', color: '#666', minWidth: '150px' }}>{m.email}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#666' }}>{m.phone}</div>
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
                      <span style={{ fontWeight: 700, fontSize: '0.85rem', color: m.color }}>{m.role}</span>
-                     <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#888' }}>⋮</button>
+                     <button onClick={() => setTeamMembers(teamMembers.filter(t => t.id !== m.id))} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}><Trash2 size={16} /></button>
                   </div>
                </div>
             ))}
+            
+            {isAddingMember && (
+               <div style={{ background: '#fff', border: '1px dashed #ccc', padding: '1rem 1.5rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input type="text" placeholder="Name" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }} />
+                  <input type="email" placeholder="Email" value={newMember.email} onChange={e => setNewMember({...newMember, email: e.target.value})} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }} />
+                  <input type="text" placeholder="Phone" value={newMember.phone} onChange={e => setNewMember({...newMember, phone: e.target.value})} style={{ width: '120px', padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }} />
+                  <select value={newMember.role} onChange={e => setNewMember({...newMember, role: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }}>
+                     <option value="Admin">Admin</option>
+                     <option value="Coordinator">Coordinator</option>
+                     <option value="Volunteer">Volunteer</option>
+                  </select>
+                  <button onClick={() => {
+                     if(newMember.name) {
+                        setTeamMembers([...teamMembers, { id: Date.now(), ...newMember, color: getRoleColor(newMember.role) }]);
+                        setNewMember({ name: '', email: '', phone: '', role: 'Coordinator' });
+                        setIsAddingMember(false);
+                     }
+                  }} style={{ background: '#111', color: '#fff', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Invite</button>
+               </div>
+            )}
          </div>
        </div>
 
@@ -843,8 +981,9 @@ function SettingsTab() {
          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0 0 1rem 0', color: '#111' }}>Registration Control</h3>
          <div style={{ border: '1px solid #eaeaea', padding: '12px 1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Registration Control</span>
-            <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', color: '#888' }}>
-               <option>Require Approval / Auto Approve</option>
+            <select value={regControl} onChange={e => setRegControl(e.target.value)} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', color: '#888', cursor: 'pointer' }}>
+               <option value="Require Approval">Require Approval</option>
+               <option value="Auto Approve">Auto Approve</option>
             </select>
          </div>
        </div>
@@ -853,7 +992,7 @@ function SettingsTab() {
        <div>
          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0 0 0.25rem 0', color: '#111' }}>Cancel Event</h3>
          <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: '#666' }}>Delete this event permanently. All the registered participants will be informed.</p>
-         <button style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+         <button onClick={handleCancelEvent} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
            <Trash2 size={16} /> Cancel Event
          </button>
        </div>

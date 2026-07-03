@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, Calendar, Bell, Plus, Trash2, Edit2, 
   X, Loader2, TrendingUp, Shield, Check,
-  Image as ImageIcon, Eye, Info, AlertTriangle, CheckCircle 
+  Image as ImageIcon, Eye, Info, AlertTriangle, CheckCircle,
+  ChevronLeft, ChevronRight, LayoutGrid
 } from 'lucide-react';
 import api from '../api/axios';
 
@@ -12,6 +13,11 @@ type Tab = 'overview' | 'events' | 'clubs' | 'pending' | 'withdrawals' | 'users'
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [loading, setLoading] = useState(true);
+  
+  // New UI States
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [activeEventTab, setActiveEventTab] = useState<'admin' | 'clubs'>('clubs');
+  const [activeUserTab, setActiveUserTab] = useState<'users' | 'clubs'>('users');
   
   // Data States
   const [users, setUsers] = useState<any[]>([]);
@@ -272,21 +278,27 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="admin-layout" style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', display: 'flex' }}>
+    <div className="admin-layout" style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', display: 'flex', fontFamily: 'Inter, sans-serif' }}>
       {/* Sidebar */}
-      <div className="admin-sidebar" style={{ width: '280px', borderRight: '1px solid var(--border-subtle)', padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-          <div style={{ width: '40px', height: '40px', background: '#8B5CF6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <TrendingUp size={24} color='var(--text-primary)' />
+      <div className="admin-sidebar" style={{ 
+        width: isSidebarCollapsed ? '80px' : '280px', 
+        borderRight: '1px solid var(--border-subtle)', 
+        padding: isSidebarCollapsed ? '2rem 1rem' : '2rem 1.5rem', 
+        display: 'flex', flexDirection: 'column', gap: '2rem',
+        transition: 'all 0.3s ease',
+        position: 'relative'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start' }}>
+          <div style={{ width: '40px', height: '40px', background: '#8B5CF6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <TrendingUp size={24} color='#fff' />
           </div>
-          <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>Admin Portal</span>
+          {!isSidebarCollapsed && <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>Admin Portal</span>}
         </div>
 
-        <nav className="admin-nav" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <nav className="admin-nav" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
           {[
             { id: 'overview', label: 'Overview', icon: TrendingUp },
             { id: 'events', label: 'Manage Events', icon: Calendar },
-            { id: 'clubs', label: 'Manage Clubs', icon: Users },
             { id: 'pending', label: 'Pending Approvals', icon: Shield },
             { id: 'withdrawals', label: 'Withdraw Requests', icon: Trash2 },
             { id: 'users', label: 'Manage Users', icon: Users },
@@ -295,18 +307,32 @@ const AdminDashboard: React.FC = () => {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as Tab)}
+              title={isSidebarCollapsed ? item.label : ''}
               style={{
-                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '12px',
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '12px',
                 background: activeTab === item.id ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
                 color: activeTab === item.id ? '#8B5CF6' : 'var(--text-secondary)',
-                border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600, textAlign: 'left'
+                border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600, textAlign: 'left',
+                justifyContent: isSidebarCollapsed ? 'center' : 'flex-start'
               }}
             >
-              <item.icon size={20} />
-              {item.label}
+              <item.icon size={20} style={{ flexShrink: 0 }} />
+              {!isSidebarCollapsed && <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>}
             </button>
           ))}
         </nav>
+        
+        <button 
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          style={{
+            background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px',
+            borderRadius: '12px', transition: 'all 0.2s'
+          }}
+          title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        >
+           {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
       </div>
 
       {/* Main Content */}
@@ -316,18 +342,18 @@ const AdminDashboard: React.FC = () => {
             <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>{activeTab === 'pending' ? 'Pending Approvals' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
             <p style={{ opacity: 0.5 }}>Control and manage everything from here.</p>
           </div>
-          {activeTab === 'events' && (
+          {activeTab === 'events' && activeEventTab === 'admin' && (
             <button
               onClick={() => { setEditingEvent(null); setEventFormData({ title: '', description: '', organizer: '', date: '', venue: '', category: 'Tech', price: 'Free', seats: 'Limited', tag: '' }); setIsEventModalOpen(true); }}
-              style={{ background: '#8B5CF6', color: 'var(--text-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+              style={{ background: '#8B5CF6', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)' }}
             >
               <Plus size={20} /> Create Event
             </button>
           )}
-          {activeTab === 'clubs' && (
+          {activeTab === 'users' && activeUserTab === 'clubs' && (
             <button
               onClick={() => { setEditingClub(null); setClubFormData({ name: '', type: 'Club', description: '', aboutUs: '', tags: '' }); setIsClubModalOpen(true); }}
-              style={{ background: '#8B5CF6', color: 'var(--text-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+              style={{ background: '#8B5CF6', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)' }}
             >
               <Plus size={20} /> Create Club
             </button>
@@ -336,77 +362,85 @@ const AdminDashboard: React.FC = () => {
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
-            {[
-              { label: 'Total Users', value: stats.totalUsers, icon: Users, color: '#3b82f6' },
-              { label: 'Active Events', value: stats.totalEvents, icon: Calendar, color: '#8B5CF6' },
-              { label: 'Active Clubs', value: stats.totalClubs, icon: Users, color: '#a855f7' },
-              { label: 'Global Alerts', value: stats.activeNotifications, icon: Bell, color: '#facc15' },
-            ].map((stat, idx) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                style={{ background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', borderRadius: '24px', padding: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}
-              >
-                <div style={{ background: `${stat.color}15`, padding: '1rem', borderRadius: '16px', color: stat.color }}>
-                  <stat.icon size={28} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '2rem', fontWeight: 800 }}>{stat.value}</div>
-                  <div style={{ opacity: 0.5, fontSize: '0.9rem' }}>{stat.label}</div>
-                </div>
-              </motion.div>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
+              {[
+                { label: 'Total Users', value: stats.totalUsers, icon: Users, color: '#3b82f6', trend: '+12% this month' },
+                { label: 'Active Events', value: stats.totalEvents, icon: Calendar, color: '#8B5CF6', trend: '+5 new events' },
+                { label: 'Clubs & Orgs', value: stats.totalClubs, icon: LayoutGrid, color: '#ec4899', trend: 'Steady growth' },
+                { label: 'System Alerts', value: stats.activeNotifications, icon: Bell, color: '#facc15', trend: 'Requires attention' },
+                { label: 'Pending Approvals', value: pendingList.length || 0, icon: Shield, color: '#10b981', trend: 'In Queue' },
+                { label: 'System Health', value: '99.9%', icon: CheckCircle, color: '#14b8a6', trend: 'Optimal' },
+              ].map((stat, idx) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '24px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ background: `${stat.color}15`, padding: '12px', borderRadius: '16px', color: stat.color }}>
+                      <stat.icon size={24} />
+                    </div>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#888', background: '#f5f5f5', padding: '4px 8px', borderRadius: '8px' }}>
+                      {stat.trend}
+                    </span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#111' }}>{stat.value}</div>
+                    <div style={{ opacity: 0.6, fontSize: '0.95rem', fontWeight: 600, marginTop: '4px' }}>{stat.label}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Events Tab */}
         {activeTab === 'events' && (
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            {events.map((event) => (
-              <motion.div
-                key={event._id}
-                className="admin-item-row"
-                style={{ background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', borderRadius: '20px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '2rem' }}
-              >
-                <img src={event.image} alt="" style={{ width: '80px', height: '80px', borderRadius: '12px', objectFit: 'cover' }} />
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{event.title}</h3>
-                  <p style={{ opacity: 0.5, fontSize: '0.9rem' }}>{event.venue} • {event.date}</p>
-                </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button onClick={() => viewRegistrations(event)} style={{ background: 'var(--border-subtle)', border: 'none', color: 'var(--text-primary)', padding: '10px', borderRadius: '10px', cursor: 'pointer' }}><Eye size={18} /></button>
-                  <button onClick={() => { setEditingEvent(event); setEventFormData({ ...event }); setIsEventModalOpen(true); }} style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: '#3b82f6', padding: '10px', borderRadius: '10px', cursor: 'pointer' }}><Edit2 size={18} /></button>
-                  <button onClick={() => deleteEvent(event._id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '10px', borderRadius: '10px', cursor: 'pointer' }}><Trash2 size={18} /></button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+               <button 
+                 onClick={() => setActiveEventTab('clubs')}
+                 style={{ background: activeEventTab === 'clubs' ? '#111' : 'transparent', color: activeEventTab === 'clubs' ? '#fff' : '#666', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s' }}
+               >
+                 Club & Org Events
+               </button>
+               <button 
+                 onClick={() => setActiveEventTab('admin')}
+                 style={{ background: activeEventTab === 'admin' ? '#111' : 'transparent', color: activeEventTab === 'admin' ? '#fff' : '#666', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s' }}
+               >
+                 Admin Events
+               </button>
+            </div>
 
-        {/* Clubs Tab */}
-        {activeTab === 'clubs' && (
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            {clubs.length === 0 && <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center', border: '1px dashed var(--border-color)', borderRadius: 16 }}>No clubs found.</p>}
-            {clubs.map((club) => (
-              <motion.div
-                key={club._id}
-                className="admin-item-row"
-                style={{ background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', borderRadius: '20px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '2rem' }}
-              >
-                <img src={club.logo} alt="" style={{ width: '80px', height: '80px', borderRadius: '12px', objectFit: 'cover' }} />
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{club.name}</h3>
-                  <p style={{ opacity: 0.5, fontSize: '0.9rem' }}>{club.type} • {club.id}</p>
-                </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button onClick={() => { setEditingClub(club); setClubFormData({ name: club.name, type: club.type, description: club.description, aboutUs: club.aboutUs, tags: (club.tags || []).join(', ') }); setIsClubModalOpen(true); }} style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: '#3b82f6', padding: '10px', borderRadius: '10px', cursor: 'pointer' }}><Edit2 size={18} /></button>
-                  <button onClick={() => deleteClub(club._id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '10px', borderRadius: '10px', cursor: 'pointer' }}><Trash2 size={18} /></button>
-                </div>
-              </motion.div>
-            ))}
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              {events.filter(e => activeEventTab === 'admin' ? (e.organizer === 'Admin' || !e.organizerId) : (e.organizer !== 'Admin' && e.organizerId)).length === 0 && (
+                <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center', border: '1px dashed var(--border-color)', borderRadius: 16 }}>No events found for this category.</p>
+              )}
+              {events.filter(e => activeEventTab === 'admin' ? (e.organizer === 'Admin' || !e.organizerId) : (e.organizer !== 'Admin' && e.organizerId)).map((event) => (
+                <motion.div
+                  key={event._id}
+                  className="admin-item-row"
+                  style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '20px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '2rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}
+                >
+                  <img src={event.image} alt="" style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }} />
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#111' }}>{event.title}</h3>
+                    <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '4px' }}>{event.venue} • {new Date(event.date).toLocaleDateString()}</p>
+                    <span style={{ display: 'inline-block', marginTop: '8px', padding: '4px 10px', background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600 }}>
+                       By: {event.organizer}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button onClick={() => viewRegistrations(event)} style={{ background: '#f5f5f5', border: 'none', color: '#111', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Eye size={18} /></button>
+                    <button onClick={() => { setEditingEvent(event); setEventFormData({ ...event }); setIsEventModalOpen(true); }} style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: '#3b82f6', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Edit2 size={18} /></button>
+                    <button onClick={() => deleteEvent(event._id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Trash2 size={18} /></button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -507,41 +541,81 @@ const AdminDashboard: React.FC = () => {
 
         {/* Users Tab */}
         {activeTab === 'users' && (
-          <div style={{ background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', borderRadius: '24px', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ textAlign: 'left', background: 'var(--border-subtle)' }}>
-                  <th style={{ padding: '1.5rem' }}>User</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u._id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <td style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <img src={u.avatar || `https://ui-avatars.com/api/?name=${u.name}`} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%' }} />
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{u.name}</div>
-                        <div style={{ fontSize: '0.8rem', opacity: 0.5 }}>{u.email}</div>
-                      </div>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: '99px', background: u.role === 'admin' ? '#8B5CF633' : 'var(--border-subtle)', color: u.role === 'admin' ? '#8B5CF6' : 'inherit' }}>
-                        {u.role.toUpperCase()}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '0.75rem', color: u.isVerified ? '#34d399' : '#94a3b8' }}>
-                         {u.isVerified ? 'Verified' : 'Pending'}
-                      </span>
-                    </td>
-                    <td style={{ opacity: 0.5, fontSize: '0.9rem' }}>{new Date(u.createdAt).toLocaleDateString()}</td>
-                  </tr>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+               <button 
+                 onClick={() => setActiveUserTab('users')}
+                 style={{ background: activeUserTab === 'users' ? '#111' : 'transparent', color: activeUserTab === 'users' ? '#fff' : '#666', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s' }}
+               >
+                 Registered Users
+               </button>
+               <button 
+                 onClick={() => setActiveUserTab('clubs')}
+                 style={{ background: activeUserTab === 'clubs' ? '#111' : 'transparent', color: activeUserTab === 'clubs' ? '#fff' : '#666', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s' }}
+               >
+                 Clubs & Organizations
+               </button>
+            </div>
+
+            {activeUserTab === 'users' ? (
+              <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left', background: '#f9f9f9', borderBottom: '1px solid var(--border-subtle)' }}>
+                      <th style={{ padding: '1.5rem', color: '#111', fontWeight: 700 }}>User</th>
+                      <th style={{ color: '#111', fontWeight: 700 }}>Role</th>
+                      <th style={{ color: '#111', fontWeight: 700 }}>Status</th>
+                      <th style={{ color: '#111', fontWeight: 700 }}>Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u._id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                        <td style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <img src={u.avatar || `https://ui-avatars.com/api/?name=${u.name}`} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+                          <div>
+                            <div style={{ fontWeight: 700, color: '#111', fontSize: '0.95rem' }}>{u.name}</div>
+                            <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '2px' }}>{u.email}</div>
+                          </div>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '99px', background: u.role === 'admin' ? '#8B5CF622' : '#f1f5f9', color: u.role === 'admin' ? '#8B5CF6' : '#64748b', fontWeight: 700 }}>
+                            {u.role.toUpperCase()}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '0.75rem', color: u.isVerified ? '#10b981' : '#94a3b8', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                             {u.isVerified && <CheckCircle size={14} />} {u.isVerified ? 'Verified' : 'Pending'}
+                          </span>
+                        </td>
+                        <td style={{ color: '#666', fontSize: '0.9rem', fontWeight: 600 }}>{new Date(u.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                {clubs.length === 0 && <p style={{ color: '#888', padding: '3rem', textAlign: 'center', border: '1px dashed var(--border-subtle)', borderRadius: 16 }}>No clubs found.</p>}
+                {clubs.map((club) => (
+                  <motion.div
+                    key={club._id}
+                    className="admin-item-row"
+                    style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '20px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '2rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}
+                  >
+                    <img src={club.logo} alt="" style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }} />
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#111' }}>{club.name}</h3>
+                      <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '4px' }}>{club.type} • {club.id}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button onClick={() => { setEditingClub(club); setClubFormData({ name: club.name, type: club.type, description: club.description, aboutUs: club.aboutUs, tags: (club.tags || []).join(', ') }); setIsClubModalOpen(true); }} style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: '#3b82f6', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Edit2 size={18} /></button>
+                      <button onClick={() => deleteClub(club._id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Trash2 size={18} /></button>
+                    </div>
+                  </motion.div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
         )}
 
