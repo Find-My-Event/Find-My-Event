@@ -152,6 +152,33 @@ router.get('/events/:id/registrations', protect, admin, async (req, res) => {
   }
 });
 
+// @desc    Remove a registered user from an event (Admin only)
+// @route   DELETE /api/admin/events/:eventId/registrations/:userId
+router.delete('/events/:eventId/registrations/:userId', protect, admin, async (req, res) => {
+  try {
+    let event = await Event.findById(req.params.eventId);
+    if (!event) {
+      event = await EventSubmission.findById(req.params.eventId);
+    }
+    
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    
+    event.registeredUsers = event.registeredUsers.filter(
+      id => id.toString() !== req.params.userId
+    );
+    if (event.attendedUsers) {
+      event.attendedUsers = event.attendedUsers.filter(
+        id => id.toString() !== req.params.userId
+      );
+    }
+    await event.save();
+    
+    res.json({ message: 'User removed from event successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // @desc    Create a global notification (Admin only)
 // @route   POST /api/admin/notifications
 router.post('/notifications', protect, admin, async (req, res) => {

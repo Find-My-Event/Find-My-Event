@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Loader2, MapPin, QrCode } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2, MapPin, QrCode, X } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { api } from '../lib/api';
 
 export default function RegisteredEvents() {
   const [registeredEvents, setRegisteredEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
 
   useEffect(() => {
     fetchRegisteredEvents();
@@ -266,23 +268,24 @@ export default function RegisteredEvents() {
                           </div>
                         </div>
 
-                        <button style={{ 
-                          background: '#f3f4f6',
-                          color: '#111827',
-                          border: 'none',
-                          padding: '0.75rem 1.25rem',
-                          borderRadius: '10px',
-                          fontWeight: 600,
-                          fontSize: '0.9rem',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          cursor: 'pointer',
-                          width: 'fit-content',
-                          marginTop: 'auto'
-                        }}>
-                          My Ticket <QrCode size={16} />
-                        </button>
+                          <button 
+                            onClick={() => setSelectedTicket(ev)}
+                            style={{ 
+                            background: '#f3f4f6',
+                            color: '#111827',
+                            border: 'none',
+                            padding: '0.75rem 1.25rem',
+                            borderRadius: '10px',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            cursor: 'pointer',
+                            width: 'fit-content',
+                            marginTop: 'auto'
+                          }}>
+                            My Ticket <QrCode size={16} />
+                          </button>
                       </div>
 
                       {/* Card Image (Right) */}
@@ -307,6 +310,83 @@ export default function RegisteredEvents() {
           </div>
         )}
       </div>
+
+      {/* Ticket Modal */}
+      <AnimatePresence>
+        {selectedTicket && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+            onClick={() => setSelectedTicket(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: '#fff',
+                borderRadius: '24px',
+                padding: '2rem',
+                width: '100%',
+                maxWidth: '400px',
+                textAlign: 'center',
+                position: 'relative',
+                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)'
+              }}
+            >
+              <button 
+                onClick={() => setSelectedTicket(null)}
+                style={{ position: 'absolute', top: '1rem', right: '1rem', background: '#f3f4f6', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <X size={18} color="#4b5563" />
+              </button>
+
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#111', margin: '0 0 0.5rem 0' }}>Digital Ticket</h2>
+              <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '2rem' }}>{selectedTicket.title}</p>
+
+              <div style={{ 
+                background: '#f8f9fc', 
+                padding: '1.5rem', 
+                borderRadius: '16px', 
+                display: 'inline-block',
+                border: '1px solid #e5e7eb'
+              }}>
+                {selectedTicket.qrToken ? (
+                  <QRCodeSVG value={selectedTicket.qrToken} size={200} level="H" />
+                ) : (
+                  <div style={{ width: 200, height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+                    Generating...
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginTop: '2rem', textAlign: 'left', borderTop: '1px dashed #e5e7eb', paddingTop: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                  <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>Attendee</span>
+                  <span style={{ fontWeight: 600, color: '#111' }}>You</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>Ticket ID</span>
+                  <span style={{ fontWeight: 600, color: '#111' }}>#{selectedTicket._id?.substring(0, 8).toUpperCase()}</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }

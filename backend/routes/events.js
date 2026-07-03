@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+const QRCode = require('qrcode');
+const { transporter } = require('../utils/email');
 
 const Event = require('../models/Event');
 const EventSubmission = require('../models/EventSubmission');
@@ -7,6 +10,8 @@ const { protect } = require('../middleware/authMiddleware');
 const { softAuth, requireAuth, requireAdmin } = require('../middleware/auth');
 const { upload } = require('../config/cloudinary');
 const PaidEventDetail = require('../models/PaidEventDetail');
+const ScannerLink = require('../models/ScannerLink');
+const crypto = require('crypto');
 
 // === Event Submission Routes (HEAD) ===
 
@@ -265,19 +270,22 @@ router.get('/registered', requireAuth, async (req, res) => {
     // Normalize format and add pricing
     const mappedSubmissions = await Promise.all(submissions.map(async (s) => {
       const pricing = await PaidEventDetail.findOne({ event: s._id }).lean();
+      const qrToken = jwt.sign({ userId: req.user._id, eventId: s._id, model: 'EventSubmission' }, process.env.JWT_SECRET || 'secret');
       return {
         ...s,
         date: s.startDate,
         venue: s.location,
         image: s.imageUrl,
         category: s.category || 'Special',
-        pricing
+        pricing,
+        qrToken
       };
     }));
 
     const eventsWithPricing = await Promise.all(events.map(async (e) => {
       const pricing = await PaidEventDetail.findOne({ event: e._id }).lean();
-      return { ...e, pricing };
+      const qrToken = jwt.sign({ userId: req.user._id, eventId: e._id, model: 'Event' }, process.env.JWT_SECRET || 'secret');
+      return { ...e, pricing, qrToken };
     }));
 
     const combined = [...eventsWithPricing, ...mappedSubmissions].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -289,6 +297,109 @@ router.get('/registered', requireAuth, async (req, res) => {
 
 // @desc    Get single event
 // @route   GET /api/events/:id
+// @desc    Generate a Magic Scanner Link
+// @route   POST /api/events/generate-scanner-link
+router.post('/generate-scanner-link', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const token = crypto.randomBytes(16).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours validity
+
+    const newLink = await ScannerLink.create({
+      token,
+      createdBy: req.user._id,
+      expiresAt
+    });
+
+    res.json({ link: newLink });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @desc    Get all active Magic Links
+// @route   GET /api/events/scanner-links
+router.get('/scanner-links', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const links = await ScannerLink.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
+    res.json(links);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @desc    Revoke a Magic Link
+// @route   DELETE /api/events/scanner-link/:id
+router.delete('/scanner-link/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    await ScannerLink.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Link revoked successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @desc    Public route to scan via Magic Link
+// @route   POST /api/events/scan-public
+router.post('/scan-public', async (req, res) => {
+  const { qrToken, scannerToken, deviceId } = req.body;
+
+  if (!scannerToken || !deviceId) {
+    return res.status(400).json({ message: "Missing scanner token or device ID" });
+  }
+
+  // 1. Verify the Magic Link
+  const link = await ScannerLink.findOne({ token: scannerToken, isActive: true });
+  if (!link) {
+    return res.status(403).json({ message: "Invalid or revoked scanner link." });
+  }
+
+  if (new Date() > new Date(link.expiresAt)) {
+    return res.status(403).json({ message: "This scanner link has expired." });
+  }
+
+  // 2. Device Locking Logic
+  if (!link.lockedDeviceId) {
+    // First time opening, lock it to this device
+    link.lockedDeviceId = deviceId;
+    await link.save();
+  } else if (link.lockedDeviceId !== deviceId) {
+    // It's already locked to another device!
+    return res.status(403).json({ message: "Link active on another device." });
+  }
+
+  // 3. Verify the QR Code
+  let payload;
+  try {
+    payload = jwt.verify(qrToken, process.env.JWT_SECRET || 'secret');
+  } catch {
+    return res.status(400).json({ message: "Invalid QR Code." });
+  }
+
+  const Model = payload.model === 'EventSubmission' ? EventSubmission : Event;
+
+  // 4. Register Attendance
+  const event = await Model.findOneAndUpdate(
+    {
+      _id: payload.eventId,
+      registeredUsers: payload.userId,
+      attendedUsers: { $ne: payload.userId }
+    },
+    { $addToSet: { attendedUsers: payload.userId } },
+    { new: true }
+  );
+
+  if (!event) {
+    const existing = await Model.findById(payload.eventId);
+    if (!existing) return res.status(404).json({ message: "Event not found." });
+    if (!existing.registeredUsers.includes(payload.userId))
+      return res.status(403).json({ message: "User is not registered for this event." });
+    return res.status(409).json({ message: "Already Scanned! Entry Denied." });
+  }
+
+  res.json({ message: "Access Granted" });
+});
+
 router.get('/:id', softAuth, async (req, res) => {
   try {
     let eventModel = 'Event';
@@ -341,11 +452,111 @@ router.post('/:id/register', requireAuth, async (req, res) => {
     event.registeredUsers.push(req.user._id);
     await event.save();
 
+    // Generate QR Token and Image
+    const qrToken = jwt.sign({ 
+      userId: req.user._id, 
+      eventId: event._id, 
+      model: isSubmission ? 'EventSubmission' : 'Event' 
+    }, process.env.JWT_SECRET || 'secret');
+    
+    let qrDataUrl = '';
+    try {
+      qrDataUrl = await QRCode.toDataURL(qrToken, { width: 200, margin: 2 });
+    } catch (err) {
+      console.error('Error generating QR code:', err);
+    }
+
+    // Send Ticket Confirmation Email
+    if (req.user.email && qrDataUrl) {
+      try {
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; text-align: center; color: #333; max-width: 500px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 12px; overflow: hidden;">
+            <div style="background-color: #8B5CF6; color: white; padding: 20px;">
+              <h1 style="margin: 0; font-size: 24px;">Ticket Confirmed!</h1>
+              <p style="margin: 5px 0 0;">${event.title}</p>
+            </div>
+            <div style="padding: 30px;">
+              <p style="font-size: 16px; font-weight: bold;">Hello ${req.user.name || 'User'},</p>
+              <p>Your registration for <strong>${event.title}</strong> is successful.</p>
+              <p>Please present the digital ticket below at the entry gate.</p>
+              
+              <div style="background: #f8f9fc; padding: 20px; border-radius: 12px; display: inline-block; margin: 20px 0;">
+                <img src="cid:ticketqr" alt="Ticket QR Code" style="width: 200px; height: 200px; border-radius: 8px;" />
+              </div>
+
+              <div style="text-align: left; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 20px;">
+                <p><strong>Venue:</strong> ${event.venue || event.location}</p>
+                <p><strong>Date:</strong> ${event.date || event.startDate}</p>
+              </div>
+            </div>
+            <div style="background-color: #f3f4f6; padding: 15px; font-size: 12px; color: #6b7280;">
+              Powered by Eventum
+            </div>
+          </div>
+        `;
+
+        const base64Data = qrDataUrl.split(';base64,').pop();
+
+        await transporter.sendMail({
+          from: '"Eventum Tickets" <' + process.env.GMAIL_USER + '>',
+          to: req.user.email,
+          subject: 'Your Ticket: ' + event.title,
+          html: emailHtml,
+          attachments: [{
+            filename: 'ticket-qr.png',
+            content: base64Data,
+            encoding: 'base64',
+            cid: 'ticketqr'
+          }]
+        });
+      } catch (err) {
+        console.error('Error sending ticket email:', err);
+      }
+    }
+
     res.json({ message: 'Successfully registered for event', event });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
+// @desc    Scan QR Code for entry
+// @route   POST /api/events/scan
+router.post('/scan', requireAuth, async (req, res) => {
+  const { qrToken } = req.body;
+
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  let payload;
+  try {
+    payload = jwt.verify(qrToken, process.env.JWT_SECRET || 'secret');
+  } catch {
+    return res.status(400).json({ message: "Invalid QR" });
+  }
+
+  const Model = payload.model === 'EventSubmission' ? EventSubmission : Event;
+
+  const event = await Model.findOneAndUpdate(
+    {
+      _id: payload.eventId,
+      registeredUsers: payload.userId,
+      attendedUsers: { $ne: payload.userId }
+    },
+    { $addToSet: { attendedUsers: payload.userId } },
+    { new: true }
+  );
+
+  if (!event) {
+    const existing = await Model.findById(payload.eventId);
+    if (!existing) return res.status(404).json({ message: "Event not found" });
+    if (!existing.registeredUsers.includes(payload.userId))
+      return res.status(403).json({ message: "Not registered" });
+    return res.status(409).json({ message: "Already Scanned! Entry Denied" });
+  }
+
+  res.json({ message: "Access Granted" });
+});
 
 module.exports = router;

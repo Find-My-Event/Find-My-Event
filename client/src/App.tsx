@@ -40,6 +40,7 @@ import Favourites     from './pages/Favourites';
 import Gallery        from './pages/Gallery';
 import AdminDashboard from './pages/AdminDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
+import PublicScanner  from './pages/PublicScanner';
 
 /* ── Context ── */
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -167,6 +168,11 @@ function AppContent() {
       return null;
     }
 
+    if (currentRoute.startsWith('#scanner=')) {
+      const token = currentRoute.split('=')[1];
+      return <PublicScanner token={token} />;
+    }
+
     /* ── Logged-in home → Dashboard ── */
     if (isLoggedIn) return <Dashboard />;
 
@@ -205,7 +211,7 @@ function AppContent() {
   return (
     <div className="App">
       {/* Navbar (Hidden on specific full-page dashboards) */}
-      {!currentRoute.startsWith('#organizer-dashboard') && !currentRoute.startsWith('#edit-event') && currentRoute !== '#admin' && <Navbar />}
+      {!currentRoute.startsWith('#organizer-dashboard') && !currentRoute.startsWith('#edit-event') && !currentRoute.startsWith('#scanner=') && currentRoute !== '#admin' && <Navbar />}
 
       {/* Page content */}
       <main>

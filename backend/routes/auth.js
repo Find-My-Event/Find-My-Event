@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const { transporter } = require('../utils/email');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { requireAuth, syncAdminRole } = require('../middleware/auth');
@@ -24,15 +24,6 @@ function userResponse(user) {
     interests: user.interests || [],
   };
 }
-
-// Configure Nodemailer
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 

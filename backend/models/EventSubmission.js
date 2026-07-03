@@ -20,6 +20,10 @@ const eventSubmissionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     }],
+    attendedUsers: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }],
     withdrawalStatus: {
       type: String,
       enum: ['none', 'pending', 'approved'],
