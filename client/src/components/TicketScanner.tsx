@@ -17,7 +17,7 @@ export default function TicketScanner() {
     }, false);
 
     scanner.render(
-      async (result) => {
+      async (result: string) => {
         // Stop scanning temporarily
         scanner.clear();
         setScanning(true);
@@ -35,13 +35,13 @@ export default function TicketScanner() {
           setScanning(false);
         }
       },
-      (error) => {
+      () => {
         // Ignore continuous scan errors (usually just means no QR found yet)
       }
     );
 
     return () => {
-      scanner.clear().catch(error => {
+      scanner.clear().catch((error: any) => {
         console.error('Failed to clear scanner', error);
       });
     };

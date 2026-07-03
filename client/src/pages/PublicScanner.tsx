@@ -27,7 +27,7 @@ export default function PublicScanner({ token }: { token: string }) {
     }, false);
 
     scanner.render(
-      async (result) => {
+      async (result: string) => {
         scanner.clear();
         setScanning(true);
         setScanResult(null);
@@ -48,7 +48,7 @@ export default function PublicScanner({ token }: { token: string }) {
           setScanning(false);
         }
       },
-      (error) => {
+      () => {
         // Ignore continuous scan errors
       }
     );
