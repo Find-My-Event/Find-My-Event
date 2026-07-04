@@ -16,11 +16,31 @@ const eventSchema = new mongoose.Schema({
   },
   date: {
     type: String, // String to match existing frontend format (e.g. "Sat, Feb 14 • 4:45 am")
-    required: true
+    required: false
   },
   venue: {
     type: String,
-    required: true
+    required: false
+  },
+  startDate: {
+    type: String,
+    default: ''
+  },
+  endDate: {
+    type: String,
+    default: ''
+  },
+  mode: {
+    type: String,
+    default: ''
+  },
+  location: {
+    type: String,
+    default: ''
+  },
+  capacity: {
+    type: Number,
+    default: 0
   },
   image: {
     type: String, // Cloudinary URL
@@ -43,6 +63,62 @@ const eventSchema = new mongoose.Schema({
     enum: ['', 'Trending', 'Hot', 'New'],
     default: ''
   },
+  participantType: {
+    type: String,
+    enum: ['individual', 'team'],
+    default: 'individual'
+  },
+  teamMin: { type: Number, default: 1 },
+  teamMax: { type: Number, default: 4 },
+  eligibility: { type: String, default: '' },
+  timeline: [{
+    title: String,
+    desc: String,
+    startDate: String,
+    endDate: String
+  }],
+  rules: { type: String, default: '' },
+  contacts: [{
+    name: String,
+    email: String,
+    phone: String
+  }],
+  announcements: [{
+    title: String,
+    content: String,
+    date: { type: Date, default: Date.now }
+  }],
+  customQuestions: [{
+    question: String,
+    type: { type: String, enum: ['Text', 'Checkbox', 'Radio', 'Dropdown', 'File Upload'], default: 'Text' },
+    required: { type: String, enum: ['Required', 'Optional', 'Off'], default: 'Optional' }
+  }],
+  tickets: [{
+    category: String,
+    price: String
+  }],
+  prizes: [{
+    rewardType: String,
+    position: String,
+    amount: String
+  }],
+  visibility: { type: String, default: 'Public' },
+  registrationControl: { type: String, default: 'Require Approval' },
+  personalInfo: [{
+    name: String,
+    required: String
+  }],
+  eduInfo: [{
+    name: String,
+    required: String
+  }],
+  organizingTeam: [{
+    name: String,
+    email: String,
+    phone: String,
+    role: String,
+    color: String
+  }],
   registeredUsers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

@@ -24,8 +24,10 @@ interface AuthContextType {
   loading: boolean;
   register: (name: string, email: string, password: string) => Promise<any>;
   verifyOtp: (email: string, otp: string) => Promise<any>;
+  resendOtp: (email: string) => Promise<any>;
   handleLogin: (email: string, password: string) => Promise<any>;
   setupProfile: (profileData: any) => Promise<any>;
+  uploadAvatar: (file: File) => Promise<string>;
   updateProfile: (profileData: any) => Promise<any>;
   updateSettings: (payload: { notifyEmail?: boolean; publicProfile?: boolean }) => Promise<any>;
   refreshUser: () => Promise<void>;
@@ -92,6 +94,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return data;
   };
 
+  const resendOtp = async (email: string) => {
+    const { data } = await api.post('/auth/resend-otp', { email });
+    return data;
+  };
+
   const handleLogin = async (email: string, password: string) => {
     if (email === 'organizer@eventum.com' && password === 'organizer123') {
       const fakeUser: User = { id: 'mock_org', name: 'Mock Organizer', email: 'organizer@eventum.com', role: 'admin' };
@@ -116,6 +123,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data } = await api.post('/auth/setup-profile', { userId: user.id || (user as any)._id, ...profileData });
     setUser({ ...data.user, id: String(data.user.id) });
     return data;
+  };
+
+  const uploadAvatar = async (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const { data } = await api.post('/auth/upload-avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data.url;
   };
 
   const updateProfile = async (profileData: any) => {
@@ -158,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isLoggedIn = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, register, verifyOtp, handleLogin, setupProfile, updateProfile, updateSettings, refreshUser, logout, mockLogin, isLoggedIn }}>
+    <AuthContext.Provider value={{ user, token, loading, register, verifyOtp, resendOtp, handleLogin, setupProfile, uploadAvatar, updateProfile, updateSettings, refreshUser, logout, mockLogin, isLoggedIn }}>
       {children}
     </AuthContext.Provider>
   );

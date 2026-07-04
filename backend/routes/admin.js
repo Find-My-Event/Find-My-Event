@@ -24,7 +24,7 @@ router.get('/users', protect, admin, async (req, res) => {
 // @route   POST /api/admin/events
 router.post('/events', protect, admin, upload.single('image'), async (req, res) => {
   try {
-    const { title, description, organizer, date, venue, category, price, seats, tag } = req.body;
+    const { title, description, organizer, date, venue, category, price, seats, tag, startDate, endDate, mode, location, capacity } = req.body;
     
     if (!req.file) {
       return res.status(400).json({ message: 'Please upload an image for the event' });
@@ -36,6 +36,11 @@ router.post('/events', protect, admin, upload.single('image'), async (req, res) 
       organizer,
       date,
       venue,
+      startDate,
+      endDate,
+      mode,
+      location,
+      capacity: capacity ? Number(capacity) : 0,
       image: req.file.path,
       category,
       price,
@@ -80,15 +85,38 @@ router.put('/events/:id', protect, admin, upload.single('image'), async (req, re
 
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
-    const { title, description, organizer, date, venue, category, price, seats, tag } = req.body;
+    const { 
+      title, description, organizer, date, venue, category, price, seats, tag, startDate, endDate, mode, location, capacity,
+      participantType, teamMin, teamMax, eligibility, timeline, rules, contacts, announcements, customQuestions,
+      tickets, prizes, visibility, registrationControl, personalInfo, eduInfo, organizingTeam
+    } = req.body;
 
     event.title = title || event.title;
     event.description = description || event.description;
     
+    if (participantType !== undefined) event.participantType = participantType;
+    if (teamMin !== undefined) event.teamMin = teamMin;
+    if (teamMax !== undefined) event.teamMax = teamMax;
+    if (eligibility !== undefined) event.eligibility = eligibility;
+    if (timeline !== undefined) event.timeline = timeline;
+    if (rules !== undefined) event.rules = rules;
+    if (contacts !== undefined) event.contacts = contacts;
+    if (announcements !== undefined) event.announcements = announcements;
+    if (customQuestions !== undefined) event.customQuestions = customQuestions;
+    if (tickets !== undefined) event.tickets = tickets;
+    if (prizes !== undefined) event.prizes = prizes;
+    if (visibility !== undefined) event.visibility = visibility;
+    if (registrationControl !== undefined) event.registrationControl = registrationControl;
+    if (personalInfo !== undefined) event.personalInfo = personalInfo;
+    if (eduInfo !== undefined) event.eduInfo = eduInfo;
+    if (organizingTeam !== undefined) event.organizingTeam = organizingTeam;
+
     if (isSubmission) {
-      event.startDate = date || event.startDate;
-      event.location = venue || event.location;
-      event.capacity = seats ? Number(seats) : event.capacity;
+      event.startDate = startDate || date || event.startDate;
+      event.endDate = endDate || event.endDate;
+      event.mode = mode || event.mode;
+      event.location = location || venue || event.location;
+      event.capacity = capacity ? Number(capacity) : (seats ? Number(seats) : event.capacity);
       event.category = category || event.category;
       if (req.file) {
         event.imageUrl = req.file.path;
@@ -97,10 +125,15 @@ router.put('/events/:id', protect, admin, upload.single('image'), async (req, re
       event.organizer = organizer || event.organizer;
       event.date = date || event.date;
       event.venue = venue || event.venue;
+      event.startDate = startDate || event.startDate;
+      event.endDate = endDate || event.endDate;
+      event.mode = mode || event.mode;
+      event.location = location || event.location;
+      event.capacity = capacity ? Number(capacity) : event.capacity;
       event.category = category || event.category;
       event.price = price || event.price;
       event.seats = seats || event.seats;
-      event.tag = tag || event.tag;
+      event.tag = tag !== undefined ? tag : event.tag;
       if (req.file) {
         event.image = req.file.path;
       }
@@ -146,7 +179,16 @@ router.get('/events/:id/registrations', protect, admin, async (req, res) => {
     
     if (!event) return res.status(404).json({ message: 'Event not found' });
     
-    res.json(event.registeredUsers);
+    const attendedSet = new Set((event.attendedUsers || []).map(id => id.toString()));
+    const registrations = event.registeredUsers.filter(u => u).map((u) => ({
+      _id: u._id,
+      name: u.name,
+      email: u.email,
+      avatar: u.avatar,
+      checkedIn: attendedSet.has(u._id.toString())
+    }));
+    
+    res.json(registrations);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

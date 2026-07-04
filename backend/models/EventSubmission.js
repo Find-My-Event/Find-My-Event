@@ -20,6 +20,62 @@ const eventSubmissionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     }],
+    participantType: {
+      type: String,
+      enum: ['individual', 'team'],
+      default: 'individual'
+    },
+    teamMin: { type: Number, default: 1 },
+    teamMax: { type: Number, default: 4 },
+    eligibility: { type: String, default: '' },
+    timeline: [{
+      title: String,
+      desc: String,
+      startDate: String,
+      endDate: String
+    }],
+    rules: { type: String, default: '' },
+    contacts: [{
+      name: String,
+      email: String,
+      phone: String
+    }],
+    announcements: [{
+      title: String,
+      content: String,
+      date: { type: Date, default: Date.now }
+    }],
+    customQuestions: [{
+      question: String,
+      type: { type: String, enum: ['Text', 'Checkbox', 'Radio', 'Dropdown', 'File Upload'], default: 'Text' },
+      required: { type: String, enum: ['Required', 'Optional', 'Off'], default: 'Optional' }
+    }],
+    tickets: [{
+      category: String,
+      price: String
+    }],
+    prizes: [{
+      rewardType: String,
+      position: String,
+      amount: String
+    }],
+    visibility: { type: String, default: 'Public' },
+    registrationControl: { type: String, default: 'Require Approval' },
+    personalInfo: [{
+      name: String,
+      required: String
+    }],
+    eduInfo: [{
+      name: String,
+      required: String
+    }],
+    organizingTeam: [{
+      name: String,
+      email: String,
+      phone: String,
+      role: String,
+      color: String
+    }],
     attendedUsers: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Users, Edit, Loader2 } from 'lucide-react';
+import { MapPin, Users, Edit, Loader2, Trophy, Phone, FileText, ChevronRight, GraduationCap, ChevronUp, User } from 'lucide-react';
 import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
@@ -15,6 +15,7 @@ const EventDetail = ({ hash }: { hash?: string }) => {
   const [rawEvent, setRawEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showRegister, setShowRegister] = useState(false);
+  const [showRules, setShowRules] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -55,7 +56,11 @@ const EventDetail = ({ hash }: { hash?: string }) => {
           organizer: data.organizer?.name || data.organizer || 'Host',
           price: data.pricing?.isPaid ? `₹${data.pricing.ticketPrice}` : (data.price || 'Free'),
           seats: data.pricing?.ticketCapacity || data.capacity || data.seats || 'Limited',
-          isRegistered: data.isRegistered
+          isRegistered: data.isRegistered,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          mode: data.mode,
+          location: data.location
         });
       } catch (err) {
         console.error('Error fetching event details', err);
@@ -66,6 +71,7 @@ const EventDetail = ({ hash }: { hash?: string }) => {
     };
     fetchEvent();
   }, [eventId]);
+
 
   if (loading) {
     return (
@@ -119,64 +125,123 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                 grid-template-columns: 360px 1fr;
               }
             }
-            .prize-card {
-              background: linear-gradient(180deg, #fff 0%, #e2e8f0 100%);
-              border: 1px solid #cbd5e1;
+            .info-box {
+              background: #fff; border-radius: 12px; padding: 1.25rem; 
+              box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;
+              margin-bottom: 1.5rem;
             }
-            .prize-card.gold { background: linear-gradient(180deg, #fff 0%, #fef08a 100%); border-color: #fde047; }
-            .prize-card.bronze { background: linear-gradient(180deg, #fff 0%, #fed7aa 100%); border-color: #fdba74; }
+            .prize-card {
+              flex: 1; min-width: 150px;
+              border-radius: 16px; padding: 1.5rem; text-align: center;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+              border: 1px solid #e2e8f0;
+              background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+              display: flex; flex-direction: column; align-items: center; justify-content: center;
+              position: relative; overflow: hidden;
+            }
+            .prize-card.pos-1 { background: linear-gradient(180deg, #fff 0%, #fef08a 100%); border-color: #fde047; }
+            .prize-card.pos-2 { background: linear-gradient(180deg, #fff 0%, #e2e8f0 100%); border-color: #cbd5e1; }
+            .prize-card.pos-3 { background: linear-gradient(180deg, #fff 0%, #fed7aa 100%); border-color: #fdba74; }
+            
+            .timeline-container { position: relative; padding-left: 24px; }
+            .timeline-container::before {
+               content: ''; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px;
+               background: repeating-linear-gradient(to bottom, #cbd5e1 0, #cbd5e1 4px, transparent 4px, transparent 8px);
+            }
           `}</style>
 
           {/* LEFT COLUMN */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Event Poster */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ background: '#111', borderRadius: '16px', overflow: 'hidden', height: '420px', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}
+              style={{ background: '#111', borderRadius: '16px', overflow: 'hidden', height: '420px', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', marginBottom: '1.5rem' }}
             >
               <img src={currentEvent.img} alt={currentEvent.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </motion.div>
 
+            {/* Eligibility Card */}
+            <div className="info-box">
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a' }}>Eligibility</h3>
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: '1rem', listStyle: 'none', padding: 0, margin: 0 }}>
+                {rawEvent?.eligibility ? rawEvent.eligibility.split('\n').map((line: string, i: number) => (
+                   <li key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                     <div style={{ background: '#fdf2f8', color: '#db2777', padding: '0.4rem', borderRadius: '8px' }}>
+                       <GraduationCap size={16} />
+                     </div>
+                     <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4, alignSelf: 'center' }}>
+                       {line}
+                     </div>
+                   </li>
+                )) : (
+                  <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                    <div style={{ background: '#fdf2f8', color: '#db2777', padding: '0.4rem', borderRadius: '8px' }}>
+                      <GraduationCap size={16} />
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4, alignSelf: 'center' }}>
+                      Open to all students
+                    </div>
+                  </li>
+                )}
+                {(rawEvent?.teamMin || rawEvent?.teamMax) && (
+                   <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                     <div style={{ background: '#f3e8ff', color: '#9333ea', padding: '0.4rem', borderRadius: '8px' }}>
+                       <Users size={16} />
+                     </div>
+                     <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4, alignSelf: 'center' }}>
+                       Min {rawEvent.teamMin || 1} • Max {rawEvent.teamMax || 1} members per team
+                     </div>
+                   </li>
+                )}
+              </ul>
+            </div>
+
             {/* Organized by Card */}
-            <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+            <div className="info-box">
               <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>Organized by</h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1rem', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1rem', borderBottom: (rawEvent?.contacts && rawEvent.contacts.length > 0) ? '1px solid #f1f5f9' : 'none' }}>
                 <img src={`https://api.dicebear.com/7.x/shapes/svg?seed=${currentEvent.organizer}`} alt="Organizer" style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#111' }} />
                 <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>{currentEvent.organizer}</h4>
               </div>
+              {rawEvent?.contacts && rawEvent.contacts.length > 0 && (
+                <div style={{ paddingTop: '1rem' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, marginBottom: '0.5rem' }}>Contact details:</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ background: '#fdf2f8', padding: '4px', borderRadius: '4px' }}><User size={12} color="#db2777" /></div>
+                      <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 500 }}>Coordinator: {rawEvent.contacts[0].name}</span>
+                    </div>
+                    {rawEvent.contacts[0].phone && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ background: '#eff6ff', padding: '4px', borderRadius: '4px' }}><Phone size={12} color="#2563eb" /></div>
+                        <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 500 }}>{rawEvent.contacts[0].phone}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* More / Rules */}
+            <div style={{ marginTop: '0.5rem' }}>
+               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a' }}>More</h3>
+               <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
+                 <button onClick={() => setShowRules(!showRules)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                     <FileText size={16} color="#475569" />
+                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Rules and Regulations</span>
+                   </div>
+                   {showRules ? <ChevronUp size={16} color="#94a3b8" /> : <ChevronRight size={16} color="#94a3b8" />}
+                 </button>
+                 {showRules && (
+                   <div style={{ padding: '0 1rem 1rem 1rem', fontSize: '0.8rem', color: '#475569', lineHeight: 1.6, whiteSpace: 'pre-wrap', borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
+                     {rawEvent?.rules || 'No rules specified.'}
+                   </div>
+                 )}
+               </div>
             </div>
 
-            {/* Eligibility Card */}
-            <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a' }}>Event Details</h3>
-              <ul style={{ display: 'flex', flexDirection: 'column', gap: '1rem', listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  <div style={{ background: '#eff6ff', color: '#2563eb', padding: '0.4rem', borderRadius: '8px' }}>
-                    <Calendar size={16} />
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4 }}>
-                    {currentEvent.date}
-                  </div>
-                </li>
-                <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  <div style={{ background: '#fdf2f8', color: '#db2777', padding: '0.4rem', borderRadius: '8px' }}>
-                    <MapPin size={16} />
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4 }}>
-                    {currentEvent.venue}
-                  </div>
-                </li>
-                <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  <div style={{ background: '#f3e8ff', color: '#9333ea', padding: '0.4rem', borderRadius: '8px' }}>
-                    <Users size={16} />
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4, alignSelf: 'center' }}>
-                    Seats: {currentEvent.seats}
-                  </div>
-                </li>
-              </ul>
-            </div>
           </div>
 
           {/* RIGHT COLUMN */}
@@ -192,7 +257,7 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                   <Edit size={14} /> Edit Event
                 </button>
               )}
-              <span style={{ display: 'inline-block', background: '#f3e8ff', color: '#9333ea', border: '1px solid #d8b4fe', padding: '0.25rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem' }}>{currentEvent.category}</span>
+              <span style={{ display: 'inline-block', background: '#f3e8ff', color: '#a855f7', border: '1px solid #e9d5ff', padding: '0.25rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem' }}>{currentEvent.category}</span>
               <h1 style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1.1, color: '#0f172a', letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>
                 {currentEvent.title}
               </h1>
@@ -201,34 +266,75 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                 {/* Date & Time */}
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   <div style={{ background: '#fff', border: '1px solid #ec4899', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                    <div style={{ background: '#ec4899', width: '100%', textAlign: 'center', color: '#fff', fontSize: '0.5rem', fontWeight: 800, padding: '0.1rem 0' }}>DATE</div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#111', lineHeight: 1.2, marginTop: '1px' }}>📅</div>
+                    <div style={{ background: '#ec4899', width: '100%', textAlign: 'center', color: '#fff', fontSize: '0.5rem', fontWeight: 800, padding: '0.1rem 0' }}>{new Date(currentEvent.startDate || currentEvent.date).toLocaleString('en-US', { month: 'short' }).toUpperCase()}</div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#111', lineHeight: 1.2, marginTop: '1px' }}>{new Date(currentEvent.startDate || currentEvent.date).getDate() || '📅'}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e293b' }}>{currentEvent.date.split('•')[0]}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>{currentEvent.date.split('•')[1] || currentEvent.date}</div>
+                    {currentEvent.startDate ? (
+                      <>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>{new Date(currentEvent.startDate).toLocaleString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+                          {new Date(currentEvent.startDate).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit' })} 
+                          {currentEvent.endDate ? ` - ${new Date(currentEvent.endDate).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit' })}` : ''}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>{currentEvent.date?.split('•')[0] || currentEvent.date?.split(' - ')[0] || currentEvent.date}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>{currentEvent.date?.split('•')[1] || currentEvent.date?.split(' - ')[1] || ''}</div>
+                      </>
+                    )}
                   </div>
                 </div>
 
                 {/* Location */}
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ background: '#e0f2fe', color: '#3b82f6', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <MapPin size={18} />
+                  <div style={{ background: '#eff6ff', color: '#3b82f6', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <MapPin size={20} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e293b' }}>{currentEvent.venue.split(',')[0]}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>{currentEvent.venue.split(',')[1] || currentEvent.venue}</div>
+                    {currentEvent.location ? (
+                      <>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>{currentEvent.location?.split(',')[0] || currentEvent.location}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+                          {currentEvent.location?.split(',').slice(1).join(',').trim() || currentEvent.mode}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>{currentEvent.venue?.split(',')[0] || currentEvent.venue?.split(' | ')[1] || currentEvent.venue}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>{currentEvent.venue?.split(',')[1] || currentEvent.venue?.split(' | ')[0] || ''}</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Team Size */}
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ background: '#f3e8ff', color: '#a855f7', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Users size={20} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>Team Size</div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+                      {rawEvent?.teamMin && rawEvent?.teamMax ? `${rawEvent.teamMin} - ${rawEvent.teamMax} Members / ${rawEvent.participantType === 'individual' ? 'Individual' : 'Team'}` : '1 - 4 Members / Individual'}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Registration Card */}
-            <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '1.25rem 1.5rem', marginBottom: '2.5rem', border: '1px solid #f1f5f9' }}>
+            <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '1.5rem', marginBottom: '2.5rem', border: '1px solid #f1f5f9' }}>
+              <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, marginBottom: '1rem' }}>
+                Registration closes on {new Date(currentEvent.startDate || currentEvent.date).toLocaleString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })}
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500, marginBottom: '0.1rem' }}>Ticket Price</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#111' }}>{currentEvent.price}</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#111' }}>
+                    {rawEvent?.tickets && rawEvent.tickets.length > 0 ? rawEvent.tickets[0].price : currentEvent.price}
+                  </div>
                 </div>
                 <button 
                   onClick={() => {
@@ -238,13 +344,13 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                     }
                     if (!currentEvent.isRegistered) setShowRegister(true);
                   }}
-                  style={{ background: currentEvent.isRegistered ? '#10b981' : '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.75rem 2rem', fontSize: '0.9rem', fontWeight: 700, cursor: currentEvent.isRegistered ? 'default' : 'pointer', transition: 'background 0.2s' }}
+                  style={{ background: currentEvent.isRegistered ? '#10b981' : '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.75rem 2.5rem', fontSize: '0.9rem', fontWeight: 700, cursor: currentEvent.isRegistered ? 'default' : 'pointer', transition: 'background 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
                 >
                   {currentEvent.isRegistered ? 'Registered' : 'Register Now'}
                 </button>
               </div>
               <div style={{ textAlign: 'center', fontSize: '0.7rem', color: '#94a3b8', marginTop: '1.25rem' }}>
-                Limited slots available. Register now to confirm your spot!
+                Limited slots available, Register now to confirm your spot!
               </div>
             </div>
 
@@ -255,6 +361,61 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                 {currentEvent.description}
               </p>
             </div>
+
+            {/* Stages & Timeline */}
+            {(rawEvent?.timeline && rawEvent.timeline.length > 0) && (
+              <div style={{ marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: '#0f172a' }}>Stages & Timeline</h2>
+                <div className="timeline-container">
+                   {rawEvent.timeline.map((item: any, i: number) => (
+                     <div key={i} style={{ display: 'flex', gap: '1.25rem', position: 'relative', marginBottom: i === rawEvent.timeline.length - 1 ? 0 : '2rem' }}>
+                        <div style={{ background: '#fff', border: i % 2 === 0 ? '1px solid #ec4899' : '1px solid #3b82f6', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'absolute', left: '-33.5px', top: 0, zIndex: 2 }}>
+                          <div style={{ background: i % 2 === 0 ? '#ec4899' : '#3b82f6', width: '100%', textAlign: 'center', color: '#fff', fontSize: '0.5rem', fontWeight: 800, padding: '0.1rem 0' }}>
+                            {new Date(item.startDate?.split(',')[0] || item.date).toLocaleString('en-US', { month: 'short' }).toUpperCase()}
+                          </div>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#111', lineHeight: 1.2, marginTop: '1px' }}>
+                            {new Date(item.startDate?.split(',')[0] || item.date).getDate() || item.date?.split(' ')[0]}
+                          </div>
+                        </div>
+                        <div style={{ marginLeft: '1.5rem', flex: 1, background: '#fff', border: '1px solid #f1f5f9', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                           <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                             {item.startDate} <span style={{ color: '#94a3b8' }}>→</span> {item.endDate}
+                           </div>
+                           <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.5rem' }}>{item.title}</h4>
+                           <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5, margin: 0 }}>{item.desc}</p>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Prizes and Rewards */}
+            {(rawEvent?.prizes && rawEvent.prizes.length > 0) && (
+              <div style={{ marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: '#0f172a' }}>Prize and Rewards</h2>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  {rawEvent.prizes.slice(0, 3).map((prize: any, i: number) => {
+                     const isFirst = prize.position?.includes('1');
+                     const isSecond = prize.position?.includes('2');
+                     const colorClass = isFirst ? 'pos-1' : (isSecond ? 'pos-2' : 'pos-3');
+                     const iconColor = isFirst ? '#eab308' : (isSecond ? '#94a3b8' : '#d97706');
+                     return (
+                        <div key={i} className={`prize-card ${colorClass}`}>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.25rem' }}>{prize.amount || prize.rewardType}</div>
+                          <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500, marginBottom: '1rem' }}>with Certificate</div>
+                          <div style={{ marginTop: 'auto', marginBottom: '0.5rem' }}>
+                            <Trophy size={48} color={iconColor} strokeWidth={1.5} />
+                          </div>
+                        </div>
+                     )
+                  })}
+                </div>
+                <div style={{ marginTop: '1rem', fontSize: '0.8rem', fontWeight: 600, color: '#0f172a' }}>
+                  Certificates will be given to all the participants.
+                </div>
+              </div>
+            )}
 
           </div>
         </div>

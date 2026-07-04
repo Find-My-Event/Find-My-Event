@@ -12,6 +12,7 @@ const { upload } = require('../config/cloudinary');
 const PaidEventDetail = require('../models/PaidEventDetail');
 const ScannerLink = require('../models/ScannerLink');
 const crypto = require('crypto');
+const PaidRegistration = require('../models/PaidRegistration');
 
 // === Event Submission Routes (HEAD) ===
 
@@ -73,7 +74,7 @@ router.get('/submission/:id', requireAuth, async (req, res) => {
   }
 });
 
-router.put('/submission/:id', requireAuth, async (req, res) => {
+router.put('/submission/:id', requireAuth, upload.single('image'), async (req, res) => {
   try {
     const s = await EventSubmission.findById(req.params.id);
     if (!s) return res.status(404).json({ message: 'Not found' });
@@ -84,7 +85,11 @@ router.put('/submission/:id', requireAuth, async (req, res) => {
       return res.status(403).json({ message: 'Forbidden: You can only edit your own events' });
     }
 
-    const { title, description, startDate, endDate, mode, location, capacity, imageUrl } = req.body;
+    const { 
+      title, description, startDate, endDate, mode, location, capacity, imageUrl,
+      participantType, teamMin, teamMax, eligibility, timeline, rules, contacts, announcements, customQuestions,
+      tickets, prizes, visibility, registrationControl, personalInfo, eduInfo, organizingTeam
+    } = req.body;
     
     s.title = title || s.title;
     s.description = description || s.description;
@@ -93,7 +98,29 @@ router.put('/submission/:id', requireAuth, async (req, res) => {
     s.mode = mode || s.mode;
     s.location = location || s.location;
     s.capacity = capacity !== undefined ? Number(capacity) : s.capacity;
-    s.imageUrl = imageUrl ?? s.imageUrl;
+    
+    if (req.file) {
+      s.imageUrl = req.file.path;
+    } else {
+      s.imageUrl = imageUrl ?? s.imageUrl;
+    }
+
+    if (participantType !== undefined) s.participantType = participantType;
+    if (teamMin !== undefined) s.teamMin = teamMin;
+    if (teamMax !== undefined) s.teamMax = teamMax;
+    if (eligibility !== undefined) s.eligibility = eligibility;
+    if (timeline !== undefined) s.timeline = timeline;
+    if (rules !== undefined) s.rules = rules;
+    if (contacts !== undefined) s.contacts = contacts;
+    if (announcements !== undefined) s.announcements = announcements;
+    if (customQuestions !== undefined) s.customQuestions = customQuestions;
+    if (tickets !== undefined) s.tickets = tickets;
+    if (prizes !== undefined) s.prizes = prizes;
+    if (visibility !== undefined) s.visibility = visibility;
+    if (registrationControl !== undefined) s.registrationControl = registrationControl;
+    if (personalInfo !== undefined) s.personalInfo = personalInfo;
+    if (eduInfo !== undefined) s.eduInfo = eduInfo;
+    if (organizingTeam !== undefined) s.organizingTeam = organizingTeam;
 
     await s.save();
     res.json({ submission: s });
@@ -428,6 +455,65 @@ router.get('/:id', softAuth, async (req, res) => {
   }
 });
 
+// @desc    Get all participants for an event
+// @route   GET /api/events/:id/participants
+router.get('/:id/participants', requireAuth, async (req, res) => {
+  try {
+    let event = await Event.findById(req.params.id).populate('registeredUsers', 'name email phone avatar');
+    if (!event) {
+      event = await EventSubmission.findById(req.params.id).populate('registeredUsers', 'name email phone avatar');
+    }
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    
+    // Also fetch paid registrations
+    const paidRegistrations = await PaidRegistration.find({ event: event._id }).populate('user', 'name email phone avatar').lean();
+    
+    // Combine them
+    const allParticipants = [];
+    const attendedSet = new Set((event.attendedUsers || []).map(id => id.toString()));
+    
+    if (event.registeredUsers) {
+      event.registeredUsers.forEach(u => {
+        if (!u) return;
+        allParticipants.push({
+          id: u._id,
+          name: u.name,
+          email: u.email,
+          phone: u.phone,
+          avatar: u.avatar,
+          type: 'Free',
+          status: 'Registered',
+          checkedIn: attendedSet.has(u._id.toString())
+        });
+      });
+    }
+
+    if (paidRegistrations) {
+      paidRegistrations.forEach(r => {
+        if (!r.user) return;
+        // Avoid duplicates if they are somehow in both (shouldn't happen, but just in case)
+        if (!allParticipants.find(p => p.id.toString() === r.user._id.toString())) {
+          allParticipants.push({
+            id: r.user._id,
+            name: r.user.name,
+            email: r.user.email,
+            phone: r.user.phone,
+            avatar: r.user.avatar,
+            type: 'Paid',
+            status: r.paymentStatus,
+            answers: r.customAnswers,
+            checkedIn: attendedSet.has(r.user._id.toString())
+          });
+        }
+      });
+    }
+
+    res.json(allParticipants);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // @desc    Register for an event
 // @route   POST /api/events/:id/register
 router.post('/:id/register', requireAuth, async (req, res) => {
@@ -498,7 +584,7 @@ router.post('/:id/register', requireAuth, async (req, res) => {
         const base64Data = qrDataUrl.split(';base64,').pop();
 
         await transporter.sendMail({
-          from: '"Eventum Tickets" <' + process.env.GMAIL_USER + '>',
+          from: '"Eventum" <' + process.env.GMAIL_USER + '>',
           to: req.user.email,
           subject: 'Your Ticket: ' + event.title,
           html: emailHtml,

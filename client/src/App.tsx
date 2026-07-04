@@ -39,6 +39,7 @@ import RegisteredEvents from './pages/RegisteredEvents';
 import Favourites     from './pages/Favourites';
 import Gallery        from './pages/Gallery';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminCreateEvent from './pages/AdminCreateEvent';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import PublicScanner  from './pages/PublicScanner';
 
@@ -167,6 +168,19 @@ function AppContent() {
       window.location.hash = '';
       return null;
     }
+    if (currentRoute === '#admin-create-event') {
+      if (isLoggedIn && user?.role === 'admin') return <AdminCreateEvent />;
+      window.location.hash = '';
+      return null;
+    }
+    if (currentRoute.startsWith('#admin-edit-event=')) {
+      if (isLoggedIn && user?.role === 'admin') {
+        const id = currentRoute.split('=')[1];
+        return <AdminCreateEvent eventId={id} />;
+      }
+      window.location.hash = '';
+      return null;
+    }
 
     if (currentRoute.startsWith('#scanner=')) {
       const token = currentRoute.split('=')[1];
@@ -211,7 +225,7 @@ function AppContent() {
   return (
     <div className="App">
       {/* Navbar (Hidden on specific full-page dashboards) */}
-      {!currentRoute.startsWith('#organizer-dashboard') && !currentRoute.startsWith('#edit-event') && !currentRoute.startsWith('#scanner=') && currentRoute !== '#admin' && <Navbar />}
+      {!currentRoute.startsWith('#organizer-dashboard') && !currentRoute.startsWith('#admin-create-event') && !currentRoute.startsWith('#admin-edit-event') && !currentRoute.startsWith('#edit-event') && !currentRoute.startsWith('#scanner=') && currentRoute !== '#admin' && <Navbar />}
 
       {/* Page content */}
       <main>

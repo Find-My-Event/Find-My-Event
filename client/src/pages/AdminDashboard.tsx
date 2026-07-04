@@ -17,12 +17,26 @@ const toast = {
 type Tab = 'overview' | 'events' | 'clubs' | 'pending' | 'withdrawals' | 'users' | 'notifications' | 'scan';
 
 const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    return (localStorage.getItem('adminActiveTab') as Tab) || 'overview';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('adminActiveTab', activeTab);
+  }, [activeTab]);
+
   const [loading, setLoading] = useState(true);
   
   // New UI States
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeEventTab, setActiveEventTab] = useState<'admin' | 'clubs'>('clubs');
+  const [activeEventTab, setActiveEventTab] = useState<'admin' | 'clubs'>(() => {
+    return (localStorage.getItem('adminActiveEventTab') as 'admin' | 'clubs') || 'admin';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('adminActiveEventTab', activeEventTab);
+  }, [activeEventTab]);
+
   const [activeUserTab, setActiveUserTab] = useState<'users' | 'clubs'>('users');
   
   // Data States
@@ -35,14 +49,6 @@ const AdminDashboard: React.FC = () => {
   const [generatingLink, setGeneratingLink] = useState(false);
   const [activeLinks, setActiveLinks] = useState<any[]>([]);
 
-  // Event Form State
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<any>(null);
-  const [eventFormData, setEventFormData] = useState({
-    title: '', description: '', organizer: '', date: '', venue: '', 
-    category: 'Tech', price: 'Free', seats: 'Limited', tag: ''
-  });
-  const [eventImage, setEventImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Club Form State
@@ -74,6 +80,21 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  useEffect(() => {
+    let interval: any;
+    if (selectedEventForReg) {
+      interval = setInterval(async () => {
+        try {
+          const res = await api.get(`/admin/events/${selectedEventForReg._id}/registrations`);
+          setRegistrations(res.data);
+        } catch (e) {
+          // ignore
+        }
+      }, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [selectedEventForReg]);
 
   useEffect(() => {
     if (activeTab === 'pending') {
@@ -191,32 +212,6 @@ const AdminDashboard: React.FC = () => {
       setActing(null);
     }
   };
-
-  const handleEventSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    const formData = new FormData();
-    Object.entries(eventFormData).forEach(([key, value]) => formData.append(key, value));
-    if (eventImage) formData.append('image', eventImage);
-
-    try {
-      if (editingEvent) {
-        await api.put(`/admin/events/${editingEvent._id}`, formData);
-      } else {
-        await api.post('/admin/events', formData);
-      }
-      setIsEventModalOpen(false);
-      setEditingEvent(null);
-      setEventFormData({ title: '', description: '', organizer: '', date: '', venue: '', category: 'Tech', price: 'Free', seats: 'Limited', tag: '' });
-      setEventImage(null);
-      fetchInitialData();
-    } catch (err) {
-      console.error('Event submission failed:', err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const deleteEvent = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this event?')) return;
     try {
@@ -378,7 +373,7 @@ const AdminDashboard: React.FC = () => {
           </div>
           {activeTab === 'events' && activeEventTab === 'admin' && (
             <button
-              onClick={() => { setEditingEvent(null); setEventFormData({ title: '', description: '', organizer: '', date: '', venue: '', category: 'Tech', price: 'Free', seats: 'Limited', tag: '' }); setIsEventModalOpen(true); }}
+              onClick={() => { window.location.hash = '#admin-create-event'; }}
               style={{ background: '#8B5CF6', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)' }}
             >
               <Plus size={20} /> Create Event
@@ -467,10 +462,11 @@ const AdminDashboard: React.FC = () => {
                        By: {event.organizer}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button onClick={() => viewRegistrations(event)} style={{ background: '#f5f5f5', border: 'none', color: '#111', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Eye size={18} /></button>
-                    <button onClick={() => { setEditingEvent(event); setEventFormData({ ...event }); setIsEventModalOpen(true); }} style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: '#3b82f6', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Edit2 size={18} /></button>
-                    <button onClick={() => deleteEvent(event._id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Trash2 size={18} /></button>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <button onClick={() => { window.location.hash = `#edit-event?id=${event._id || event.id}`; }} style={{ background: '#111', border: 'none', color: '#fff', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600, fontSize: '0.85rem' }}>Manage</button>
+                    <button onClick={() => viewRegistrations(event)} style={{ background: '#f5f5f5', border: 'none', color: '#111', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }} title="View Registrations"><Eye size={18} /></button>
+                    <button onClick={() => { window.location.hash = `#admin-edit-event=${event._id || event.id}`; }} style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: '#3b82f6', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }} title="Edit Event Details"><Edit2 size={18} /></button>
+                    <button onClick={() => deleteEvent(event._id || event.id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }} title="Delete Event"><Trash2 size={18} /></button>
                   </div>
                 </motion.div>
               ))}
@@ -803,64 +799,7 @@ const AdminDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Create/Edit Event Modal */}
-      <AnimatePresence>
-        {isEventModalOpen && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '800px', borderRadius: '24px', border: '1px solid var(--border-color)', padding: '2.5rem', maxHeight: '90vh', overflowY: 'auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>{editingEvent ? 'Edit Event' : 'Create New Event'}</h2>
-                <button onClick={() => setIsEventModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}><X size={32} /></button>
-              </div>
-
-              <form className="admin-form-grid" onSubmit={handleEventSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Event Title</label>
-                  <input required placeholder="E.g. National Hackathon" value={eventFormData.title} onChange={e => setEventFormData({...eventFormData, title: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Description</label>
-                  <textarea required placeholder="Detail about the event..." value={eventFormData.description} onChange={e => setEventFormData({...eventFormData, description: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', minHeight: '120px' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Organizer</label>
-                  <input required placeholder="Club/College Name" value={eventFormData.organizer} onChange={e => setEventFormData({...eventFormData, organizer: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Category</label>
-                  <select value={eventFormData.category} onChange={e => setEventFormData({...eventFormData, category: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }}>
-                    {['Tech', 'Music', 'Gaming', 'Dance', 'Culture', 'Academics', 'Workshops'].map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Date & Time String</label>
-                  <input required placeholder="E.g. Oct 12, 10:00 AM" value={eventFormData.date} onChange={e => setEventFormData({...eventFormData, date: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Venue</label>
-                  <input required placeholder="Location" value={eventFormData.venue} onChange={e => setEventFormData({...eventFormData, venue: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Event Poster (Cloudinary)</label>
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                     <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '14px', background: 'var(--border-subtle)', border: '2px dashed var(--border-color)', borderRadius: '12px', cursor: 'pointer' }}>
-                        <ImageIcon size={20} />
-                        <span>{eventImage ? eventImage.name : 'Click to upload image'}</span>
-                        <input type="file" hidden accept="image/*" onChange={e => setEventImage(e.target.files ? e.target.files[0] : null)} />
-                     </label>
-                     {editingEvent?.image && !eventImage && <img src={editingEvent.image} style={{ width: '54px', height: '54px', borderRadius: '8px' }} />}
-                  </div>
-                </div>
-                <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
-                  <button type="submit" disabled={isSubmitting} style={{ width: '100%', background: '#8B5CF6', color: 'var(--text-primary)', border: 'none', padding: '18px', borderRadius: '16px', fontWeight: 800, fontSize: '1.1rem', cursor: 'pointer' }}>
-                    {isSubmitting ? <Loader2 className="spin" size={24} /> : (editingEvent ? 'Update Event' : 'Create Event')}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      
 
       {/* Create/Edit Club Modal */}
       <AnimatePresence>
@@ -935,9 +874,14 @@ const AdminDashboard: React.FC = () => {
                   {registrations.length === 0 ? <p style={{ textAlign: 'center', opacity: 0.5 }}>No one has registered yet.</p> : registrations.map(reg => (
                     <div key={reg._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--border-subtle)', padding: '1rem', borderRadius: '12px' }}>
                        <img src={reg.avatar || `https://ui-avatars.com/api/?name=${reg.name}`} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
-                       <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600 }}>{reg.name}</div>
-                          <div style={{ fontSize: '0.8rem', opacity: 0.5 }}>{reg.email}</div>
+                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <div>
+                            <div style={{ fontWeight: 600 }}>{reg.name}</div>
+                            <div style={{ fontSize: '0.8rem', opacity: 0.5 }}>{reg.email}</div>
+                          </div>
+                          <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', background: reg.checkedIn ? '#dcfce7' : '#f1f5f9', color: reg.checkedIn ? '#166534' : '#475569', fontWeight: 600 }}>
+                            {reg.checkedIn ? 'Checked In' : 'Pending'}
+                          </span>
                        </div>
                        <button onClick={() => removeUserFromEvent(reg._id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '8px', borderRadius: '8px', cursor: 'pointer' }} title="Remove User">
                          <Trash2 size={16} />
@@ -976,6 +920,8 @@ const AdminDashboard: React.FC = () => {
           .admin-header h1 { font-size: 1.5rem !important; }
           .admin-item-row { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
           .admin-form-grid { grid-template-columns: 1fr !important; }
+          .admin-event-grid { grid-template-columns: 1fr !important; }
+          .admin-event-dates { grid-template-columns: 1fr !important; }
         }
       `}</style>
       <style>{`

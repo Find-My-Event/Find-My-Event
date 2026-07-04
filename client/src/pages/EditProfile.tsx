@@ -5,11 +5,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { darkPageShell } from '../theme/darkShell';
 
 export default function EditProfile() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, uploadAvatar } = useAuth();
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [avatar, setAvatar] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
@@ -35,6 +36,23 @@ export default function EditProfile() {
       setMsg('Could not update');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setMsg('');
+    try {
+      const url = await uploadAvatar(file);
+      setAvatar(url);
+      setMsg('Image uploaded successfully');
+      setTimeout(() => setMsg(''), 2500);
+    } catch (err: any) {
+      setMsg('Failed to upload image. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -83,16 +101,16 @@ export default function EditProfile() {
             />
           </div>
           <div>
-            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.82rem', fontWeight: 600, marginBottom: 6 }}>Avatar URL</label>
-            <input
-              value={avatar}
-              onChange={(e) => setAvatar(e.target.value)}
-              placeholder="https://…"
-              style={{
-                width: '100%', background: 'var(--border-subtle)', border: '1px solid var(--border-color)',
-                borderRadius: 14, padding: '0.9rem 1rem', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', fontFamily: "'Outfit', sans-serif",
-              }}
-            />
+            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.82rem', fontWeight: 600, marginBottom: 6 }}>Profile Picture</label>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <label style={{
+                background: 'var(--border-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-primary)',
+                padding: '0.9rem 1.25rem', borderRadius: 14, cursor: uploading ? 'wait' : 'pointer', fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap'
+              }}>
+                {uploading ? 'Uploading...' : 'Upload Image'}
+                <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} disabled={uploading} />
+              </label>
+            </div>
           </div>
           {avatar && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>

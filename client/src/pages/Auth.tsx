@@ -14,7 +14,8 @@ const Auth: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, verifyOtp, handleLogin, setupProfile, mockLogin } = useAuth();
+  const [isUploading, setIsUploading] = useState(false);
+  const { register, verifyOtp, resendOtp, handleLogin, setupProfile, uploadAvatar, mockLogin } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -60,6 +61,34 @@ const Auth: React.FC = () => {
       setError(err.response?.data?.message || 'Invalid OTP');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await resendOtp(formData.email);
+      setError('A new code has been sent to your email.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to resend code');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    setError('');
+    try {
+      const url = await uploadAvatar(file);
+      setProfileData({ ...profileData, avatar: url });
+    } catch (err: any) {
+      setError('Failed to upload image. Please try again.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -225,14 +254,27 @@ const Auth: React.FC = () => {
 
         {/* ── OTP STEP ── */}
         {step === 'otp' && (
-          <form onSubmit={handleOtpVerify} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <input type="text" maxLength={6} value={formData.otp}
-              onChange={(e) => setFormData({ ...formData, otp: e.target.value })} placeholder="000000"
-              style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.6rem', fontSize: '1.4rem' }} />
-            <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
-              {isSubmitting ? <Loader2 className="spin" size={18} /> : 'Verify Code'}
-            </motion.button>
-          </form>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleOtpVerify} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <input type="text" maxLength={6} value={formData.otp}
+                onChange={(e) => setFormData({ ...formData, otp: e.target.value })} placeholder="000000"
+                style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.6rem', fontSize: '1.4rem' }} />
+              <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
+                {isSubmitting ? <Loader2 className="spin" size={18} /> : 'Verify Code'}
+              </motion.button>
+            </form>
+            <p style={{ textAlign: 'center', color: '#888', fontSize: '0.9rem', margin: 0 }}>
+              Didn't receive the code?{' '}
+              <button 
+                type="button"
+                onClick={handleResendOtp}
+                disabled={isSubmitting}
+                style={{ background: 'none', border: 'none', color: '#7c3aed', fontWeight: 600, cursor: isSubmitting ? 'wait' : 'pointer', fontSize: '0.9rem' }}
+              >
+                Send again
+              </button>
+            </p>
+          </div>
         )}
 
         {/* ── PROFILE STEP ── */}
@@ -240,12 +282,20 @@ const Auth: React.FC = () => {
           <form onSubmit={handleProfileSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: '0.5rem' }}>
               <div style={{ width: '80px', height: '80px', borderRadius: '50%', border: '2px solid #7c3aed', padding: '3px', background: 'white', position: 'relative' }}>
-                <img src={profileData.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                <div style={{ position: 'absolute', bottom: 0, right: 0, background: '#7c3aed', padding: '4px', borderRadius: '50%', border: '2px solid #fff', color: 'white' }}><Camera size={12} /></div>
+                <img src={profileData.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                {isUploading && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.7)', borderRadius: '50%' }}>
+                    <Loader2 className="spin" size={20} color="#7c3aed" />
+                  </div>
+                )}
+                <label style={{ position: 'absolute', bottom: -5, right: -5, background: '#7c3aed', padding: '6px', borderRadius: '50%', border: '2px solid #fff', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Camera size={14} />
+                  <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} disabled={isUploading} />
+                </label>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-              {['Felix', 'Anya'].map(seed => (
+              {['Felix', 'Anya', 'Jasper', 'Milo'].map(seed => (
                 <div key={seed} onClick={() => setProfileData({ ...profileData, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}` })}
                   style={{ width: '40px', height: '40px', borderRadius: '50%', border: profileData.avatar.includes(seed) ? '2px solid #7c3aed' : '2px solid transparent', cursor: 'pointer' }}>
                   <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />

@@ -197,12 +197,12 @@ export default function CreateEvent() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="create-event-dates">
                   <div>
-                    <label style={labelStyle}>Start date <span style={{ color: '#3b82f6' }}>*</span></label>
-                    <input style={inputStyle} value={startDate} onChange={(e) => setStartDate(e.target.value)} placeholder="Sat, Feb 14 | 05:00 PM" />
+                    <label style={labelStyle}>Start date & Time <span style={{ color: '#3b82f6' }}>*</span></label>
+                    <input style={inputStyle} type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                   </div>
                   <div>
-                    <label style={labelStyle}>End date <span style={{ color: '#3b82f6' }}>*</span></label>
-                    <input style={inputStyle} value={endDate} onChange={(e) => setEndDate(e.target.value)} placeholder="Sun, Feb 15 | 09:00 PM" />
+                    <label style={labelStyle}>End date & Time <span style={{ color: '#3b82f6' }}>*</span></label>
+                    <input style={inputStyle} type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                   </div>
                 </div>
                 <div>
