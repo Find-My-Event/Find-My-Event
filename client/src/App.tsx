@@ -41,6 +41,7 @@ import Gallery        from './pages/Gallery';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminCreateEvent from './pages/AdminCreateEvent';
 import OrganizerDashboard from './pages/OrganizerDashboard';
+import OrganizerSetup   from './pages/OrganizerSetup';
 import PublicScanner  from './pages/PublicScanner';
 
 /* ── Context ── */
@@ -91,9 +92,22 @@ function AppContent() {
   /* ── Auth guard ── */
   useEffect(() => {
     if (loading) return;
+
+    // Organizer onboarding guard
+    if (isLoggedIn && user?.role === 'organizer') {
+      if (!user.hasCompletedProfile && currentRoute !== '#organizer-setup') {
+        window.location.hash = '#organizer-setup';
+        return;
+      }
+      if (user.hasCompletedProfile && currentRoute === '#organizer-setup') {
+        window.location.hash = '#organizer-dashboard';
+        return;
+      }
+    }
+
     const protected_ = [
       '#create-event', '#settings', '#edit-profile', '#admin', 
-      '#your-events', '#registered-events', '#organizer-dashboard', '#edit-event'
+      '#your-events', '#registered-events', '#organizer-dashboard', '#edit-event', '#organizer-setup'
     ];
     
     const isProtected = protected_.some(prefix => currentRoute.startsWith(prefix));
@@ -101,7 +115,7 @@ function AppContent() {
     if (!isLoggedIn && isProtected) {
       window.location.hash = '#signin';
     }
-  }, [currentRoute, isLoggedIn, loading]);
+  }, [currentRoute, isLoggedIn, loading, user]);
 
   /* ── Lenis smooth scroll (landing only) ── */
   useEffect(() => {
@@ -142,6 +156,10 @@ function AppContent() {
     if (currentRoute === '#registered-events') return <RegisteredEvents />;
     if (currentRoute === '#favourites')       return <Favourites />;
     if (currentRoute === '#gallery')          return <Gallery />;
+    if (currentRoute === '#organizer-setup') {
+      if (!isLoggedIn || user?.role !== 'organizer') return null;
+      return <OrganizerSetup />;
+    }
     if (currentRoute.startsWith('#organizer-dashboard')) {
       if (!isLoggedIn) return null;
       return <OrganizerDashboard />;
@@ -188,7 +206,7 @@ function AppContent() {
     }
 
     /* ── Logged-in home → Dashboard ── */
-    if (isLoggedIn) return <Dashboard />;
+    // if (isLoggedIn && user?.role === 'user') return <Dashboard />;
 
     /* ══════════════════════════════════════
        PREMIUM LANDING PAGE
@@ -225,7 +243,7 @@ function AppContent() {
   return (
     <div className="App">
       {/* Navbar (Hidden on specific full-page dashboards) */}
-      {!currentRoute.startsWith('#organizer-dashboard') && !currentRoute.startsWith('#admin-create-event') && !currentRoute.startsWith('#admin-edit-event') && !currentRoute.startsWith('#edit-event') && !currentRoute.startsWith('#scanner=') && currentRoute !== '#admin' && <Navbar />}
+      {!currentRoute.startsWith('#organizer-dashboard') && !currentRoute.startsWith('#organizer-setup') && !currentRoute.startsWith('#admin-create-event') && !currentRoute.startsWith('#admin-edit-event') && !currentRoute.startsWith('#edit-event') && !currentRoute.startsWith('#scanner=') && currentRoute !== '#admin' && <Navbar />}
 
       {/* Page content */}
       <main>

@@ -241,14 +241,60 @@ router.post('/notifications', protect, admin, async (req, res) => {
   }
 });
 
+// @desc    Get all clubs with organizer details (Admin only)
+// @route   GET /api/admin/clubs
+router.get('/clubs', protect, admin, async (req, res) => {
+  try {
+    const clubs = await Club.find({}).populate('organizerAccount', 'email').sort({ name: 1 });
+    res.json(clubs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // @desc    Create a new club (Admin only)
 // @route   POST /api/admin/clubs
-router.post('/clubs', protect, admin, upload.single('logo'), async (req, res) => {
+router.post('/clubs', protect, admin, upload.any(), async (req, res) => {
   try {
-    const { name, type, description, aboutUs, tags } = req.body;
+    const { name, type, description, aboutUs, tags, foundedOn, venue, eventsConducted, detailedDescription, organizerEmail, organizerPassword } = req.body;
     
-    if (!req.file) {
+    let logoFile = null;
+    let teamPhotos = {};
+    if (req.files && Array.isArray(req.files)) {
+      req.files.forEach(file => {
+        if (file.fieldname === 'logo') {
+          logoFile = file;
+        } else if (file.fieldname.startsWith('teamPhoto_')) {
+          const index = file.fieldname.split('_')[1];
+          teamPhotos[index] = file.path;
+        }
+      });
+    }
+
+    if (!logoFile) {
       return res.status(400).json({ message: 'Please upload a logo for the club' });
+    }
+
+    // Check if email is already taken
+    if (organizerEmail && organizerPassword) {
+      const existingUser = await User.findOne({ email: organizerEmail });
+      if (existingUser) {
+        return res.status(400).json({ message: 'A user with this organizer email already exists.' });
+      }
+    }
+
+    let leadership = [];
+    if (req.body.leadership) {
+      try {
+        const parsedLeadership = JSON.parse(req.body.leadership);
+        leadership = parsedLeadership.map((member, index) => ({
+          name: member.name,
+          position: member.position,
+          photoUrl: teamPhotos[index] || member.photoUrl || ''
+        }));
+      } catch (err) {
+        console.error('Error parsing leadership', err);
+      }
     }
 
     const club = new Club({
@@ -257,11 +303,33 @@ router.post('/clubs', protect, admin, upload.single('logo'), async (req, res) =>
       type,
       description,
       aboutUs,
-      logo: req.file.path,
+      foundedOn,
+      venue,
+      eventsConducted: eventsConducted ? parseInt(eventsConducted, 10) : 0,
+      detailedDescription,
+      leadership,
+      logo: logoFile.path,
       tags: tags ? tags.split(',').map(tag => tag.trim()) : []
     });
 
     const savedClub = await club.save();
+
+    // Create Organizer Account if credentials provided
+    if (organizerEmail && organizerPassword) {
+      const organizerUser = new User({
+        name: `${name} Organizer`,
+        email: organizerEmail,
+        password: organizerPassword,
+        role: 'organizer',
+        clubId: savedClub._id,
+        isVerified: true
+      });
+      const savedUser = await organizerUser.save();
+      
+      // Link back to club
+      savedClub.organizerAccount = savedUser._id;
+      await savedClub.save();
+    }
     res.status(201).json(savedClub);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -270,12 +338,25 @@ router.post('/clubs', protect, admin, upload.single('logo'), async (req, res) =>
 
 // @desc    Update a club (Admin only)
 // @route   PUT /api/admin/clubs/:id
-router.put('/clubs/:id', protect, admin, upload.single('logo'), async (req, res) => {
+router.put('/clubs/:id', protect, admin, upload.any(), async (req, res) => {
   try {
     let club = await Club.findById(req.params.id);
     if (!club) return res.status(404).json({ message: 'Club not found' });
 
-    const { name, type, description, aboutUs, tags } = req.body;
+    const { name, type, description, aboutUs, tags, foundedOn, venue, eventsConducted, detailedDescription, organizerEmail, organizerPassword } = req.body;
+    
+    let logoFile = null;
+    let teamPhotos = {};
+    if (req.files && Array.isArray(req.files)) {
+      req.files.forEach(file => {
+        if (file.fieldname === 'logo') {
+          logoFile = file;
+        } else if (file.fieldname.startsWith('teamPhoto_')) {
+          const index = file.fieldname.split('_')[1];
+          teamPhotos[index] = file.path;
+        }
+      });
+    }
 
     club.name = name || club.name;
     if (name) {
@@ -284,16 +365,63 @@ router.put('/clubs/:id', protect, admin, upload.single('logo'), async (req, res)
     club.type = type || club.type;
     club.description = description || club.description;
     club.aboutUs = aboutUs || club.aboutUs;
+    if (foundedOn !== undefined) club.foundedOn = foundedOn;
+    if (venue !== undefined) club.venue = venue;
+    if (eventsConducted !== undefined) club.eventsConducted = parseInt(eventsConducted, 10);
+    if (detailedDescription !== undefined) club.detailedDescription = detailedDescription;
     
     if (tags) {
       club.tags = tags.split(',').map(tag => tag.trim());
     }
 
-    if (req.file) {
-      club.logo = req.file.path;
+    if (logoFile) {
+      club.logo = logoFile.path;
+    }
+
+    if (req.body.leadership) {
+      try {
+        const parsedLeadership = JSON.parse(req.body.leadership);
+        club.leadership = parsedLeadership.map((member, index) => ({
+          name: member.name,
+          position: member.position,
+          photoUrl: teamPhotos[index] || member.photoUrl || ''
+        }));
+      } catch (err) {
+        console.error('Error parsing leadership', err);
+      }
     }
 
     const updatedClub = await club.save();
+    
+    // Update or Create Organizer Account
+    if (organizerEmail || organizerPassword) {
+      if (updatedClub.organizerAccount) {
+        // Update existing user
+        const organizerUser = await User.findById(updatedClub.organizerAccount);
+        if (organizerUser) {
+          if (organizerEmail) organizerUser.email = organizerEmail;
+          if (organizerPassword) organizerUser.password = organizerPassword;
+          await organizerUser.save();
+        }
+      } else if (organizerEmail && organizerPassword) {
+        // Create new user if not exist
+        const existingUser = await User.findOne({ email: organizerEmail });
+        if (!existingUser) {
+          const organizerUser = new User({
+            name: `${name} Organizer`,
+            email: organizerEmail,
+            password: organizerPassword,
+            role: 'organizer',
+            clubId: updatedClub._id,
+            isVerified: true
+          });
+          const savedUser = await organizerUser.save();
+          updatedClub.organizerAccount = savedUser._id;
+          await updatedClub.save();
+        }
+      }
+    }
+
     res.json(updatedClub);
   } catch (error) {
     res.status(500).json({ message: error.message });

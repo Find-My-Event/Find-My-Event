@@ -46,8 +46,12 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'organizer'],
     default: 'user',
+  },
+  clubId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Club',
   },
   isVerified: {
     type: Boolean,
@@ -67,11 +71,7 @@ const userSchema = new mongoose.Schema({
   otpExpires: {
     type: Date,
   },
-  role: {
-    type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
-  },
+
   notifyEmail: {
     type: Boolean,
     default: true,

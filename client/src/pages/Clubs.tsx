@@ -4,6 +4,50 @@ import gsap from 'gsap';
 import Footer from '../components/Footer';
 import { api } from '../lib/api';
 
+const ClubCard = ({ club }: { club: any }) => (
+  <motion.div 
+    onClick={() => window.location.hash = `#club-detail-${club.id}`}
+    whileHover="hover"
+    initial="initial"
+    variants={{
+      initial: { y: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.04)' },
+      hover: { y: -4, boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }
+    }}
+    style={{ 
+      background: '#fff', 
+      borderRadius: '20px', 
+      overflow: 'hidden', 
+      border: '1px solid rgba(0,0,0,0.06)', 
+      display: 'flex', 
+      flexDirection: 'row', 
+      alignItems: 'center',
+      padding: '1.25rem',
+      gap: '1.5rem',
+      cursor: 'pointer',
+      height: '100%'
+    }}
+  >
+    <div style={{ width: '110px', height: '110px', flexShrink: 0, borderRadius: '16px', overflow: 'hidden', background: '#f4f4f5', border: '1px solid rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <motion.img 
+        variants={{ initial: { scale: 1 }, hover: { scale: 1.05 } }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        src={club.logo || '/club-images/Rectangle 31.png'} 
+        alt={club.name} 
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+      />
+    </div>
+
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' }}>
+      <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', lineHeight: 1.3, margin: '0 0 0.4rem 0' }}>
+        {club.name}
+      </h3>
+      <p style={{ color: '#6B7280', fontSize: '0.9rem', fontWeight: 500, margin: 0, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        {club.description || 'JECRC Incubation Centre backs visionary founders with capital.'}
+      </p>
+    </div>
+  </motion.div>
+);
+
 export default function Clubs() {
   const heroRef = useRef<HTMLHeadingElement>(null);
   const marker1Ref = useRef<HTMLSpanElement>(null);
@@ -34,6 +78,9 @@ export default function Clubs() {
       );
     }
   }, []);
+
+  const initiativesList = clubs.filter(c => c.type === 'Initiative');
+  const clubsList = clubs.filter(c => c.type === 'Club');
 
   return (
     <div style={{ backgroundColor: '#FAFAFA', minHeight: '100vh', fontFamily: "'Inter', 'SF Pro Display', sans-serif", color: '#111', position: 'relative', overflowX: 'hidden' }}>
@@ -128,50 +175,40 @@ export default function Clubs() {
           </div>
         </section>
 
+        {/* All Initiatives Section */}
+        {initiativesList.length > 0 && (
+          <section style={{ maxWidth: '1440px', margin: '2rem auto 4rem', padding: '0 2.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+              <h2 style={{ fontSize: '3rem', fontWeight: 700, fontFamily: "'Inter', sans-serif", color: '#111', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
+                All Initiatives
+              </h2>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
+              {initiativesList.map((club) => (
+                <ClubCard key={club.id} club={club} />
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Interactive Bento Grid Section */}
-        <section style={{ maxWidth: '1440px', margin: '4rem auto 6rem', padding: '0 2.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
-            <h2 style={{ fontSize: '3.5rem', fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#111', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
-              All Clubs
-            </h2>
-          </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '2rem' }}>
-            {clubs.map((club) => (
-              <motion.div 
-                key={club.id}
-                onClick={() => window.location.hash = `#club-detail-${club.id}`}
-                whileHover="hover"
-                initial="initial"
-                variants={{
-                  initial: { y: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' },
-                  hover: { y: -6, boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }
-                }}
-                style={{ background: '#f8f9fa', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', height: '100%', cursor: 'pointer' }}
-              >
-                {/* Image Background */}
-                <div style={{ aspectRatio: '1 / 1.414', width: '100%', position: 'relative', overflow: 'hidden', background: '#111' }}>
-                  <motion.img 
-                    variants={{ initial: { scale: 1 }, hover: { scale: 1.05 } }}
-                    transition={{ duration: 0.5, ease: 'easeOut' }}
-                    src={club.logo || '/club-images/Rectangle 31.png'} alt={club.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-                  />
-                </div>
-
-                {/* Content Container */}
-                <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1 }}>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#111', lineHeight: 1.3, margin: '0 0 0.4rem 0' }}>
-                    {club.name}
-                  </h3>
-                  <p style={{ color: '#6B7280', fontSize: '0.85rem', fontWeight: 500, margin: 0, lineHeight: 1.5 }}>
-                    {club.description || 'JECRC Incubation Centre backs visionary founders with capital.'}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+        {/* All Clubs Section */}
+        {clubsList.length > 0 && (
+          <section style={{ maxWidth: '1440px', margin: '2rem auto 6rem', padding: '0 2.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+              <h2 style={{ fontSize: '3rem', fontWeight: 700, fontFamily: "'Inter', sans-serif", color: '#111', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
+                All Clubs
+              </h2>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
+              {clubsList.map((club) => (
+                <ClubCard key={club.id} club={club} />
+              ))}
+            </div>
+          </section>
+        )}
+        
       </main>
       
       <Footer />

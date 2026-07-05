@@ -13,7 +13,7 @@ export interface User {
   hobbies?: string[];
   favEvents?: string[];
   hasCompletedProfile?: boolean;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'organizer';
   notifyEmail?: boolean;
   publicProfile?: boolean;
 }

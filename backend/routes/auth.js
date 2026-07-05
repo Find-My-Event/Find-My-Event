@@ -23,6 +23,7 @@ function userResponse(user) {
     gender: user.gender,
     hobbies: user.hobbies || [],
     interests: user.interests || [],
+    hasCompletedProfile: user.hasCompletedProfile || false,
   };
 }
 

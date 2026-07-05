@@ -30,14 +30,14 @@ const AdminDashboard: React.FC = () => {
   // New UI States
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeEventTab, setActiveEventTab] = useState<'admin' | 'clubs'>(() => {
-    return (localStorage.getItem('adminActiveEventTab') as 'admin' | 'clubs') || 'admin';
+    return (localStorage.getItem('adminActiveEventTab') as 'admin' | 'clubs') || 'clubs';
   });
 
   useEffect(() => {
     localStorage.setItem('adminActiveEventTab', activeEventTab);
   }, [activeEventTab]);
 
-  const [activeUserTab, setActiveUserTab] = useState<'users' | 'clubs'>('users');
+  const [activeUserTab, setActiveUserTab] = useState<'users' | 'clubs' | 'initiatives'>('users');
   
   // Data States
   const [users, setUsers] = useState<any[]>([]);
@@ -55,8 +55,9 @@ const AdminDashboard: React.FC = () => {
   const [isClubModalOpen, setIsClubModalOpen] = useState(false);
   const [editingClub, setEditingClub] = useState<any>(null);
   const [clubFormData, setClubFormData] = useState({
-    name: '', type: 'Club', description: '', aboutUs: '', tags: ''
+    name: '', type: 'Club', description: '', aboutUs: '', tags: '', foundedOn: '', venue: '', eventsConducted: '', detailedDescription: '', organizerEmail: '', organizerPassword: ''
   });
+  const [clubLeadership, setClubLeadership] = useState<any[]>([]);
   const [clubImage, setClubImage] = useState<File | null>(null);
 
   // Registration View State
@@ -123,7 +124,7 @@ const AdminDashboard: React.FC = () => {
         api.get('/events'),
         api.get('/events/approved'),
         api.get('/notifications'),
-        api.get('/clubs')
+        api.get('/admin/clubs')
       ]);
       setUsers(usersRes.data);
       
@@ -229,6 +230,15 @@ const AdminDashboard: React.FC = () => {
     Object.entries(clubFormData).forEach(([key, value]) => formData.append(key, value));
     if (clubImage) formData.append('logo', clubImage);
 
+    const leadershipToSend = clubLeadership.map(l => ({ name: l.name, position: l.position, photoUrl: l.photoUrl || '' }));
+    formData.append('leadership', JSON.stringify(leadershipToSend));
+    
+    clubLeadership.forEach((l, idx) => {
+      if (l.photoFile) {
+        formData.append(`teamPhoto_${idx}`, l.photoFile);
+      }
+    });
+
     try {
       if (editingClub) {
         await api.put(`/admin/clubs/${editingClub._id}`, formData);
@@ -237,7 +247,8 @@ const AdminDashboard: React.FC = () => {
       }
       setIsClubModalOpen(false);
       setEditingClub(null);
-      setClubFormData({ name: '', type: 'Club', description: '', aboutUs: '', tags: '' });
+      setClubFormData({ name: '', type: 'Club', description: '', aboutUs: '', tags: '', foundedOn: '', venue: '', eventsConducted: '', detailedDescription: '', organizerEmail: '', organizerPassword: '' });
+      setClubLeadership([]);
       setClubImage(null);
       fetchInitialData();
     } catch (err) {
@@ -379,12 +390,17 @@ const AdminDashboard: React.FC = () => {
               <Plus size={20} /> Create Event
             </button>
           )}
-          {activeTab === 'users' && activeUserTab === 'clubs' && (
+          {(activeTab === 'users' && (activeUserTab === 'clubs' || activeUserTab === 'initiatives')) && (
             <button
-              onClick={() => { setEditingClub(null); setClubFormData({ name: '', type: 'Club', description: '', aboutUs: '', tags: '' }); setIsClubModalOpen(true); }}
+              onClick={() => { 
+                setEditingClub(null); 
+                setClubFormData({ name: '', type: activeUserTab === 'initiatives' ? 'Initiative' : 'Club', description: '', aboutUs: '', tags: '', foundedOn: '', venue: '', eventsConducted: '', detailedDescription: '', organizerEmail: '', organizerPassword: '' }); 
+                setClubLeadership([]);
+                setIsClubModalOpen(true); 
+              }}
               style={{ background: '#8B5CF6', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)' }}
             >
-              <Plus size={20} /> Create Club
+              <Plus size={20} /> Create {activeUserTab === 'initiatives' ? 'Initiative' : 'Club'}
             </button>
           )}
         </header>
@@ -583,7 +599,13 @@ const AdminDashboard: React.FC = () => {
                  onClick={() => setActiveUserTab('clubs')}
                  style={{ background: activeUserTab === 'clubs' ? '#111' : 'transparent', color: activeUserTab === 'clubs' ? '#fff' : '#666', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s' }}
                >
-                 Clubs & Organizations
+                 Clubs
+               </button>
+               <button 
+                 onClick={() => setActiveUserTab('initiatives')}
+                 style={{ background: activeUserTab === 'initiatives' ? '#111' : 'transparent', color: activeUserTab === 'initiatives' ? '#fff' : '#666', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s' }}
+               >
+                 Initiatives
                </button>
             </div>
 
@@ -624,10 +646,10 @@ const AdminDashboard: React.FC = () => {
                   </tbody>
                 </table>
               </div>
-            ) : (
+            ) : (activeUserTab === 'clubs' || activeUserTab === 'initiatives') && (
               <div style={{ display: 'grid', gap: '1rem' }}>
-                {clubs.length === 0 && <p style={{ color: '#888', padding: '3rem', textAlign: 'center', border: '1px dashed var(--border-subtle)', borderRadius: 16 }}>No clubs found.</p>}
-                {clubs.map((club) => (
+                {(activeUserTab === 'clubs' ? clubs.filter(c => c.type !== 'Initiative') : clubs.filter(c => c.type === 'Initiative')).length === 0 && <p style={{ color: '#888', padding: '3rem', textAlign: 'center', border: '1px dashed var(--border-subtle)', borderRadius: 16 }}>No {activeUserTab === 'clubs' ? 'clubs' : 'initiatives'} found.</p>}
+                {(activeUserTab === 'clubs' ? clubs.filter(c => c.type !== 'Initiative') : clubs.filter(c => c.type === 'Initiative')).map((club) => (
                   <motion.div
                     key={club._id}
                     className="admin-item-row"
@@ -639,7 +661,20 @@ const AdminDashboard: React.FC = () => {
                       <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '4px' }}>{club.type} • {club.id}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
-                      <button onClick={() => { setEditingClub(club); setClubFormData({ name: club.name, type: club.type, description: club.description, aboutUs: club.aboutUs, tags: (club.tags || []).join(', ') }); setIsClubModalOpen(true); }} style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: '#3b82f6', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Edit2 size={18} /></button>
+                      <button onClick={() => { 
+                        setEditingClub(club); 
+                        setClubFormData({ 
+                          name: club.name, type: club.type, description: club.description, aboutUs: club.aboutUs, tags: (club.tags || []).join(', '),
+                          foundedOn: club.foundedOn ? new Date(club.foundedOn).toISOString().substring(0, 7) : '',
+                          venue: club.venue || '',
+                          eventsConducted: club.eventsConducted !== undefined ? club.eventsConducted.toString() : '',
+                          detailedDescription: club.detailedDescription || '',
+                          organizerEmail: club.organizerAccount?.email || '', 
+                          organizerPassword: '' // Clear them when editing, usually we don't fetch password
+                        }); 
+                        setClubLeadership(club.leadership || []);
+                        setIsClubModalOpen(true); 
+                      }} style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: '#3b82f6', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Edit2 size={18} /></button>
                       <button onClick={() => deleteClub(club._id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}><Trash2 size={18} /></button>
                     </div>
                   </motion.div>
@@ -822,18 +857,77 @@ const AdminDashboard: React.FC = () => {
                     {['Club', 'Organization', 'Initiative'].map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
+                  <>
+                    <div style={{ gridColumn: '1 / -1', background: 'rgba(59, 130, 246, 0.05)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(59, 130, 246, 0.2)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <label style={{ fontWeight: 600, color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Shield size={16} /> Organizer Login Credentials
+                        </label>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>Provide these details to create or update a dedicated dashboard account for this club's organizer.</p>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5, fontSize: '0.9rem' }}>Organizer Email</label>
+                        <input type="email" placeholder="club@eventum.com" value={clubFormData.organizerEmail} onChange={e => setClubFormData({...clubFormData, organizerEmail: e.target.value})} style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid rgba(0,0,0,0.1)', padding: '12px', borderRadius: '8px', color: 'var(--text-primary)' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5, fontSize: '0.9rem' }}>Organizer Password</label>
+                        <input type="text" placeholder={editingClub ? "Leave blank to keep current" : "Set a strong password"} value={clubFormData.organizerPassword} onChange={e => setClubFormData({...clubFormData, organizerPassword: e.target.value})} style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid rgba(0,0,0,0.1)', padding: '12px', borderRadius: '8px', color: 'var(--text-primary)' }} />
+                      </div>
+                    </div>
+                  </>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Founded On</label>
+                  <input type="month" value={clubFormData.foundedOn} onChange={e => setClubFormData({...clubFormData, foundedOn: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Venue</label>
+                  <input placeholder="E.g. Room 402, Block A" value={clubFormData.venue} onChange={e => setClubFormData({...clubFormData, venue: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Events Conducted</label>
+                  <input type="number" placeholder="E.g. 15" value={clubFormData.eventsConducted} onChange={e => setClubFormData({...clubFormData, eventsConducted: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
+                </div>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Short Description</label>
                   <input required placeholder="Brief one-liner" value={clubFormData.description} onChange={e => setClubFormData({...clubFormData, description: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
                 </div>
+
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>About Us (Detailed)</label>
-                  <textarea required placeholder="Detailed about section..." value={clubFormData.aboutUs} onChange={e => setClubFormData({...clubFormData, aboutUs: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', minHeight: '120px' }} />
+                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Detailed Description</label>
+                  <textarea placeholder="Extensive details about the club, activities, and achievements..." value={clubFormData.detailedDescription} onChange={e => setClubFormData({...clubFormData, detailedDescription: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)', minHeight: '120px' }} />
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Tags (comma separated)</label>
                   <input placeholder="Technology, Design, Open Source" value={clubFormData.tags} onChange={e => setClubFormData({...clubFormData, tags: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
                 </div>
+
+                <div style={{ gridColumn: '1 / -1', padding: '1rem', background: 'rgba(139, 92, 246, 0.05)', borderRadius: '16px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <label style={{ opacity: 0.7, fontWeight: 600 }}>Leadership & Team</label>
+                    <button type="button" onClick={() => setClubLeadership([...clubLeadership, { name: '', position: '', photoUrl: '', photoFile: null }])} style={{ background: '#8B5CF6', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>+ Add Member</button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {clubLeadership.map((member, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '12px' }}>
+                        <input placeholder="Name" value={member.name} onChange={e => { const newL = [...clubLeadership]; newL[idx].name = e.target.value; setClubLeadership(newL); }} style={{ flex: 1, background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)' }} />
+                        <input placeholder="Position" value={member.position} onChange={e => { const newL = [...clubLeadership]; newL[idx].position = e.target.value; setClubLeadership(newL); }} style={{ flex: 1, background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)' }} />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px', background: 'var(--border-subtle)', border: '1px dashed var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
+                          <ImageIcon size={16} /> {member.photoFile ? 'File selected' : (member.photoUrl ? 'Photo uploaded' : 'Upload')}
+                          <input type="file" hidden accept="image/*" onChange={e => {
+                            if (e.target.files && e.target.files[0]) {
+                              const newL = [...clubLeadership];
+                              newL[idx].photoFile = e.target.files[0];
+                              setClubLeadership(newL);
+                            }
+                          }} />
+                        </label>
+                        <button type="button" onClick={() => { const newL = [...clubLeadership]; newL.splice(idx, 1); setClubLeadership(newL); }} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
+                      </div>
+                    ))}
+                    {clubLeadership.length === 0 && <p style={{ fontSize: '0.85rem', color: '#888', textAlign: 'center', margin: '0' }}>No members added yet.</p>}
+                  </div>
+                </div>
+
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Club Logo (Cloudinary)</label>
                   <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -896,6 +990,8 @@ const AdminDashboard: React.FC = () => {
       </AnimatePresence>
 
       <style>{`
+        input, textarea, select, button, label { font-family: 'Inter', sans-serif !important; }
+        ::placeholder { font-family: 'Inter', sans-serif !important; opacity: 0.6; }
         .spin { animation: spin-anim 1s linear infinite; }
         @keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         

@@ -26,8 +26,7 @@ const clubSchema = new mongoose.Schema({
     required: true
   },
   aboutUs: {
-    type: String,
-    required: true
+    type: String
   },
   glimpses: [{
     type: String
@@ -35,6 +34,31 @@ const clubSchema = new mongoose.Schema({
   tags: [{
     type: String
   }],
+  foundedOn: {
+    type: Date
+  },
+  venue: {
+    type: String
+  },
+  eventsConducted: {
+    type: Number,
+    default: 0
+  },
+  detailedDescription: {
+    type: String
+  },
+  leadership: [{
+    name: String,
+    position: String,
+    photoUrl: String
+  }],
+  organizerAccount: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  presidentEmail: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now

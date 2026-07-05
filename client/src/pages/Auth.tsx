@@ -34,8 +34,10 @@ const Auth: React.FC = () => {
     try {
       if (step === 'login') {
         const result = await handleLogin(formData.email, formData.password);
-        if (result.user?.role === 'admin' && result.user?.email === 'organizer@eventum.com') {
-          window.location.hash = '#organizer-dashboard/my-events';
+        if (result.user?.role === 'admin') {
+          window.location.hash = '#admin';
+        } else if (result.user?.role === 'organizer') {
+          window.location.hash = '#organizer-dashboard';
         } else {
           window.location.hash = '#home';
         }

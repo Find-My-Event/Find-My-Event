@@ -248,6 +248,12 @@ const Navbar: React.FC = () => {
                           <Shield size={15} /> <span>Admin</span>
                         </button>
                       )}
+                      {user?.role === 'organizer' && (
+                        <button type="button" className={`dropdown-item${isInnerPage ? ' dropdown-item-dark' : ''}`}
+                          onClick={() => { setIsProfileOpen(false); window.location.hash = '#organizer-dashboard'; }}>
+                          <LayoutGrid size={15} /> <span>Organizer Dash</span>
+                        </button>
+                      )}
                       <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', margin: '0.4rem 0' }} />
                       <button type="button" className={`dropdown-item logout${isInnerPage ? ' dropdown-item-dark' : ''}`} onClick={logout}>
                         <LogOut size={15} /> <span>Sign Out</span>
