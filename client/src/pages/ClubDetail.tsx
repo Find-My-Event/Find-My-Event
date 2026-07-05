@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Loader2, Mail } from 'lucide-react';
+import { Calendar, MapPin, Loader2, Mail, User, Image as ImageIcon } from 'lucide-react';
 import { api } from '../lib/api';
 import { fallbackClubs } from '../data/clubs';
 import type { Club } from '../data/clubs';
@@ -75,12 +75,8 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
 
   // Filter events matching the club organizer
   const clubEvents = useMemo(() => {
-    if (!club) return [];
-    return events.filter((e: any) => {
-      const organizerName = e.organizer?.name || e.organizer || '';
-      return organizerName.toLowerCase().includes(club.name.toLowerCase()) || 
-             club.name.toLowerCase().includes(organizerName.toLowerCase());
-    });
+    // Left completely vacant for now as per request. Will fetch specific club events later.
+    return [];
   }, [events, club]);
 
   if (clubLoading) {
@@ -107,7 +103,7 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
   }
 
   return (
-    <div style={{ backgroundColor: '#FAFAFA', minHeight: '100vh', fontFamily: "'Inter', 'SF Pro Display', sans-serif", color: '#111', position: 'relative' }}>
+    <div style={{ backgroundColor: '#FAFAFA', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#111', position: 'relative' }}>
       
       {/* Background Gradient */}
       <div style={{ 
@@ -159,9 +155,9 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ background: '#111', borderRadius: '16px', overflow: 'hidden', height: '420px', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}
+              style={{ borderRadius: '16px', overflow: 'hidden', width: '100%', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', display: 'flex', border: '1px solid #000', marginLeft: '-24px' }}
             >
-              <img src={club.logo} alt={club.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={club.logo} alt={club.name} style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
             </motion.div>
 
             {/* Social Icons */}
@@ -169,17 +165,6 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d946ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: 'pointer' }}><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: 'pointer' }}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
               <Mail color="#a855f7" size={24} style={{ cursor: 'pointer' }} />
-            </div>
-
-            {/* Join Club Card */}
-            <div style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', marginTop: '1.5rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.75rem' }}>Join Club</h3>
-              <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5, marginBottom: '1.5rem' }}>
-                We are currently looking for passionate developers, designers, and problem solvers to join our core team for 2026.
-              </p>
-              <button style={{ width: '100%', background: '#0f172a', color: '#fff', padding: '0.75rem', borderRadius: '8px', fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'background 0.2s' }}>
-                Notify Me
-              </button>
             </div>
           </div>
 
@@ -192,18 +177,20 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
               {club.name}
             </h1>
             <p style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500, marginBottom: '2rem' }}>
-              {club.description}
+              {club.description || 'Not Listed'}
             </p>
 
             {/* Stats */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2.5rem' }}>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <div style={{ background: '#fff', border: '1px solid #ec4899', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  <div style={{ background: '#ec4899', width: '100%', textAlign: 'center', color: '#fff', fontSize: '0.5rem', fontWeight: 800, padding: '0.1rem 0' }}>JUNE</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#111', lineHeight: 1.2, marginTop: '1px' }}>16</div>
+                  <div style={{ background: '#ec4899', width: '100%', textAlign: 'center', color: '#fff', fontSize: '0.5rem', fontWeight: 800, padding: '0.1rem 0' }}>Est.</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#111', lineHeight: 1.2, marginTop: '2px' }}>Yr</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>16, June 2026</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>
+                    {club.foundedOn ? new Date(club.foundedOn).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Not Listed'}
+                  </div>
                   <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>Founded On</div>
                 </div>
               </div>
@@ -213,18 +200,18 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
                   <MapPin size={18} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>VIB, First floor</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>Jecrc University</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>{club.venue || 'Not Listed'}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>Venue</div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <div style={{ background: '#f3e8ff', color: '#9333ea', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>{clubEvents.length > 0 ? clubEvents.length : '16'}</span>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>{club.eventsConducted || '0'}</span>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>{clubEvents.length > 0 ? clubEvents.length : '16'} Events Conducted</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>4 Major Events</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>{club.eventsConducted || '0'} Events Conducted</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>Total Events</div>
                 </div>
               </div>
             </div>
@@ -233,50 +220,61 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
             <div style={{ marginBottom: '2.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.75rem', color: '#0f172a' }}>About</h2>
               <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.6, fontWeight: 500, whiteSpace: 'pre-wrap' }}>
-                {club.aboutUs}
+                {club.detailedDescription || club.aboutUs || 'Not Listed'}
               </p>
             </div>
 
             {/* Leadership & Team */}
             <div style={{ marginBottom: '3rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: '#0f172a' }}>Leadership & Team</h2>
-              <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '1rem' }}>
-                {[
-                  { name: 'Chirag Sharma', role: 'Faculty Coordinator', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chirag' },
-                  { name: 'Shubhangi', role: 'Club President', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Shubhangi' },
-                  { name: 'Jatin Bhariya', role: 'Vice President', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jatin' },
-                ].map((leader, i) => (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', minWidth: '120px' }}>
-                    <div style={{ width: '120px', height: '150px', borderRadius: '16px', background: '#f1f5f9', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
-                      <img src={leader.img} alt={leader.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {!club.leadership || club.leadership.length === 0 ? (
+                <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Not Listed</div>
+              ) : (
+                <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '1rem' }}>
+                  {club.leadership.map((leader, i) => (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', minWidth: '120px' }}>
+                      <div style={{ width: '120px', height: '150px', borderRadius: '16px', background: '#f1f5f9', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
+                        {leader.photoUrl ? (
+                          <img src={leader.photoUrl} alt={leader.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e2e8f0', color: '#94a3b8' }}>
+                            <User size={48} />
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0f172a' }}>{leader.name || 'Not Listed'}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>{leader.position || 'Not Listed'}</div>
+                      </div>
                     </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0f172a' }}>{leader.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>{leader.role}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
           </div>
         </div>
 
         {/* Gallery Section */}
-        {club.glimpses && club.glimpses.length > 0 && (
-          <div style={{ marginBottom: '4rem', marginTop: '2rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: '#0f172a' }}>Club Highlights</h2>
+        <div style={{ marginBottom: '4rem', marginTop: '2rem' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', color: '#0f172a' }}>Club Highlights</h2>
+          {club.glimpses && club.glimpses.length > 0 ? (
             <div className="gallery-masonry">
               {club.glimpses.map((img, idx) => (
                 <img key={idx} src={img} alt={`Highlight ${idx}`} />
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div style={{ padding: '3rem 2rem', textAlign: 'center', background: '#fff', borderRadius: '20px', border: '1px dashed #cbd5e1' }}>
+              <ImageIcon size={40} color="#94a3b8" style={{ margin: '0 auto 1rem auto' }} />
+              <p style={{ color: '#64748b', fontSize: '1.1rem', marginBottom: '0.25rem', fontWeight: 600 }}>No highlights added yet</p>
+            </div>
+          )}
+        </div>
 
         {/* Events Section */}
         <div style={{ marginBottom: '4rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: '#0f172a' }}>Club Highlights</h2>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', color: '#0f172a' }}>Past / Upcoming Events</h2>
           
           {eventsLoading ? (
              <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>

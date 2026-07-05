@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Bell, Plus, LayoutGrid, Image as ImageIcon, MapPin, Ticket, Users, ChevronDown, X, Menu } from 'lucide-react';
+import { Search, Bell, Plus, LayoutGrid, Image as ImageIcon, MapPin, Ticket, Users, ChevronDown, X, Menu, User, Lock, UserCircle, LogOut } from 'lucide-react';
 import darkLogo from '../logo/dark logo.png';
 import Footer from '../components/Footer';
+import { useAuth } from '../contexts/AuthContext';
+import ChangePasswordModal from '../components/ChangePasswordModal';
+import { AnimatePresence } from 'framer-motion';
 
 const MOCK_LOCATIONS = [
   { id: '1', title: 'Jaipur', subtitle: 'Rajasthan, India' },
@@ -16,6 +19,10 @@ export default function OrganizerDashboard() {
   const [activeTab, setActiveTab] = useState<'events' | 'create'>('events');
   const [eventFilter, setEventFilter] = useState<'upcoming' | 'past'>('upcoming');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  
+  const { user, logout } = useAuth();
 
   // Sync state with hash route
   useEffect(() => {
@@ -279,12 +286,54 @@ export default function OrganizerDashboard() {
           <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex' }}>
             <Bell size={20} />
           </button>
-          <div style={{ 
-            width: '32px', height: '32px', borderRadius: '50%', 
-            background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            overflow: 'hidden', cursor: 'pointer', border: '2px solid rgba(255,255,255,0.5)'
-          }}>
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer" alt="Profile" style={{ width: '100%', height: '100%' }} />
+          <div 
+            style={{ position: 'relative' }} 
+            onMouseEnter={() => setIsProfileOpen(true)}
+            onMouseLeave={() => setIsProfileOpen(false)}
+          >
+            <div 
+              style={{ 
+                width: '32px', height: '32px', borderRadius: '12px', 
+                background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                overflow: 'hidden', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.1)'
+              }}>
+              <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer"} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            <AnimatePresence>
+              {isProfileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  style={{
+                    position: 'absolute', top: '120%', right: 0,
+                    background: '#fff',
+                    borderRadius: '14px', boxShadow: '0 16px 48px rgba(0,0,0,0.12)',
+                    border: '1px solid rgba(0,0,0,0.06)', padding: '0.5rem',
+                    minWidth: '200px', zIndex: 2000,
+                  }}
+                >
+                  <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid rgba(0,0,0,0.05)', marginBottom: '0.5rem' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#111' }}>{user?.name}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#888' }}>{user?.email}</div>
+                  </div>
+                  <button type="button" className="dropdown-item" onClick={() => { setIsProfileOpen(false); window.location.hash = '#organizer-setup'; }}>
+                    <User size={15} /> <span>Edit Profile</span>
+                  </button>
+                  <button type="button" className="dropdown-item" onClick={() => { setIsProfileOpen(false); setIsPasswordModalOpen(true); }}>
+                    <Lock size={15} /> <span>Change Password</span>
+                  </button>
+                  <button type="button" className="dropdown-item" onClick={() => { setIsProfileOpen(false); window.location.hash = '#home'; }}>
+                    <UserCircle size={15} /> <span>User Dashboard</span>
+                  </button>
+                  <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', margin: '0.4rem 0' }} />
+                  <button type="button" className="dropdown-item logout" onClick={logout}>
+                    <LogOut size={15} /> <span>Sign Out</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -308,13 +357,32 @@ export default function OrganizerDashboard() {
         }}>
           {/* Profile Section */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1.5rem', borderBottom: '1px solid #eaeaea' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#111', overflow: 'hidden' }}>
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer" alt="Profile" style={{ width: '100%', height: '100%' }} />
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#111', overflow: 'hidden' }}>
+              <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer"} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div>
-              <div style={{ fontWeight: 700, color: '#111' }}>Eventum Organizer</div>
-              <div style={{ fontSize: '0.8rem', color: '#888' }}>organizer@eventum.com</div>
+              <div style={{ fontWeight: 700, color: '#111' }}>{user?.name || 'Organizer'}</div>
+              <div style={{ fontSize: '0.8rem', color: '#888' }}>{user?.email || 'organizer@eventum.com'}</div>
             </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <button style={{ background: 'none', border: 'none', textAlign: 'left', fontWeight: 600, padding: '0.5rem 0', color: '#111', display: 'flex', alignItems: 'center', gap: '8px' }}
+              onClick={() => { setIsMobileMenuOpen(false); window.location.hash = '#organizer-setup'; }}>
+              <User size={18} /> Edit Profile
+            </button>
+            <button style={{ background: 'none', border: 'none', textAlign: 'left', fontWeight: 600, padding: '0.5rem 0', color: '#111', display: 'flex', alignItems: 'center', gap: '8px' }}
+              onClick={() => { setIsMobileMenuOpen(false); setIsPasswordModalOpen(true); }}>
+              <Lock size={18} /> Change Password
+            </button>
+            <button style={{ background: 'none', border: 'none', textAlign: 'left', fontWeight: 600, padding: '0.5rem 0', color: '#111', display: 'flex', alignItems: 'center', gap: '8px' }}
+              onClick={() => { setIsMobileMenuOpen(false); window.location.hash = '#home'; }}>
+              <UserCircle size={18} /> User Dashboard
+            </button>
+            <button style={{ background: 'none', border: 'none', textAlign: 'left', fontWeight: 600, padding: '0.5rem 0', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '1rem' }}
+              onClick={logout}>
+              <LogOut size={18} /> Sign Out
+            </button>
           </div>
 
           {/* Nav Links */}
@@ -847,6 +915,8 @@ export default function OrganizerDashboard() {
       </main>
 
       <Footer />
+      {/* Modals */}
+      <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />
     </div>
   );
 }
