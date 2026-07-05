@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import api from '../api/axios';
-import { LayoutGrid, Plus, Bell, Search, Image as ImageIcon, MapPin, ChevronDown, CheckCircle, Users, Trophy, ArrowRight, Edit2, Check, Trash2, Download, Lock, Link as LinkIcon, Send, User, Mail, Phone } from 'lucide-react';
+import { LayoutGrid, Plus, Bell, Search, Image as ImageIcon, MapPin, ChevronDown, CheckCircle, Users, Trophy, ArrowRight, Edit2, Check, Trash2, Download, Lock, Link as LinkIcon, Send, User, Mail, Phone, Calendar, X } from 'lucide-react';
 import darkLogo from '../logo/dark logo.png';
 import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
@@ -566,7 +566,8 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
 // -------------------------------------------------------------
 function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const [capacity] = useState(event?.capacity?.toString() || '100');
-  const [partType] = useState(event?.participantType === 'team' ? 'Team' : 'Individual');
+  const [partType, setPartType] = useState(event?.participantType === 'team' ? 'Team' : 'Individual');
+  const [regWindow, setRegWindow] = useState('Open');
 
   const [tickets, setTickets] = useState<any[]>(event?.tickets?.length > 0 ? event.tickets : [{ id: 1, category: 'General Pass', price: 'Free' }]);
   const [isAddingTicket, setIsAddingTicket] = useState(false);
@@ -589,36 +590,33 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const [isAddingEdu, setIsAddingEdu] = useState(false);
   const [newEduField, setNewEduField] = useState('');
 
-  const [customQuestions, setCustomQuestions] = useState<any[]>(event?.customQuestions?.length > 0 ? event.customQuestions : [
-    { id: 1, question: 'Why do you want to join?', type: 'Text', required: 'Required' },
-    { id: 2, question: 'Do you need accommodation?', type: 'Checkbox', required: 'Optional' }
-  ]);
+  const [customQuestions, setCustomQuestions] = useState<any[]>(event?.customQuestions?.length > 0 ? event.customQuestions : []);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
-  const [newQuestion, setNewQuestion] = useState({ question: '', type: 'Text', required: 'Optional' });
+  const [newQuestion, setNewQuestion] = useState<any>({ question: '', type: 'Text', required: 'Optional', options: [] });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
        {/* Top Metrics */}
-       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <div style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-             <div style={{ width: '40px', height: '40px', background: '#fdf2f8', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Lock size={20} color="#ec4899" /></div>
+       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div className="card-hover" style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+             <div style={{ width: '40px', height: '40px', background: '#eff6ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Calendar size={20} color="#3b82f6" /></div>
              <div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111' }}>Registration Window</div>
-                <div style={{ fontSize: '0.8rem', color: '#666' }}>Open</div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111' }}>Registration window</div>
+                <select value={regWindow} onChange={(e) => setRegWindow(e.target.value)} style={{ fontSize: '0.8rem', color: '#111', border: '1px solid #eaeaea', background: '#f8fafc', outline: 'none', padding: '4px 8px', marginTop: '4px', cursor: 'pointer', borderRadius: '4px' }}>
+                   <option value="Open">Open</option>
+                   <option value="Closed">Closed</option>
+                   <option value="Draft">Draft</option>
+                </select>
              </div>
           </div>
-          <div style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-             <div style={{ width: '40px', height: '40px', background: '#eff6ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={20} color="#3b82f6" /></div>
-             <div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111' }}>Event Capacity</div>
-                <div style={{ fontSize: '0.8rem', color: '#666' }}>{capacity}</div>
-             </div>
-          </div>
-          <div style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div className="card-hover" style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
              <div style={{ width: '40px', height: '40px', background: '#f3e8ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={20} color="#a855f7" /></div>
              <div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111' }}>Participation type</div>
-                <div style={{ fontSize: '0.8rem', color: '#666' }}>{partType}</div>
+                <select value={partType} onChange={(e) => setPartType(e.target.value)} style={{ fontSize: '0.8rem', color: '#111', border: '1px solid #eaeaea', background: '#f8fafc', outline: 'none', padding: '4px 8px', marginTop: '4px', cursor: 'pointer', borderRadius: '4px' }}>
+                   <option value="Individual">Individual</option>
+                   <option value="Team">Team</option>
+                </select>
              </div>
           </div>
        </div>
@@ -635,7 +633,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                <div key={t.id} style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem 1.5rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ fontWeight: 600, color: '#111', fontSize: '0.95rem' }}>{t.category}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ color: '#666', fontSize: '0.9rem' }}>{t.price}</div>
+                    <div style={{ color: '#666', fontSize: '0.9rem' }}>{t.price === 'Free' || t.price.toLowerCase() === 'free' ? 'Free' : (t.price.includes('₹') ? t.price : '₹' + t.price)}</div>
                     <Trash2 size={16} color="#ef4444" style={{ cursor: 'pointer' }} onClick={async () => {
                        const updated = tickets.filter(ticket => ticket.id !== t.id);
                        setTickets(updated);
@@ -648,7 +646,10 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
             {isAddingTicket && (
                <div style={{ background: '#fff', border: '1px dashed #ccc', padding: '1rem 1.5rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <input type="text" placeholder="Category Name" value={newTicket.category} onChange={e => setNewTicket({...newTicket, category: e.target.value})} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }} />
-                  <input type="text" placeholder="Price (e.g. Free, $10)" value={newTicket.price} onChange={e => setNewTicket({...newTicket, price: e.target.value})} style={{ width: '150px', padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '1rem', fontWeight: 600, color: '#111' }}>₹</span>
+                    <input type="text" placeholder="Price (in INR)" value={newTicket.price} onChange={e => setNewTicket({...newTicket, price: e.target.value})} style={{ width: '150px', padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }} />
+                  </div>
                   <button onClick={async () => {
                      if(newTicket.category) {
                         const updated = [...tickets, { id: Date.now(), ...newTicket }];
@@ -783,8 +784,8 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                         <div style={{ display: 'flex', gap: '1rem' }}>
                            <select value={newQuestion.type} onChange={e => setNewQuestion({...newQuestion, type: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ccc', flex: 1 }}>
                               <option value="Text">Text</option>
-                              <option value="Checkbox">Checkbox</option>
                               <option value="Dropdown">Dropdown</option>
+                              <option value="Checkbox">Checkbox</option>
                               <option value="File Upload">File Upload</option>
                            </select>
                            <select value={newQuestion.required} onChange={e => setNewQuestion({...newQuestion, required: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ccc', flex: 1 }}>
@@ -792,6 +793,31 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                               <option value="Optional">Optional</option>
                            </select>
                         </div>
+                        
+                        {(newQuestion.type === 'Checkbox' || newQuestion.type === 'Dropdown') && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                             <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Options</div>
+                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                               {(newQuestion.options || []).map((opt: string, idx: number) => (
+                                 <div key={idx} style={{ background: '#f3e8ff', color: '#9333ea', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                   {opt} <X size={12} style={{ cursor: 'pointer' }} onClick={() => setNewQuestion({...newQuestion, options: (newQuestion.options || []).filter((_: any, i: number) => i !== idx)})} />
+                                 </div>
+                               ))}
+                             </div>
+                             <div style={{ display: 'flex', gap: '8px' }}>
+                               <input type="text" placeholder="Add option" id="new-option-input" style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc', flex: 1 }} />
+                               <button type="button" onClick={() => {
+                                 const input = document.getElementById('new-option-input') as HTMLInputElement;
+                                 if (input && input.value.trim()) {
+                                   const currentOptions = newQuestion.options || [];
+                                   setNewQuestion({...newQuestion, options: [...currentOptions, input.value.trim()]});
+                                   input.value = '';
+                                 }
+                               }} style={{ background: '#111', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>Add Option</button>
+                             </div>
+                          </div>
+                        )}
+                        
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
                            <button onClick={() => setIsAddingQuestion(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
                            <button onClick={async () => {
@@ -799,7 +825,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                                  const updated = [...customQuestions, { id: Date.now(), ...newQuestion }];
                                  setCustomQuestions(updated);
                                  await saveEvent({ customQuestions: updated });
-                                 setNewQuestion({ question: '', type: 'Text', required: 'Optional' });
+                                 setNewQuestion({ question: '', type: 'Text', required: 'Optional', options: [] });
                                  setIsAddingQuestion(false);
                               }
                            }} style={{ background: '#111', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Save Question</button>
@@ -815,6 +841,14 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
 
          </div>
        </div>
+       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', borderTop: '1px solid #eaeaea', paddingTop: '1.5rem' }}>
+          <button onClick={async () => {
+             await saveEvent({ participantType: partType === 'Team' ? 'team' : 'individual' });
+             alert('Registration details saved successfully!');
+          }} style={{ background: '#7c3aed', color: '#fff', padding: '12px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.95rem' }}>
+              Save Registration Details
+          </button>
+       </div>
     </div>
   );
 }
@@ -825,6 +859,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
 function ParticipantsTab({ event }: { event: any }) {
   const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'list' | 'detailed'>('list');
 
   useEffect(() => {
     let interval: any;
@@ -863,21 +898,44 @@ function ParticipantsTab({ event }: { event: any }) {
        {/* Analytics Placeholder */}
        <div style={{ border: '1px solid #eaeaea', borderRadius: '12px', padding: '1.5rem', background: '#fff' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Page Views</h3>
-             <select style={{ background: '#eaeaea', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, outline: 'none' }}><option>Last 7 Days</option></select>
+             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Registration Analytics</h3>
           </div>
-          {/* Mock Bar Chart */}
-          <div style={{ height: '200px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', borderBottom: '1px solid #eaeaea', paddingBottom: '1rem' }}>
-             <div style={{ width: '4px', height: '0%', background: '#ec4899' }} />
-             <div style={{ width: '4px', height: '0%', background: '#ec4899' }} />
-             <div style={{ width: '4px', height: '60%', background: '#ec4899' }} />
-             <div style={{ width: '4px', height: '90%', background: '#ec4899' }} />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '1rem', color: '#888', fontSize: '0.8rem', fontWeight: 600 }}>
-             <span>13 June</span>
-             <span>14 June</span>
-             <span>15 June</span>
-          </div>
+          {/* Real Bar Chart */}
+          {(() => {
+            const total = Math.max(participants.length, 1);
+            const checkedIn = participants.filter(p => p.checkedIn).length;
+            const paid = participants.filter(p => p.type !== 'Free').length;
+            const free = participants.filter(p => p.type === 'Free').length;
+
+            return (
+              <>
+                <div style={{ height: '200px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', borderBottom: '1px solid #eaeaea', paddingBottom: '1rem' }}>
+                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end', width: '20%' }}>
+                      <div style={{ fontWeight: 800, color: '#ec4899', fontSize: '1rem' }}>{participants.length}</div>
+                      <div style={{ width: '100%', maxWidth: '40px', height: `${(participants.length / total) * 100}%`, background: '#ec4899', borderRadius: '4px 4px 0 0', minHeight: '4px' }} title="Total Registrations" />
+                   </div>
+                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end', width: '20%' }}>
+                      <div style={{ fontWeight: 800, color: '#22c55e', fontSize: '1rem' }}>{checkedIn}</div>
+                      <div style={{ width: '100%', maxWidth: '40px', height: `${(checkedIn / total) * 100}%`, background: '#22c55e', borderRadius: '4px 4px 0 0', minHeight: '4px' }} title="Checked In" />
+                   </div>
+                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end', width: '20%' }}>
+                      <div style={{ fontWeight: 800, color: '#3b82f6', fontSize: '1rem' }}>{paid}</div>
+                      <div style={{ width: '100%', maxWidth: '40px', height: `${(paid / total) * 100}%`, background: '#3b82f6', borderRadius: '4px 4px 0 0', minHeight: '4px' }} title="Paid Tickets" />
+                   </div>
+                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end', width: '20%' }}>
+                      <div style={{ fontWeight: 800, color: '#8b5cf6', fontSize: '1rem' }}>{free}</div>
+                      <div style={{ width: '100%', maxWidth: '40px', height: `${(free / total) * 100}%`, background: '#8b5cf6', borderRadius: '4px 4px 0 0', minHeight: '4px' }} title="Free Tickets" />
+                   </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '1rem', color: '#888', fontSize: '0.8rem', fontWeight: 600 }}>
+                   <span style={{ width: '20%', textAlign: 'center' }}>Total</span>
+                   <span style={{ width: '20%', textAlign: 'center' }}>Checked In</span>
+                   <span style={{ width: '20%', textAlign: 'center' }}>Paid</span>
+                   <span style={{ width: '20%', textAlign: 'center' }}>Free</span>
+                </div>
+              </>
+            );
+          })()}
        </div>
 
        {/* Total Registrations */}
@@ -887,18 +945,14 @@ function ParticipantsTab({ event }: { event: any }) {
          {participants.length > 0 ? (() => {
            const total = participants.length;
            const checkedIn = participants.filter(p => p.checkedIn).length;
-           const pending = total - checkedIn;
-           const checkedInPct = Math.round((checkedIn / total) * 100);
-           const pendingPct = Math.round((pending / total) * 100);
+           const checkedInPct = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
            
            return (
              <>
-               <div style={{ display: 'flex', height: '12px', borderRadius: '6px', overflow: 'hidden', marginBottom: '1rem' }}>
-                  <div style={{ width: `${pendingPct}%`, background: '#f97316' }} title={`Pending: ${pendingPct}%`} />
+               <div style={{ display: 'flex', height: '12px', borderRadius: '6px', overflow: 'hidden', marginBottom: '1rem', background: '#fbcfe8' }}>
                   <div style={{ width: `${checkedInPct}%`, background: '#22c55e' }} title={`Checked In: ${checkedInPct}%`} />
                </div>
                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', fontWeight: 700, flexWrap: 'wrap' }}>
-                  <span style={{ color: '#f97316' }}>• {pending} Pending</span>
                   <span style={{ color: '#22c55e' }}>• {checkedIn} Checked In</span>
                   <span style={{ color: '#ec4899' }}>• {total} Total Registrations</span>
                </div>
@@ -920,20 +974,25 @@ function ParticipantsTab({ event }: { event: any }) {
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-               <button style={{ background: '#fff', border: '1px solid #eaeaea', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <button onClick={() => setViewMode('list')} style={{ background: viewMode === 'list' ? '#111' : '#fff', color: viewMode === 'list' ? '#fff' : '#111', border: '1px solid #eaeaea', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                  <LayoutGrid size={14} /> All Participants
                </button>
-               <button style={{ background: '#fff', border: '1px solid #eaeaea', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 <Download size={14} /> Download Data
-               </button>
+               <div style={{ display: 'flex', gap: '1rem' }}>
+                 <button onClick={() => setViewMode('detailed')} style={{ background: viewMode === 'detailed' ? '#111' : '#fff', color: viewMode === 'detailed' ? '#fff' : '#111', border: '1px solid #eaeaea', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                   <LayoutGrid size={14} /> View Data
+                 </button>
+                 <button style={{ background: '#fff', border: '1px solid #eaeaea', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                   <Download size={14} /> Download Data
+                 </button>
+               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
                {loading ? (
                  <div style={{ padding: '1rem', textAlign: 'center', color: '#666' }}>Loading participants...</div>
                ) : participants.length === 0 ? (
                  <div style={{ padding: '1rem', textAlign: 'center', color: '#666' }}>No participants registered yet.</div>
-               ) : (
+               ) : viewMode === 'list' ? (
                  participants.map((p, i) => (
                     <div key={p.id || i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', padding: '12px 1rem', borderRadius: '8px', border: '1px solid #eaeaea', flexWrap: 'wrap', gap: '1rem' }}>
                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '200px' }}>
@@ -944,13 +1003,92 @@ function ParticipantsTab({ event }: { event: any }) {
                        <div style={{ fontSize: '0.85rem', color: '#666' }}>{p.phone || 'N/A'}</div>
                        
                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
-                          <span style={{ fontWeight: 700, fontSize: '0.85rem', color: p.status === 'Registered' || p.status === 'completed' ? '#22c55e' : '#888' }}>{p.status}</span>
-                          <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', background: p.checkedIn ? '#dcfce7' : '#f1f5f9', color: p.checkedIn ? '#166534' : '#475569', fontWeight: 600 }}>
-                            {p.checkedIn ? 'Checked In' : 'Pending'}
-                          </span>
+                          <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#22c55e' }}>{p.status}</span>
+                          {p.checkedIn && (
+                            <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', background: '#dcfce7', color: '#166534', fontWeight: 600 }}>
+                              Checked In
+                            </span>
+                          )}
+                          <button onClick={async () => {
+                            if(window.confirm('Are you sure you want to deregister this participant?')) {
+                              try {
+                                await api.delete(`/events/${event._id || event.id}/participants/${p.id}`);
+                                alert('Participant deregistered successfully!');
+                                window.location.reload();
+                              } catch(err) { alert('Failed to deregister'); }
+                            }
+                          }} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '6px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600 }} title="Deregister">
+                            Deregister
+                          </button>
                        </div>
                     </div>
                  ))
+               ) : (
+                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                   {participants.map((p, i) => (
+                     <div key={p.id || i} style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                           <img src={p.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.name}`} alt="" style={{ width: 48, height: 48, borderRadius: '50%', border: '1px solid #eaeaea' }} />
+                           <div>
+                             <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#111' }}>{p.name}</h4>
+                             <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '2px' }}>{p.email}</div>
+                             <div style={{ fontSize: '0.8rem', color: '#666' }}>{p.phone || 'No phone'}</div>
+                           </div>
+                         </div>
+                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                           <span style={{ background: '#f3e8ff', color: '#9333ea', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700 }}>
+                             {p.type} Pass
+                           </span>
+                           <span style={{ color: '#22c55e', fontSize: '0.75rem', fontWeight: 700 }}>
+                             {p.status}
+                           </span>
+                         </div>
+                       </div>
+                       <div style={{ borderTop: '1px dashed #eaeaea', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                         <h5 style={{ margin: '0 0 12px 0', fontSize: '0.95rem', color: '#111', fontWeight: 800 }}>Registration Data</h5>
+                         {p.answers && p.answers.length > 0 ? (
+                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                             {p.answers.map((ans: any, idx: number) => {
+                               const isLink = ans.answer && typeof ans.answer === 'string' && (ans.answer.startsWith('http') || ans.answer.startsWith('blob:'));
+                               return (
+                                 <div key={idx} style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                                   <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, marginBottom: '4px' }}>{ans.question}</div>
+                                   {isLink ? (
+                                     <a href={ans.answer} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: '#3b82f6', textDecoration: 'none', background: '#eff6ff', padding: '4px 10px', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+                                       <Download size={14} /> View File
+                                     </a>
+                                   ) : (
+                                     <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 600, wordBreak: 'break-word' }}>
+                                       {ans.answer || <span style={{ color: '#94a3b8', fontStyle: 'italic', fontWeight: 400 }}>N/A</span>}
+                                     </div>
+                                   )}
+                                 </div>
+                               );
+                             })}
+                           </div>
+                         ) : (
+                           <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px dashed #cbd5e1', color: '#64748b', fontSize: '0.85rem', textAlign: 'center', fontWeight: 500 }}>
+                             No extra registration data provided.
+                           </div>
+                         )}
+                       </div>
+                       <div style={{ display: 'flex', gap: '8px', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #eaeaea' }}>
+                          <button onClick={async () => {
+                            if(window.confirm('Are you sure you want to deregister this participant?')) {
+                              try {
+                                await api.delete(`/events/${event._id || event.id}/participants/${p.id}`);
+                                alert('Participant deregistered successfully!');
+                                window.location.reload();
+                              } catch(err) { alert('Failed to deregister'); }
+                            }
+                          }} style={{ flex: 1, background: '#fee2e2', color: '#ef4444', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                            Deregister
+                          </button>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
                )}
             </div>
          </div>
@@ -963,6 +1101,7 @@ function ParticipantsTab({ event }: { event: any }) {
 // ANNOUNCEMENT TAB
 // -------------------------------------------------------------
 function AnnouncementTab({ event, saveEvent }: { event: any, saveEvent: any }) {
+  const { user } = useAuth();
   const [announcements, setAnnouncements] = useState<any[]>(event?.announcements || []);
   const [newAnnouncement, setNewAnnouncement] = useState('');
   
@@ -979,7 +1118,7 @@ function AnnouncementTab({ event, saveEvent }: { event: any, saveEvent: any }) {
          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0 0 1rem 0', color: '#111' }}>Announcement</h3>
          <div style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', gap: '1rem' }}>
-               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer" alt="" style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid #ccc' }} />
+               <img src={user?.avatar || darkLogo} alt="Club Logo" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
                <textarea value={newAnnouncement} onChange={e => setNewAnnouncement(e.target.value)} placeholder="Send an Announcement..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '1rem', minHeight: '80px', resize: 'none' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -1005,7 +1144,7 @@ function AnnouncementTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                <div style={{ color: '#888', fontSize: '0.9rem' }}>No announcements yet.</div>
             ) : announcements.map((ann, idx) => (
                <div key={idx} style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1.5rem', borderRadius: '12px', display: 'flex', gap: '1rem' }}>
-                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer" alt="" style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid #ccc' }} />
+                  <img src={user?.avatar || darkLogo} alt="Club Logo" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
                   <div>
                      <div style={{ fontWeight: 800, fontSize: '1rem', color: '#111', marginBottom: '0.5rem' }}>{ann.title || 'Announcement'} <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 'normal', marginLeft: '8px' }}>{new Date(ann.date).toLocaleDateString()}</span></div>
                      <div style={{ fontSize: '0.9rem', color: '#555', marginBottom: '1rem', whiteSpace: 'pre-wrap' }}>{ann.content}</div>
@@ -1026,9 +1165,7 @@ function SettingsTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const [visibility, setVisibility] = useState(event?.visibility || 'Public');
   const [regControl, setRegControl] = useState(event?.registrationControl || 'Require Approval');
 
-  const [teamMembers, setTeamMembers] = useState<any[]>(event?.organizingTeam?.length > 0 ? event.organizingTeam : [
-    { id: 1, name: 'Ninja Hatori', email: 'user@example.edu.in', phone: '98765-12345', role: 'Admin', color: '#ec4899' }
-  ]);
+  const [teamMembers, setTeamMembers] = useState<any[]>(event?.organizingTeam?.length > 0 ? event.organizingTeam : []);
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [newMember, setNewMember] = useState({ name: '', email: '', phone: '', role: 'Coordinator' });
 
@@ -1118,20 +1255,7 @@ function SettingsTab({ event, saveEvent }: { event: any, saveEvent: any }) {
          </div>
        </div>
 
-       {/* Registration Control */}
-       <div>
-         <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0 0 1rem 0', color: '#111' }}>Registration Control</h3>
-         <div style={{ border: '1px solid #eaeaea', padding: '12px 1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>Registration Control</span>
-            <select value={regControl} onChange={async e => {
-               setRegControl(e.target.value);
-               await saveEvent({ registrationControl: e.target.value });
-            }} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', color: '#888', cursor: 'pointer' }}>
-               <option value="Require Approval">Require Approval</option>
-               <option value="Auto Approve">Auto Approve</option>
-            </select>
-         </div>
-       </div>
+
 
        {/* Cancel Event */}
        <div>
@@ -1154,6 +1278,8 @@ export default function ManageEvent() {
   const [eventData, setEventData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
   const { user } = useAuth();
 
   useEffect(() => {
@@ -1170,6 +1296,7 @@ export default function ManageEvent() {
         
         const { data } = await api.get(`/events/${id}`);
         setEventData(data);
+        setEditedTitle(data.title);
       } catch (err: any) {
         setError(err.response?.data?.message || err.message || 'Failed to load event');
       } finally {
@@ -1279,7 +1406,37 @@ export default function ManageEvent() {
         
         {/* Header & Button */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <h1 style={{ fontSize: '2.2rem', fontWeight: 800, margin: 0 }}>Event Name<span style={{ color: '#ec4899' }}>.</span></h1>
+          {isEditingTitle ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input 
+                autoFocus
+                value={editedTitle} 
+                onChange={(e) => setEditedTitle(e.target.value)}
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter') {
+                    const success = await saveEvent({ title: editedTitle });
+                    if (success) setIsEditingTitle(false);
+                  } else if (e.key === 'Escape') {
+                    setIsEditingTitle(false);
+                    setEditedTitle(eventData?.title || '');
+                  }
+                }}
+                onBlur={() => {
+                  setIsEditingTitle(false);
+                  setEditedTitle(eventData?.title || '');
+                }}
+                style={{ fontSize: '2.2rem', fontWeight: 800, margin: 0, padding: '0 8px', border: '2px solid #7c3aed', borderRadius: '8px', outline: 'none', background: '#fff', color: '#111' }}
+              />
+              <button onClick={async () => {
+                const success = await saveEvent({ title: editedTitle });
+                if (success) setIsEditingTitle(false);
+              }} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 12px', cursor: 'pointer', fontWeight: 700 }}>Save</button>
+            </div>
+          ) : (
+            <h1 onClick={() => setIsEditingTitle(true)} style={{ fontSize: '2.2rem', fontWeight: 800, margin: 0, cursor: 'pointer' }} title="Click to edit">
+              {eventData?.title || 'Event Name'}<span style={{ color: '#ec4899' }}>.</span>
+            </h1>
+          )}
           <button style={{ 
             background: '#7c3aed', color: '#fff', border: 'none', padding: '10px 20px', 
             borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',

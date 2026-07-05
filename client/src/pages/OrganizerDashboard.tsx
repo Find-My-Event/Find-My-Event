@@ -68,22 +68,48 @@ export default function OrganizerDashboard() {
   
   const [capacity, setCapacity] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [eventsList, setEventsList] = useState<any[]>([]); // Store created events
+
+  // Fetch Events from API
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/organizer/events', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEventsList(data);
+      }
+    } catch (err) {
+      console.error('Error fetching events:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'events') {
+      fetchEvents();
+    }
+  }, [activeTab]);
 
   const showError = (msg: string) => {
     setFormError(msg);
     setTimeout(() => setFormError(''), 4000);
   };
 
-  const handleCreateEvent = () => {
+  const handleCreateEvent = async () => {
+    if (isSubmitting) return;
     setFormError('');
     const finalLocation = selectedMockLocation ? selectedMockLocation.title : location;
     
     // Strict Validation
     if (!eventName.trim() || !category || (category === 'custom' && !customCategory.trim()) || 
-        !startDate || !startTime || !endDate || !endTime || !finalLocation || !imagePreview) {
+        !startDate || !startTime || !endDate || !endTime || !finalLocation || !imageFile) {
       showError('Please fill in all required fields and upload an event poster.');
       return;
     }
@@ -96,46 +122,68 @@ export default function OrganizerDashboard() {
       return;
     }
 
-    const newEvent = {
-      id: Math.random().toString(36).substring(7),
-      name: eventName,
-      category: category === 'custom' ? customCategory : category,
-      description,
-      startDate,
-      startTime,
-      endDate,
-      endTime,
-      location: finalLocation,
-      ticketType,
-      ticketPrice: ticketType === 'Paid' ? ticketPrice : 'Free',
-      capacity: capacity || 'Unlimited',
-      imagePreview
-    };
+    setIsSubmitting(true);
+    const formData = new FormData();
+    formData.append('title', eventName);
+    formData.append('category', category === 'custom' ? customCategory : category);
+    formData.append('description', description);
+    formData.append('date', `${startDate} • ${startTime}`); // Combining to match schema
+    formData.append('startDate', `${startDate}T${startTime}`);
+    formData.append('endDate', `${endDate}T${endTime}`);
+    // Since schema has mode and location, let's map venue/location
+    formData.append('venue', finalLocation);
+    formData.append('location', finalLocation);
+    formData.append('capacity', capacity || '0');
+    formData.append('ticketType', ticketType);
+    formData.append('price', ticketType === 'Paid' ? ticketPrice : 'Free');
+    formData.append('seats', maxTickets ? maxTickets : 'Limited');
+    formData.append('rules', instructions);
+    formData.append('image', imageFile);
 
-    setEventsList(prev => [...prev, newEvent]);
+    try {
+      const res = await fetch('http://localhost:5000/api/organizer/events', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
 
-    // Reset Form
-    setEventName('');
-    setCategory('');
-    setCustomCategory('');
-    setDescription('');
-    setInstructions('');
-    setStartDate('');
-    setStartTime('');
-    setEndDate('');
-    setEndTime('');
-    setLocation('');
-    setTicketType('Free');
-    setTicketPrice('');
-    setMaxTickets('');
-    setCapacity('');
-    setImagePreview(null);
-    setSelectedMockLocation(null);
-    setLocationSearchTerm('');
-    setIsLocationExpanded(false);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to create event');
+      }
 
-    // Redirect to Events list
-    navigateTo('events');
+      // Reset Form
+      setEventName('');
+      setCategory('');
+      setCustomCategory('');
+      setDescription('');
+      setInstructions('');
+      setStartDate('');
+      setStartTime('');
+      setEndDate('');
+      setEndTime('');
+      setLocation('');
+      setTicketType('Free');
+      setTicketPrice('');
+      setMaxTickets('');
+      setCapacity('');
+      setImagePreview(null);
+      setImageFile(null);
+      setSelectedMockLocation(null);
+      setLocationSearchTerm('');
+      setIsLocationExpanded(false);
+
+      // Redirect to Events list and fetch updated
+      navigateTo('events');
+      fetchEvents();
+    } catch (err: any) {
+      console.error(err);
+      showError(err.message || 'An error occurred while creating the event.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
@@ -157,10 +205,18 @@ export default function OrganizerDashboard() {
 
   const now = new Date();
   const processedEvents = eventsList.map(ev => {
-    const startObj = parseEventDate(ev.startDate, ev.startTime);
-    const endObj = ev.endDate ? parseEventDate(ev.endDate, ev.endTime) : startObj;
+    // We stored date as "YYYY-MM-DD • HH:MM am/pm". We should parse intelligently.
+    // Or just use createdAt if we don't have a reliable parser for custom date strings here.
+    // Let's use the DB's startDate if available, else fallback
+    const startObj = ev.startDate ? new Date(ev.startDate) : new Date(ev.createdAt);
+    const endObj = ev.endDate ? new Date(ev.endDate) : startObj;
+    
     return {
       ...ev,
+      // Map API fields to UI expected fields
+      name: ev.title,
+      location: ev.venue || ev.location,
+      imagePreview: ev.image,
       startObj,
       endObj,
       isPast: endObj < now
@@ -466,12 +522,12 @@ export default function OrganizerDashboard() {
              ) : (
                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                  {filteredEvents.map((ev, index) => {
-                   const formatted = formatEventDate(ev.startObj);
-                   const endFormatted = formatEventDate(ev.endObj);
+                   const formatted = formatEventDate(new Date(ev.startObj));
+                   const endFormatted = formatEventDate(new Date(ev.endObj));
                    const timeRange = ev.endDate && ev.endTime ? `${formatted.timeStr} - ${endFormatted.timeStr}` : formatted.timeStr;
                    
                    return (
-                     <div className="mobile-timeline-row" key={ev.id} style={{ display: 'flex', gap: '2rem', position: 'relative' }}>
+                     <div className="mobile-timeline-row" key={ev._id} style={{ display: 'flex', gap: '2rem', position: 'relative' }}>
                        
                        {/* Left Column: Timeline Node */}
                        <div className="mobile-timeline-node" style={{ width: '120px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingTop: '1rem', position: 'relative' }}>
@@ -521,7 +577,7 @@ export default function OrganizerDashboard() {
                            {/* Manage Event Button */}
                            <div>
                              <button 
-                               onClick={() => window.location.hash = `#edit-event?id=${ev.id}`}
+                               onClick={() => window.location.hash = `#edit-event?id=${ev._id}`}
                                style={{ background: '#111', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', transition: 'opacity 0.2s' }} 
                                onMouseOver={e=>e.currentTarget.style.opacity='0.8'} 
                                onMouseOut={e=>e.currentTarget.style.opacity='1'}
@@ -573,9 +629,11 @@ export default function OrganizerDashboard() {
                   }}>
                     <input id="image-upload" type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        setImageFile(file);
                         const reader = new FileReader();
                         reader.onload = (e) => setImagePreview(e.target?.result as string);
-                        reader.readAsDataURL(e.target.files[0]);
+                        reader.readAsDataURL(file);
                       }
                     }} />
 
@@ -901,11 +959,12 @@ export default function OrganizerDashboard() {
                       )}
                       <button 
                         onClick={handleCreateEvent}
-                        style={{ width: '100%', background: '#111', color: '#fff', border: 'none', padding: '18px', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer', transition: 'background 0.2s' }}
-                        onMouseOver={e=>e.currentTarget.style.background='#000'} 
-                        onMouseOut={e=>e.currentTarget.style.background='#111'}
+                        disabled={isSubmitting}
+                        style={{ width: '100%', background: isSubmitting ? '#555' : '#111', color: '#fff', border: 'none', padding: '18px', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 800, cursor: isSubmitting ? 'not-allowed' : 'pointer', transition: 'background 0.2s' }}
+                        onMouseOver={e=> { if (!isSubmitting) e.currentTarget.style.background='#000'; }} 
+                        onMouseOut={e=> { if (!isSubmitting) e.currentTarget.style.background='#111'; }}
                       >
-                        Create Event
+                        {isSubmitting ? 'Creating Event...' : 'Create Event'}
                       </button>
                    </div>
                 </div>

@@ -166,4 +166,67 @@ router.post('/verify-password-change', requireAuth, requireOrganizer, async (req
   }
 });
 
+// GET /api/organizer/events
+// Fetch all events created by the logged-in organizer
+router.get('/events', requireAuth, requireOrganizer, async (req, res) => {
+  try {
+    const events = await require('../models/ClubsEvent').find({ createdBy: req.user.id }).sort({ createdAt: -1 });
+    res.status(200).json(events);
+  } catch (err) {
+    console.error('Error fetching organizer events:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/organizer/events
+// Create a new event by the logged-in organizer
+router.post('/events', requireAuth, requireOrganizer, upload.single('image'), async (req, res) => {
+  try {
+    const club = await Club.findOne({ organizerAccount: req.user.id });
+    if (!club) {
+      return res.status(404).json({ message: 'Club profile not found. Cannot create event.' });
+    }
+
+    const { title, description, date, venue, category, price, seats, tag, startDate, endDate, mode, location, capacity, rules } = req.body;
+    
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload an image for the event' });
+    }
+
+    const ClubsEvent = require('../models/ClubsEvent');
+    
+    const event = new ClubsEvent({
+      title,
+      description: description || 'No description provided.',
+      organizer: club.name, // Set organizer name to the club's name
+      date,
+      venue,
+      startDate,
+      endDate,
+      mode,
+      location,
+      capacity: capacity ? Number(capacity) : 0,
+      image: req.file.path,
+      category: category || 'General',
+      price: price || 'Free',
+      seats: seats || 'Limited',
+      tag: tag || '',
+      rules: rules || '',
+      createdBy: req.user.id,
+      clubId: club._id
+    });
+
+    const savedEvent = await event.save();
+    
+    // Optionally increment eventsConducted
+    club.eventsConducted += 1;
+    await club.save();
+
+    res.status(201).json(savedEvent);
+  } catch (err) {
+    console.error('Error creating organizer event:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

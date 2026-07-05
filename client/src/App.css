@@ -182,3 +182,13 @@
     border-right-color: var(--border);
   }
 }
+
+.card-hover {
+  border: 1px solid #eaeaea !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-left 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border-left: 4px solid var(--accent, #a855f7) !important;
+}

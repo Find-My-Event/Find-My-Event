@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Users, Edit, Loader2, Trophy, Phone, FileText, ChevronRight, GraduationCap, ChevronUp, User } from 'lucide-react';
+import { MapPin, Users, Edit, Loader2, Trophy, Phone, FileText, ChevronRight, GraduationCap, ChevronUp, User, Mail, Bell } from 'lucide-react';
 import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
@@ -207,23 +207,34 @@ const EventDetail = ({ hash }: { hash?: string }) => {
               {rawEvent?.contacts && rawEvent.contacts.length > 0 && (
                 <div style={{ paddingTop: '1rem' }}>
                   <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, marginBottom: '0.5rem' }}>Contact details:</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div style={{ background: '#fdf2f8', padding: '4px', borderRadius: '4px' }}><User size={12} color="#db2777" /></div>
-                      <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 500 }}>Coordinator: {rawEvent.contacts[0].name}</span>
-                    </div>
-                    {rawEvent.contacts[0].phone && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <div style={{ background: '#eff6ff', padding: '4px', borderRadius: '4px' }}><Phone size={12} color="#2563eb" /></div>
-                        <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 500 }}>{rawEvent.contacts[0].phone}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {rawEvent.contacts.map((contact: any, idx: number) => (
+                      <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {idx > 0 && <div style={{ borderTop: '1px solid #f1f5f9', margin: '0.5rem 0' }}></div>}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ background: '#fdf2f8', padding: '4px', borderRadius: '4px' }}><User size={12} color="#db2777" /></div>
+                          <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 500 }}>Coordinator: {contact.name || 'N/A'}</span>
+                        </div>
+                        {contact.phone && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ background: '#eff6ff', padding: '4px', borderRadius: '4px' }}><Phone size={12} color="#2563eb" /></div>
+                            <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 500 }}>{contact.phone}</span>
+                          </div>
+                        )}
+                        {contact.email && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ background: '#f3e8ff', padding: '4px', borderRadius: '4px' }}><Mail size={12} color="#9333ea" /></div>
+                            <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 500 }}>{contact.email}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
               )}
             </div>
             
-            {/* More / Rules */}
+             {/* More / Rules */}
             <div style={{ marginTop: '0.5rem' }}>
                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a' }}>More</h3>
                <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
@@ -241,6 +252,28 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                  )}
                </div>
             </div>
+
+            {/* Announcements */}
+            {rawEvent?.announcements && rawEvent.announcements.length > 0 && (
+              <div style={{ marginTop: '2rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Bell size={18} color="#0f172a" /> Announcements
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {rawEvent.announcements.map((ann: any, idx: number) => (
+                    <div key={idx} style={{ background: '#fff', borderRadius: '8px', border: '1px solid #f1f5f9', padding: '1rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                        <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>{ann.title || 'Announcement'}</h4>
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>{new Date(ann.date).toLocaleDateString()}</span>
+                      </div>
+                      <p style={{ fontSize: '0.85rem', color: '#475569', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                        {ann.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
 
@@ -317,7 +350,11 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                   <div>
                     <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>Team Size</div>
                     <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
-                      {rawEvent?.teamMin && rawEvent?.teamMax ? `${rawEvent.teamMin} - ${rawEvent.teamMax} Members / ${rawEvent.participantType === 'individual' ? 'Individual' : 'Team'}` : '1 - 4 Members / Individual'}
+                      {rawEvent?.participantType === 'individual' 
+                        ? '1 Member / Individual' 
+                        : (rawEvent?.teamMin && rawEvent?.teamMax 
+                            ? `${rawEvent.teamMin} - ${rawEvent.teamMax} Members / Team` 
+                            : '1 - 4 Members / Team')}
                     </div>
                   </div>
                 </div>

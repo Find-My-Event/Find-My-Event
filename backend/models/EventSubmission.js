@@ -48,7 +48,9 @@ const eventSubmissionSchema = new mongoose.Schema(
     customQuestions: [{
       question: String,
       type: { type: String, enum: ['Text', 'Checkbox', 'Radio', 'Dropdown', 'File Upload'], default: 'Text' },
-      required: { type: String, enum: ['Required', 'Optional', 'Off'], default: 'Optional' }
+      required: { type: String, enum: ['Required', 'Optional', 'Off'], default: 'Optional' },
+      options: [String],
+      selectionType: { type: String, enum: ['Single', 'Multiple'], default: 'Multiple' }
     }],
     tickets: [{
       category: String,

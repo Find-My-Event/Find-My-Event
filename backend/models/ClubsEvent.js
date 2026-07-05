@@ -129,6 +129,11 @@ const eventSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  clubId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Club',
+    required: true
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -140,4 +145,4 @@ const eventSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Event', eventSchema);
+module.exports = mongoose.model('ClubsEvent', eventSchema);

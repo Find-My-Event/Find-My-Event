@@ -6,6 +6,7 @@ const { transporter } = require('../utils/email');
 
 const Event = require('../models/Event');
 const EventSubmission = require('../models/EventSubmission');
+const ClubsEvent = require('../models/ClubsEvent');
 const { protect } = require('../middleware/authMiddleware');
 const { softAuth, requireAuth, requireAdmin } = require('../middleware/auth');
 const { upload } = require('../config/cloudinary');
@@ -273,7 +274,6 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
 router.get('/', softAuth, async (req, res) => {
   try {
     const events = await Event.find({}).sort({ date: 1 }).lean();
-    
     const eventsWithPricing = await Promise.all(events.map(async (event) => {
       const pricing = await PaidEventDetail.findOne({ event: event._id }).lean();
       if (pricing) pricing.isPaid = true;
@@ -281,7 +281,16 @@ router.get('/', softAuth, async (req, res) => {
       return { ...event, pricing, isRegistered };
     }));
 
-    res.json(eventsWithPricing);
+    const clubsEvents = await ClubsEvent.find({}).sort({ createdAt: -1 }).lean();
+    const clubsEventsWithPricing = await Promise.all(clubsEvents.map(async (event) => {
+      const pricing = await PaidEventDetail.findOne({ event: event._id }).lean();
+      if (pricing) pricing.isPaid = true;
+      const isRegistered = req.user ? event.registeredUsers?.some(id => id.toString() === req.user._id.toString()) : false;
+      return { ...event, pricing, isRegistered };
+    }));
+
+    const allEvents = [...eventsWithPricing, ...clubsEventsWithPricing];
+    res.json(allEvents);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -293,6 +302,7 @@ router.get('/registered', requireAuth, async (req, res) => {
   try {
     const events = await Event.find({ registeredUsers: req.user._id }).lean();
     const submissions = await EventSubmission.find({ registeredUsers: req.user._id }).lean();
+    const clubsEvents = await ClubsEvent.find({ registeredUsers: req.user._id }).lean();
     
     // Normalize format and add pricing
     const mappedSubmissions = await Promise.all(submissions.map(async (s) => {
@@ -315,7 +325,17 @@ router.get('/registered', requireAuth, async (req, res) => {
       return { ...e, pricing, qrToken };
     }));
 
-    const combined = [...eventsWithPricing, ...mappedSubmissions].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const mappedClubsEvents = await Promise.all(clubsEvents.map(async (ce) => {
+      const pricing = await PaidEventDetail.findOne({ event: ce._id }).lean();
+      const qrToken = jwt.sign({ userId: req.user._id, eventId: ce._id, model: 'ClubsEvent' }, process.env.JWT_SECRET || 'secret');
+      return {
+        ...ce,
+        pricing,
+        qrToken
+      };
+    }));
+
+    const combined = [...eventsWithPricing, ...mappedSubmissions, ...mappedClubsEvents].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json(combined);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -403,7 +423,7 @@ router.post('/scan-public', async (req, res) => {
     return res.status(400).json({ message: "Invalid QR Code." });
   }
 
-  const Model = payload.model === 'EventSubmission' ? EventSubmission : Event;
+  const Model = payload.model === 'EventSubmission' ? EventSubmission : (payload.model === 'ClubsEvent' ? ClubsEvent : Event);
 
   // 4. Register Attendance
   const event = await Model.findOneAndUpdate(
@@ -427,6 +447,29 @@ router.post('/scan-public', async (req, res) => {
   res.json({ message: "Access Granted" });
 });
 
+// @desc    Get events for a specific club by club's custom ID
+// @route   GET /api/events/club/:id
+router.get('/club/:id', async (req, res) => {
+  try {
+    const Club = require('../models/Club');
+    const club = await Club.findOne({ id: req.params.id });
+    if (!club) {
+      return res.status(404).json({ message: 'Club not found' });
+    }
+    const events = await ClubsEvent.find({ clubId: club._id }).sort({ createdAt: -1 }).lean();
+    
+    const eventsWithPricing = await Promise.all(events.map(async (event) => {
+      const pricing = await PaidEventDetail.findOne({ event: event._id }).lean();
+      if (pricing) pricing.isPaid = true;
+      return { ...event, pricing };
+    }));
+
+    res.json(eventsWithPricing);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.get('/:id', softAuth, async (req, res) => {
   try {
     let eventModel = 'Event';
@@ -435,6 +478,11 @@ router.get('/:id', softAuth, async (req, res) => {
     if (!event) {
       event = await EventSubmission.findById(req.params.id).lean();
       eventModel = 'EventSubmission';
+    }
+
+    if (!event) {
+      event = await ClubsEvent.findById(req.params.id).lean();
+      eventModel = 'ClubsEvent';
     }
 
     if (!event) return res.status(404).json({ message: 'Event not found' });
@@ -462,6 +510,9 @@ router.get('/:id/participants', requireAuth, async (req, res) => {
     let event = await Event.findById(req.params.id).populate('registeredUsers', 'name email phone avatar');
     if (!event) {
       event = await EventSubmission.findById(req.params.id).populate('registeredUsers', 'name email phone avatar');
+    }
+    if (!event) {
+      event = await ClubsEvent.findById(req.params.id).populate('registeredUsers', 'name email phone avatar');
     }
     if (!event) return res.status(404).json({ message: 'Event not found' });
     
@@ -520,12 +571,17 @@ router.post('/:id/register', requireAuth, async (req, res) => {
   try {
     // Try finding in Event collection first
     let event = await Event.findById(req.params.id);
-    let isSubmission = false;
+    let modelName = 'Event';
 
     if (!event) {
       // If not found, check EventSubmission collection
       event = await EventSubmission.findById(req.params.id);
-      isSubmission = true;
+      if (event) modelName = 'EventSubmission';
+    }
+
+    if (!event) {
+      event = await ClubsEvent.findById(req.params.id);
+      if (event) modelName = 'ClubsEvent';
     }
 
     if (!event) return res.status(404).json({ message: 'Event not found' });
@@ -542,7 +598,7 @@ router.post('/:id/register', requireAuth, async (req, res) => {
     const qrToken = jwt.sign({ 
       userId: req.user._id, 
       eventId: event._id, 
-      model: isSubmission ? 'EventSubmission' : 'Event' 
+      model: modelName
     }, process.env.JWT_SECRET || 'secret');
     
     let qrDataUrl = '';
@@ -622,7 +678,7 @@ router.post('/scan', requireAuth, async (req, res) => {
     return res.status(400).json({ message: "Invalid QR" });
   }
 
-  const Model = payload.model === 'EventSubmission' ? EventSubmission : Event;
+  const Model = payload.model === 'EventSubmission' ? EventSubmission : (payload.model === 'ClubsEvent' ? ClubsEvent : Event);
 
   const event = await Model.findOneAndUpdate(
     {

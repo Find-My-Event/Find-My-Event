@@ -51,11 +51,12 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
     };
   }, [clubId]);
 
-  // Fetch Approved Events
+  // Fetch Club Events
   useEffect(() => {
     let active = true;
+    if (!clubId) return;
     setEventsLoading(true);
-    api.get('/events/approved')
+    api.get(`/events/club/${clubId}`)
       .then((res) => {
         if (active && Array.isArray(res.data)) {
           setEvents(res.data);
@@ -71,13 +72,9 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [clubId]);
 
-  // Filter events matching the club organizer
-  const clubEvents = useMemo(() => {
-    // Left completely vacant for now as per request. Will fetch specific club events later.
-    return [];
-  }, [events, club]);
+  const clubEvents = events;
 
   if (clubLoading) {
     return (
@@ -281,7 +278,7 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
                <Loader2 className="spin" size={30} color="#0f172a" />
              </div>
           ) : clubEvents.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
               {clubEvents.map((event, idx) => (
                 <div 
                   key={idx} 

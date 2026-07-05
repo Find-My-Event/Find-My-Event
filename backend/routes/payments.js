@@ -86,6 +86,7 @@ router.post('/create-order', requireAuth, async (req, res) => {
       razorpayOrderId: order.id,
       amount: pricing.ticketPrice * ticketsCount,
       ticketsCount: ticketsCount,
+      customAnswers: req.body.customAnswers || [],
       status: 'pending'
     });
 

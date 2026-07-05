@@ -151,7 +151,7 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
             <Calendar size={24} color="#a78bfa" />
           </div>
           <div>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: '6px' }}>Date & Time</p>
+            <p style={{ fontSize: '0.95rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: '6px' }}>Date & Time</p>
             <p style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 600 }}>{event?.date || event?.startDate || 'TBD'}</p>
           </div>
         </div>
@@ -165,7 +165,7 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
             <MapPin size={24} color="#38bdf8" />
           </div>
           <div>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: '6px' }}>Location</p>
+            <p style={{ fontSize: '0.95rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: '6px' }}>Location</p>
             <p style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 600, lineHeight: 1.3 }}>{event?.venue?.split(',')[0] || 'TBD'}</p>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '2px' }}>{event?.venue?.split(',')[1] || ''}</p>
           </div>
@@ -212,7 +212,7 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
                   </div>
                   {(event?.pricing?.ticketCapacity || event?.seats) && (
                      <div style={{ textAlign: 'right' }}>
-                        <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: '4px' }}>Capacity</p>
+                        <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: '4px' }}>Capacity</p>
                         <p style={{ color: '#f59e0b', fontSize: '1.1rem', fontWeight: 700 }}>
                            {event?.pricing?.ticketCapacity || event.seats}
                         </p>
@@ -262,7 +262,7 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
                   )}
                </motion.button>
 
-               <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center', marginTop: '1rem', fontWeight: 500 }}>
+               <p style={{ color: '#64748b', fontSize: '0.95rem', textAlign: 'center', marginTop: '1rem', fontWeight: 500 }}>
                   Limited slots available. Register now to confirm!
                </p>
             </div>
@@ -278,6 +278,8 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
   const [loading, setLoading] = useState(false);
   const { isLoggedIn, user } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', team: '' });
+  const [customAnswers, setCustomAnswers] = useState<any[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState(event?.tickets?.[0]?.category || 'Free');
   const [ticketsCount, setTicketsCount] = useState(1);
 
   const renderTicket = (isAlreadyRegistered: boolean) => (
@@ -303,8 +305,8 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
             <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>{formData?.name || user?.name || 'Participant'}</p>
           </div>
           <div>
-            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.2rem 0' }}>Team Name</p>
-            <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>{formData?.team || 'N/A'}</p>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.2rem 0' }}>Pass Type</p>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>{selectedTicket}</p>
           </div>
           <div style={{ gridColumn: 'span 2' }}>
             <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.2rem 0' }}>Event Name</p>
@@ -370,12 +372,73 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
     rzp1.open();
   };
 
+  const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
+
+  const handleCustomAnswerChange = (question: string, answer: any) => {
+    const existing = customAnswers.find(a => a.question === question);
+    if (existing) {
+      setCustomAnswers(customAnswers.map(a => a.question === question ? { ...a, answer } : a));
+    } else {
+      setCustomAnswers([...customAnswers, { question, answer }]);
+    }
+  };
+
+  const handleFileUpload = async (question: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    try {
+      setIsUploading(prev => ({ ...prev, [question]: true }));
+      const formData = new FormData();
+      formData.append('file', e.target.files[0]);
+      const res = await api.post('/events/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      handleCustomAnswerChange(question, res.data.url);
+    } catch (err) {
+      alert('Failed to upload file');
+    } finally {
+      setIsUploading(prev => ({ ...prev, [question]: false }));
+    }
+  };
+
   const handleSubmit = async (e: any) => {
      e.preventDefault();
      if (!isLoggedIn) {
        window.location.hash = '#signin';
        return;
      }
+     
+     // Validate custom questions if any are required
+     if (event.customQuestions?.length > 0) {
+       for (let q of event.customQuestions) {
+         if (q.required === 'Required' || q.required === true) {
+           const answered = customAnswers.find(a => a.question === q.question);
+           if (!answered || !answered.answer) {
+             alert(`Please answer the required question: ${q.question}`);
+             return;
+           }
+         }
+       }
+     }
+     
+     // Validate educational info if required
+     const activeEduInfoVal = event.eduInfo?.length > 0 ? event.eduInfo : [
+        { id: 1, name: 'Roll Number', required: 'Optional' },
+        { id: 2, name: 'Course', required: 'Optional' },
+        { id: 3, name: 'Branch', required: 'Optional' },
+        { id: 4, name: 'Year', required: 'Off' }
+     ];
+     if (activeEduInfoVal?.length > 0) {
+       for (let eInfo of activeEduInfoVal) {
+         if (eInfo.required === 'Required') {
+           const answered = customAnswers.find(a => a.question === eInfo.name);
+           if (!answered || !answered.answer) {
+             alert(`Please provide your ${eInfo.name}`);
+             return;
+           }
+         }
+       }
+     }
+
      if (!isFormValid) return;
 
      setLoading(true);
@@ -383,19 +446,46 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
        const actualEventId = event._id || (String(event.id).startsWith('api-') ? event.id.replace('api-', '') : event.id);
        const actualModel = (event._id || String(event.id).startsWith('api-')) ? 'EventSubmission' : 'Event';
 
-       if (event.pricing?.isPaid) {
+       const ticketPrice = event.tickets?.find((t: any) => t.category === selectedTicket)?.price;
+       const isPaidTicket = ticketPrice && ticketPrice !== 'Free' && parseInt(ticketPrice) > 0;
+
+       // Compile all questions, even if unanswered, for comprehensive data
+       const fullAnswers: any[] = [];
+       const activeEduInfoVal = event.eduInfo?.length > 0 ? event.eduInfo : [
+          { id: 1, name: 'Roll Number', required: 'Optional' },
+          { id: 2, name: 'Course', required: 'Optional' },
+          { id: 3, name: 'Branch', required: 'Optional' },
+          { id: 4, name: 'Year', required: 'Off' }
+       ];
+       activeEduInfoVal.forEach((eInfo: any) => {
+         if (eInfo.required !== 'Off') {
+           const answered = customAnswers.find(a => a.question === eInfo.name);
+           fullAnswers.push({ question: eInfo.name, answer: answered ? answered.answer : '' });
+         }
+       });
+       event.customQuestions?.forEach((q: any) => {
+         const answered = customAnswers.find(a => a.question === q.question);
+         fullAnswers.push({ question: q.question, answer: answered ? answered.answer : '' });
+       });
+
+       if (event.pricing?.isPaid || isPaidTicket) {
           // 1. Create Order
           const { data: orderData } = await api.post('/payments/create-order', {
             eventId: actualEventId,
             eventModel: actualModel,
-            ticketsCount
+            ticketsCount,
+            customAnswers: fullAnswers
           });
           
           // 2. Open Razorpay
           await handleRazorpayPayment(orderData);
        } else {
           // Free Registration
-          await api.post(`/events/${actualEventId}/register`);
+          const payload = {
+            customAnswers: fullAnswers,
+            ticketType: selectedTicket
+          };
+          await api.post(`/events/${actualEventId}/register`, payload);
           setStep(2);
        }
      } catch (err: any) {
@@ -406,6 +496,14 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
        setLoading(false);
      }
   };
+
+  let qNum = 1;
+  const activeEduInfo = event.eduInfo?.length > 0 ? event.eduInfo : [
+    { id: 1, name: 'Roll Number', required: 'Optional' },
+    { id: 2, name: 'Course', required: 'Optional' },
+    { id: 3, name: 'Branch', required: 'Optional' },
+    { id: 4, name: 'Year', required: 'Off' }
+  ];
 
   return (
     <motion.div 
@@ -422,7 +520,7 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
       <motion.div 
         initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         style={{
-           width: '100%', maxWidth: '500px',
+           width: '100%', maxWidth: '700px',
            padding: '2.5rem',
            position: 'relative',
            background: '#ffffff',
@@ -432,7 +530,7 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-           <h2 style={{ color: '#111827', fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>
+           <h2 style={{ color: '#111827', fontSize: '2rem', fontWeight: 600, margin: 0 }}>
               Registration form
            </h2>
            <button type="button" onClick={onBack} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
@@ -447,77 +545,161 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
           <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
              {/* Name */}
              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111827' }}>Full Name</label>
-                <input required type="text" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.name ? '#ffffff' : '#F5F3FF', border: formData.name ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
+                <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. Full Name *</label>
+                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
+                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.name ? '#ffffff' : '#F3F4F6', border: formData.name ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
              </div>
 
              {/* Phone */}
              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111827' }}>Mobile Number</label>
-                <input required type="text" placeholder="+91 98765-12345" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
-                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.phone ? '#ffffff' : '#F5F3FF', border: formData.phone ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
+                <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. Mobile Number *</label>
+                <input required type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
+                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.phone ? '#ffffff' : '#F3F4F6', border: formData.phone ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
              </div>
 
              {/* Email */}
              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111827' }}>Email Address</label>
+                <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. Email Address *</label>
                 <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.email ? '#ffffff' : '#F5F3FF', border: formData.email ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
+                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.email ? '#ffffff' : '#F3F4F6', border: formData.email ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
              </div>
 
-             {/* Course */}
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', position: 'relative' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111827' }}>Course</label>
-                <select value={(formData as any).course || ''} onChange={e => setFormData({...formData, course: e.target.value} as any)}
-                  style={{ width: '100%', padding: '0.85rem 1rem', background: (formData as any).course ? '#ffffff' : '#F5F3FF', border: (formData as any).course ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: (formData as any).course ? '#111' : '#8B5CF6', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s', appearance: 'none' }}>
-                  <option value="" disabled>Select an option</option>
-                  <option value="btech">B.Tech</option>
-                  <option value="bca">BCA</option>
-                  <option value="mca">MCA</option>
-                </select>
-                <ChevronDown size={16} color="#8B5CF6" style={{ position: 'absolute', right: '1rem', top: '2.4rem', pointerEvents: 'none' }} />
-             </div>
-
-             {/* Invite Team Member */}
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', position: 'relative' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111827' }}>Invite Team Member</label>
-                <input type="email" placeholder="Team Member Email Address" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}
-                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.team ? '#ffffff' : '#F5F3FF', border: formData.team ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
-                <ChevronDown size={16} color="#6b7280" style={{ position: 'absolute', right: '1rem', top: '2.4rem', pointerEvents: 'none' }} />
-             </div>
-
-             {/* Paid Event: Quantity Selector */}
-             {event.pricing?.isPaid && (
-               <div style={{ 
-                 background: '#F5F3FF', padding: '1.25rem', borderRadius: '12px', 
-                 border: '1px solid rgba(139, 92, 246, 0.2)', marginTop: '0.5rem' 
-               }}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <div>
-                     <p style={{ color: '#111827', fontWeight: 700, fontSize: '0.95rem', margin: 0 }}>Select Tickets</p>
-                     <p style={{ color: '#6b7280', fontSize: '0.8rem', margin: '0.2rem 0 0 0' }}>Max {event.pricing?.maxTicketsPerUser || 10} per user</p>
-                   </div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#111', borderRadius: '10px', padding: '0.4rem 1rem' }}>
-                     <button 
-                       type="button"
-                       onClick={() => setTicketsCount(Math.max(1, ticketsCount - 1))}
-                       style={{ background: 'none', border: 'none', color: '#8B5CF6', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', padding: 0 }}
-                     >-</button>
-                     <span style={{ color: '#ffffff', fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{ticketsCount}</span>
-                     <button 
-                       type="button"
-                       onClick={() => setTicketsCount(Math.min(event.pricing?.maxTicketsPerUser || 10, ticketsCount + 1))}
-                       style={{ background: 'none', border: 'none', color: '#8B5CF6', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', padding: 0 }}
-                     >+</button>
-                   </div>
+             {/* Educational Info */}
+             {activeEduInfo?.filter((eInfo: any) => eInfo.required !== 'Off').map((eInfo: any, i: number) => {
+               const val = customAnswers.find(a => a.question === eInfo.name)?.answer || '';
+               const isReq = eInfo.required === 'Required';
+               return (
+                 <div key={`edu-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {eInfo.name} {isReq && '*'}</label>
+                    <input 
+                      required={isReq} 
+                      type="text" 
+                      value={val} 
+                      onChange={e => handleCustomAnswerChange(eInfo.name, e.target.value)}
+                      style={{ width: '100%', padding: '0.85rem 1rem', background: val ? '#ffffff' : '#F3F4F6', border: val ? '1px solid #D1D5DB' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} 
+                    />
                  </div>
-                 <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed rgba(139, 92, 246, 0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <span style={{ color: '#6D28D9', fontSize: '0.9rem', fontWeight: 600 }}>Total Amount</span>
-                   <span style={{ color: '#8B5CF6', fontSize: '1.25rem', fontWeight: 800 }}>₹{event.pricing.ticketPrice * ticketsCount}</span>
+               );
+             })}
+
+             {/* Custom Questions */}
+             {event.customQuestions?.map((q: any, i: number) => {
+               const val = customAnswers.find(a => a.question === q.question)?.answer || '';
+               const isReq = q.required === 'Required' || q.required === true;
+               
+               if (q.type === 'Dropdown') {
+                 return (
+                   <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                     <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {q.question} {isReq && '*'}</label>
+                     <select 
+                       required={isReq}
+                       value={val}
+                       onChange={e => handleCustomAnswerChange(q.question, e.target.value)}
+                       style={{ width: '100%', padding: '0.85rem 1rem', background: val ? '#ffffff' : '#F3F4F6', border: val ? '1px solid #D1D5DB' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', cursor: 'pointer', appearance: 'none' }}
+                     >
+                       <option value="" disabled>Select an option</option>
+                       {q.options?.map((opt: string, idx: number) => (
+                         <option key={idx} value={opt}>{opt}</option>
+                       ))}
+                     </select>
+                   </div>
+                 );
+               }
+               
+               if (q.type === 'Checkbox') {
+                 const selectedOpts = Array.isArray(val) ? val : (val ? val.split(', ') : []);
+                 return (
+                   <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                     <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {q.question} {isReq && '*'}</label>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '4px' }}>
+                       {q.options?.map((opt: string, idx: number) => (
+                         <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer' }}>
+                           <input 
+                             type="checkbox" 
+                             checked={selectedOpts.includes(opt)}
+                             onChange={(e) => {
+                               let newOpts = [...selectedOpts];
+                               if (e.target.checked) newOpts.push(opt);
+                               else newOpts = newOpts.filter(o => o !== opt);
+                               handleCustomAnswerChange(q.question, newOpts.join(', '));
+                             }}
+                             style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', cursor: 'pointer' }}
+                           />
+                           {opt}
+                         </label>
+                       ))}
+                     </div>
+                   </div>
+                 );
+               }
+               
+               if (q.type === 'File Upload') {
+                 return (
+                   <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                     <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {q.question} {isReq && '*'}</label>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                       <input 
+                         type="file" 
+                         accept="image/*,.pdf,.doc,.docx"
+                         onChange={e => handleFileUpload(q.question, e)}
+                         style={{ display: 'none' }}
+                         id={`file-upload-${i}`}
+                       />
+                       <label htmlFor={`file-upload-${i}`} style={{ background: '#F3F4F6', color: '#4B5563', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, border: '1px dashed #9CA3AF' }}>
+                         {isUploading[q.question] ? 'Uploading...' : 'Choose File'}
+                       </label>
+                       {val && <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>File Attached ✓</span>}
+                     </div>
+                   </div>
+                 );
+               }
+
+               return (
+                 <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {q.question} {isReq && '*'}</label>
+                    <input 
+                      required={isReq} 
+                      type={q.type === 'Text' ? 'text' : 'text'} 
+                      value={val} 
+                      onChange={e => handleCustomAnswerChange(q.question, e.target.value)}
+                      style={{ width: '100%', padding: '0.85rem 1rem', background: val ? '#ffffff' : '#F3F4F6', border: val ? '1px solid #D1D5DB' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} 
+                    />
                  </div>
+               );
+             })}
+
+             {/* Tickets / Passes */}
+             {event.tickets && event.tickets.length > 0 && (
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '1rem' }}>
+                  <label style={{ fontSize: '0.9rem', fontWeight: 800, color: '#111827' }}>Select Pass / Ticket</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {event.tickets.map((t: any, i: number) => (
+                      <div 
+                        key={i} 
+                        onClick={() => setSelectedTicket(t.category)}
+                        style={{ 
+                          padding: '1rem', 
+                          border: selectedTicket === t.category ? '2px solid #8B5CF6' : '1px solid #e2e8f0', 
+                          borderRadius: '12px', 
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          background: selectedTicket === t.category ? '#F5F3FF' : '#fff'
+                        }}
+                      >
+                        <div>
+                          <p style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>{t.category}</p>
+                        </div>
+                        <div style={{ fontWeight: 800, color: '#8B5CF6' }}>
+                           {t.price === 'Free' || t.price === '0' ? 'Free' : `₹${t.price}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                </div>
              )}
+
           </div>
           
           <motion.button 
