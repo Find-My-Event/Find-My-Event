@@ -29,7 +29,7 @@ import Clubs          from './pages/Clubs';
 import Home2          from './pages/Home2';
 import ClubDetail     from './pages/ClubDetail';
 import EventDetail    from './pages/EventDetail';
-import Dashboard      from './pages/Dashboard';
+
 import CreateEvent    from './pages/CreateEvent';
 import GeneralSettings from './pages/GeneralSettings';
 import EditProfile    from './pages/EditProfile';

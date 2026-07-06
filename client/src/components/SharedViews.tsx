@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, ArrowLeft, Heart, Share2, Ticket, Sparkles, Users, CheckCircle, Loader2, X, ChevronDown } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, Heart, Share2, Ticket, Sparkles, Users, CheckCircle, Loader2, X } from 'lucide-react';
 import { useState } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -280,7 +280,7 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', team: '' });
   const [customAnswers, setCustomAnswers] = useState<any[]>([]);
   const [selectedTicket, setSelectedTicket] = useState(event?.tickets?.[0]?.category || 'Free');
-  const [ticketsCount, setTicketsCount] = useState(1);
+  const [ticketsCount] = useState(1);
 
   const renderTicket = (isAlreadyRegistered: boolean) => (
     <motion.div key={isAlreadyRegistered ? "is-registered" : "success"} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '1rem 0' }}>
@@ -375,12 +375,14 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
   const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
 
   const handleCustomAnswerChange = (question: string, answer: any) => {
-    const existing = customAnswers.find(a => a.question === question);
-    if (existing) {
-      setCustomAnswers(customAnswers.map(a => a.question === question ? { ...a, answer } : a));
-    } else {
-      setCustomAnswers([...customAnswers, { question, answer }]);
-    }
+    setCustomAnswers(prev => {
+      const existing = prev.find(a => a.question === question);
+      if (existing) {
+        return prev.map(a => a.question === question ? { ...a, answer } : a);
+      } else {
+        return [...prev, { question, answer }];
+      }
+    });
   };
 
   const handleFileUpload = async (question: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -643,9 +645,9 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
                          accept="image/*,.pdf,.doc,.docx"
                          onChange={e => handleFileUpload(q.question, e)}
                          style={{ display: 'none' }}
-                         id={`file-upload-${i}`}
+                         id={`file-upload-${i}-${q.question.replace(/\s+/g, '-')}`}
                        />
-                       <label htmlFor={`file-upload-${i}`} style={{ background: '#F3F4F6', color: '#4B5563', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, border: '1px dashed #9CA3AF' }}>
+                       <label htmlFor={`file-upload-${i}-${q.question.replace(/\s+/g, '-')}`} style={{ background: '#F3F4F6', color: '#4B5563', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, border: '1px dashed #9CA3AF' }}>
                          {isUploading[q.question] ? 'Uploading...' : 'Choose File'}
                        </label>
                        {val && <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>File Attached ✓</span>}

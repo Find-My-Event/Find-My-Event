@@ -62,6 +62,7 @@ const eventSubmissionSchema = new mongoose.Schema(
       amount: String
     }],
     visibility: { type: String, default: 'Public' },
+    registrationDeadline: { type: String, default: '' },
     generateQRCode: { type: Boolean, default: false },
     registrationControl: { type: String, default: 'Require Approval' },
     personalInfo: [{

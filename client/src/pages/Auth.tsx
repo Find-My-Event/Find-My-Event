@@ -15,7 +15,7 @@ const Auth: React.FC = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const { register, verifyOtp, resendOtp, handleLogin, setupProfile, uploadAvatar, mockLogin } = useAuth();
+  const { register, verifyOtp, resendOtp, handleLogin, setupProfile, uploadAvatar } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

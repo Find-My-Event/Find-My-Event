@@ -238,7 +238,7 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
                 <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Not Listed</div>
               ) : (
                 <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '1rem' }}>
-                  {club.leadership.map((leader, i) => (
+                  {club.leadership.map((leader: any, i: number) => (
                     <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', minWidth: '120px' }}>
                       <div style={{ width: '120px', height: '150px', borderRadius: '16px', background: '#f1f5f9', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>
                         {leader.photoUrl ? (

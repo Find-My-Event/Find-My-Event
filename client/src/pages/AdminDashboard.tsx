@@ -141,7 +141,8 @@ const AdminDashboard: React.FC = () => {
         category: s.category || 'Workshops',
         price: 'Free',
         seats: s.capacity || 'Limited',
-        tag: ''
+        tag: '',
+        isUserSubmission: true
       }));
 
       setEvents([...mappedApproved, ...eventsRes.data]);
@@ -461,10 +462,10 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             <div style={{ display: 'grid', gap: '1rem' }}>
-              {events.filter(e => activeEventTab === 'admin' ? (e.organizer === 'Admin' || !e.organizerId) : (e.organizer !== 'Admin' && e.organizerId)).length === 0 && (
+              {events.filter(e => activeEventTab === 'admin' ? e.isAdminEvent : !e.isAdminEvent).length === 0 && (
                 <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center', border: '1px dashed var(--border-color)', borderRadius: 16 }}>No events found for this category.</p>
               )}
-              {events.filter(e => activeEventTab === 'admin' ? (e.organizer === 'Admin' || !e.organizerId) : (e.organizer !== 'Admin' && e.organizerId)).map((event) => (
+              {events.filter(e => activeEventTab === 'admin' ? e.isAdminEvent : !e.isAdminEvent).map((event) => (
                 <motion.div
                   key={event._id}
                   className="admin-item-row"

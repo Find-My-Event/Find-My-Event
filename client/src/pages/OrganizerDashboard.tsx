@@ -56,6 +56,9 @@ export default function OrganizerDashboard() {
   const [endDate, setEndDate] = useState('');
   const [endTime, setEndTime] = useState('');
   
+  const [regDeadlineDate, setRegDeadlineDate] = useState('');
+  const [regDeadlineTime, setRegDeadlineTime] = useState('');
+  
   const [location, setLocation] = useState('');
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
   const [locationSearchTerm, setLocationSearchTerm] = useState('');
@@ -110,8 +113,8 @@ export default function OrganizerDashboard() {
     
     // Strict Validation
     if (!eventName.trim() || !category || (category === 'custom' && !customCategory.trim()) || 
-        !startDate || !startTime || !endDate || !endTime || !finalLocation || !imageFile) {
-      showError('Please fill in all required fields and upload an event poster.');
+        !startDate || !startTime || !endDate || !endTime || !finalLocation || !imageFile || !regDeadlineDate || !regDeadlineTime) {
+      showError('Please fill in all required fields (including registration deadline) and upload an event poster.');
       return;
     }
 
@@ -131,6 +134,7 @@ export default function OrganizerDashboard() {
     formData.append('date', `${startDate} • ${startTime}`); // Combining to match schema
     formData.append('startDate', `${startDate}T${startTime}`);
     formData.append('endDate', `${endDate}T${endTime}`);
+    formData.append('registrationDeadline', `${regDeadlineDate}T${regDeadlineTime}`);
     // Since schema has mode and location, let's map venue/location
     formData.append('venue', finalLocation);
     formData.append('location', finalLocation);
@@ -166,6 +170,8 @@ export default function OrganizerDashboard() {
       setStartTime('');
       setEndDate('');
       setEndTime('');
+      setRegDeadlineDate('');
+      setRegDeadlineTime('');
       setLocation('');
       setTicketType('Free');
       setTicketPrice('');
@@ -778,6 +784,14 @@ export default function OrganizerDashboard() {
                          <div className="mobile-form-row" style={{ display: 'flex', gap: '8px' }}>
                             <input className="mobile-form-col" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', flex: 1 }} />
                             <input className="mobile-form-col" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', width: '130px' }} />
+                         </div>
+                       </div>
+                       {/* Registration Deadline block */}
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                         <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#555' }}>Registration Deadline</div>
+                         <div className="mobile-form-row" style={{ display: 'flex', gap: '8px' }}>
+                            <input className="mobile-form-col" type="date" value={regDeadlineDate} onChange={e => setRegDeadlineDate(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', flex: 1 }} />
+                            <input className="mobile-form-col" type="time" value={regDeadlineTime} onChange={e => setRegDeadlineTime(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', width: '130px' }} />
                          </div>
                        </div>
                      </div>

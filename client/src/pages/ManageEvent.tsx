@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import api from '../api/axios';
-import { LayoutGrid, Plus, Bell, Search, Image as ImageIcon, MapPin, ChevronDown, CheckCircle, Users, Trophy, ArrowRight, Edit2, Check, Trash2, Download, Lock, Link as LinkIcon, Send, User, Mail, Phone, Calendar, X } from 'lucide-react';
+import { LayoutGrid, Plus, Bell, Search, Image as ImageIcon, MapPin, ChevronDown, CheckCircle, Users, Trophy, ArrowRight, Edit2, Check, Trash2, Download, Link as LinkIcon, Send, User, Mail, Phone, Calendar, X } from 'lucide-react';
 import darkLogo from '../logo/dark logo.png';
 import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,6 +25,9 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const [endDate, setEndDate] = useState(event?.endDate ? event.endDate.split('T')[0] : '2026-06-19');
   const [endTime, setEndTime] = useState(event?.endDate && event.endDate.includes('T') ? event.endDate.split('T')[1] : '00:30');
   
+  const [regDeadlineDate, setRegDeadlineDate] = useState(event?.registrationDeadline ? event.registrationDeadline.split('T')[0] : '');
+  const [regDeadlineTime, setRegDeadlineTime] = useState(event?.registrationDeadline && event.registrationDeadline.includes('T') ? event.registrationDeadline.split('T')[1] : '');
+  
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [selectedMockLocation, setSelectedMockLocation] = useState<any>(
     event?.location ? { id: 'custom', title: event.location, subtitle: '' } : MOCK_LOCATIONS[0]
@@ -32,29 +35,24 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const [locationSearchTerm, setLocationSearchTerm] = useState('');
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
   
-  const [participantType, setParticipantType] = useState<'individual' | 'team'>(event?.participantType || 'team');
-  const [teamMin, setTeamMin] = useState(event?.teamMin || 2);
-  const [teamMax, setTeamMax] = useState(event?.teamMax || 4);
+  const [participantType, setParticipantType] = useState<'individual' | 'team'>(event?.participantType || 'individual');
+  const [teamMin, setTeamMin] = useState(event?.teamMin || '');
+  const [teamMax, setTeamMax] = useState(event?.teamMax || '');
   
   const [isEditingDesc, setIsEditingDesc] = useState(false);
-  const [description, setDescription] = useState(event?.description || 'Participants will work on the problem statement...');
+  const [description, setDescription] = useState(event?.description || '');
   
   const [isEditingElig, setIsEditingElig] = useState(false);
-  const [eligYears, setEligYears] = useState(event?.eligibility || 'Engineering students only\nAllowed Years: 1, 2, 3, 4');
+  const [eligYears, setEligYears] = useState(event?.eligibility || '');
   
-  const [timeline, setTimeline] = useState<any[]>(event?.timeline?.length > 0 ? event.timeline : [
-    { id: 1, date: '16 Jun', startDate: '23 Jun 26, 12:00 AM IST', endDate: '27 Jun 26, 11:59 PM IST', title: 'Upload Detailed Solution Document', desc: 'Participants will work on the problem statement...' },
-    { id: 2, date: '16 Jun', startDate: '23 Jun 26, 12:00 AM IST', endDate: '27 Jun 26, 11:59 PM IST', title: 'Final', desc: 'Finalist teams will present their solutions...' }
-  ]);
+  const [timeline, setTimeline] = useState<any[]>(event?.timeline?.length > 0 ? event.timeline : []);
   const [showAddTimeline, setShowAddTimeline] = useState(false);
   const [newTimeline, setNewTimeline] = useState({ title: '', desc: '', start: '', end: '' });
 
   const [isEditingRules, setIsEditingRules] = useState(false);
-  const [rules, setRules] = useState(event?.rules || '1. Respect everyone.\n2. Submit on time.');
+  const [rules, setRules] = useState(event?.rules || '');
 
-  const [contacts, setContacts] = useState<any[]>(event?.contacts?.length > 0 ? event.contacts : [
-    { id: 1, name: 'Chirag Sharma', email: 'chirag@eventum.com', phone: '+91 98765-12345', isEditing: false }
-  ]);
+  const [contacts, setContacts] = useState<any[]>(event?.contacts?.length > 0 ? event.contacts : []);
   
   const [isAddingPrize, setIsAddingPrize] = useState(false);
   const [prizes, setPrizes] = useState<any[]>(event?.prizes?.length > 0 ? event.prizes : []);
@@ -62,7 +60,7 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   
   const handleAddTimeline = async () => {
     if(!newTimeline.title) return;
-    const updated = [...timeline, { id: Date.now(), date: 'New', startDate: newTimeline.start, endDate: newTimeline.end, title: newTimeline.title, desc: newTimeline.desc }];
+    const updated = [...timeline, { id: Date.now(), date: newTimeline.start || 'New', startDate: newTimeline.start, endDate: newTimeline.end, title: newTimeline.title, desc: newTimeline.desc }];
     setTimeline(updated);
     await saveEvent({ timeline: updated });
     setShowAddTimeline(false);
@@ -139,7 +137,8 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                   if (isEditingDates) {
                     const fullStart = `${startDate}T${startTime}`;
                     const fullEnd = `${endDate}T${endTime}`;
-                    await saveEvent({ startDate: fullStart, endDate: fullEnd });
+                    const fullReg = (regDeadlineDate && regDeadlineTime) ? `${regDeadlineDate}T${regDeadlineTime}` : '';
+                    await saveEvent({ startDate: fullStart, endDate: fullEnd, registrationDeadline: fullReg });
                   }
                   setIsEditingDates(!isEditingDates)
                 }} style={{ background: isEditingDates ? '#111' : '#d1d5db', color: isEditingDates ? '#fff' : '#4b5563', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -169,19 +168,33 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                    )}
                  </div>
                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                   <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>End</div>
-                   {isEditingDates ? (
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                         <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
-                         <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
-                      </div>
-                   ) : (
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{endDate}</div>
-                        <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{endTime}</div>
-                      </div>
-                   )}
-                 </div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>End</div>
+                    {isEditingDates ? (
+                       <div style={{ display: 'flex', gap: '8px' }}>
+                          <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                          <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                       </div>
+                    ) : (
+                       <div style={{ display: 'flex', gap: '8px' }}>
+                         <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{endDate}</div>
+                         <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{endTime}</div>
+                       </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #dcdcdc', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>Registration Deadline</div>
+                    {isEditingDates ? (
+                       <div style={{ display: 'flex', gap: '8px' }}>
+                          <input type="date" value={regDeadlineDate} onChange={e=>setRegDeadlineDate(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                          <input type="time" value={regDeadlineTime} onChange={e=>setRegDeadlineTime(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                       </div>
+                    ) : (
+                       <div style={{ display: 'flex', gap: '8px' }}>
+                         <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{regDeadlineDate || 'None'}</div>
+                         <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{regDeadlineTime || '--:--'}</div>
+                       </div>
+                    )}
+                  </div>
                </div>
              </div>
           </div>
@@ -386,9 +399,13 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
           {timeline.map((item, i) => (
              <div key={item.id} style={{ display: 'flex', gap: '1.5rem', position: 'relative' }}>
                {i !== timeline.length - 1 && <div style={{ position: 'absolute', left: '16px', top: '30px', bottom: '-20px', borderLeft: '2px dotted #ccc' }} />}
-               <div style={{ zIndex: 1, background: i % 2 === 0 ? '#fdf2f8' : '#eff6ff', border: `1px solid ${i % 2 === 0 ? '#fbcfe8' : '#bfdbfe'}`, borderRadius: '8px', padding: '4px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px' }}>
-                  <div style={{ fontSize: '0.55rem', fontWeight: 800, color: i % 2 === 0 ? '#ec4899' : '#3b82f6', textTransform: 'uppercase' }}>Date</div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#111', lineHeight: '1' }}>{item.date?.split(' ')[0] || ''}</div>
+               <div style={{ zIndex: 1, background: i % 2 === 0 ? '#fdf2f8' : '#eff6ff', border: `1px solid ${i % 2 === 0 ? '#fbcfe8' : '#bfdbfe'}`, borderRadius: '8px', padding: '4px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px' }}>
+                  <div style={{ fontSize: '0.55rem', fontWeight: 800, color: i % 2 === 0 ? '#ec4899' : '#3b82f6', textTransform: 'uppercase' }}>
+                     {item.startDate ? new Date(item.startDate.split(',')[0]).toLocaleString('en-US', { month: 'short' }).toUpperCase() : 'DATE'}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#111', lineHeight: '1' }}>
+                     {item.startDate ? new Date(item.startDate.split(',')[0]).getDate() || item.date?.split(' ')[0] : item.date?.split(' ')[0] || ''}
+                  </div>
                </div>
                <div style={{ flex: 1, paddingBottom: '1rem' }}>
                  <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -565,8 +582,10 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
 // REGISTRATION TAB
 // -------------------------------------------------------------
 function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
-  const [capacity] = useState(event?.capacity?.toString() || '100');
+  const [] = useState(event?.capacity?.toString() || '100');
   const [partType, setPartType] = useState(event?.participantType === 'team' ? 'Team' : 'Individual');
+  const [teamMin, setTeamMin] = useState(event?.teamMin?.toString() || '1');
+  const [teamMax, setTeamMax] = useState(event?.teamMax?.toString() || '4');
   const [regWindow, setRegWindow] = useState('Open');
 
   const [tickets, setTickets] = useState<any[]>(event?.tickets?.length > 0 ? event.tickets : [{ id: 1, category: 'General Pass', price: 'Free' }]);
@@ -617,6 +636,18 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                    <option value="Individual">Individual</option>
                    <option value="Team">Team</option>
                 </select>
+                {partType === 'Team' && (
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                       <span style={{ fontSize: '0.75rem', color: '#666', fontWeight: 600 }}>Min:</span>
+                       <input type="number" min="1" value={teamMin} onChange={e => setTeamMin(e.target.value)} style={{ width: '50px', padding: '4px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #ccc', outline: 'none' }} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                       <span style={{ fontSize: '0.75rem', color: '#666', fontWeight: 600 }}>Max:</span>
+                       <input type="number" min="1" value={teamMax} onChange={e => setTeamMax(e.target.value)} style={{ width: '50px', padding: '4px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #ccc', outline: 'none' }} />
+                    </div>
+                  </div>
+                )}
              </div>
           </div>
        </div>
@@ -843,7 +874,12 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
        </div>
        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', borderTop: '1px solid #eaeaea', paddingTop: '1.5rem' }}>
           <button onClick={async () => {
-             await saveEvent({ participantType: partType === 'Team' ? 'team' : 'individual' });
+             const updatePayload: any = { participantType: partType === 'Team' ? 'team' : 'individual' };
+             if (partType === 'Team') {
+                updatePayload.teamMin = parseInt(teamMin) || 1;
+                updatePayload.teamMax = parseInt(teamMax) || 4;
+             }
+             await saveEvent(updatePayload);
              alert('Registration details saved successfully!');
           }} style={{ background: '#7c3aed', color: '#fff', padding: '12px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.95rem' }}>
               Save Registration Details
@@ -1164,15 +1200,22 @@ function AnnouncementTab({ event, saveEvent }: { event: any, saveEvent: any }) {
 function SettingsTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const [visibility, setVisibility] = useState(event?.visibility || 'Public');
   const [generateQRCode, setGenerateQRCode] = useState(event?.generateQRCode || false);
-  const [regControl, setRegControl] = useState(event?.registrationControl || 'Require Approval');
+  const [] = useState(event?.registrationControl || 'Require Approval');
 
   const [teamMembers, setTeamMembers] = useState<any[]>(event?.organizingTeam?.length > 0 ? event.organizingTeam : []);
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [newMember, setNewMember] = useState({ name: '', email: '', phone: '', role: 'Coordinator' });
 
-  const handleCancelEvent = () => {
+  const handleCancelEvent = async () => {
     if(window.confirm('Are you sure you want to cancel this event? This action cannot be undone.')) {
-      alert('Event Cancelled Successfully');
+      try {
+         await api.delete(`/events/submission/${event._id || event.id}`);
+         alert('Event Cancelled Successfully');
+         window.location.hash = '#organizer-dashboard/my-events';
+      } catch (err) {
+         console.error(err);
+         alert('Failed to cancel event.');
+      }
     }
   };
 

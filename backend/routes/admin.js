@@ -91,8 +91,8 @@ router.put('/events/:id', protect, admin, upload.single('image'), async (req, re
       tickets, prizes, visibility, registrationControl, personalInfo, eduInfo, organizingTeam
     } = req.body;
 
-    event.title = title || event.title;
-    event.description = description || event.description;
+    if (title !== undefined) event.title = title;
+    if (description !== undefined) event.description = description;
     
     if (participantType !== undefined) event.participantType = participantType;
     if (teamMin !== undefined) event.teamMin = teamMin;
@@ -112,28 +112,33 @@ router.put('/events/:id', protect, admin, upload.single('image'), async (req, re
     if (organizingTeam !== undefined) event.organizingTeam = organizingTeam;
 
     if (isSubmission) {
-      event.startDate = startDate || date || event.startDate;
-      event.endDate = endDate || event.endDate;
-      event.mode = mode || event.mode;
-      event.location = location || venue || event.location;
-      event.capacity = capacity ? Number(capacity) : (seats ? Number(seats) : event.capacity);
-      event.category = category || event.category;
+      if (startDate !== undefined) event.startDate = startDate;
+      else if (date !== undefined) event.startDate = date;
+      
+      if (endDate !== undefined) event.endDate = endDate;
+      if (mode !== undefined) event.mode = mode;
+      
+      if (location !== undefined) event.location = location;
+      else if (venue !== undefined) event.location = venue;
+      
+      event.capacity = capacity !== undefined ? Number(capacity) : (seats !== undefined ? Number(seats) : event.capacity);
+      if (category !== undefined) event.category = category;
       if (req.file) {
         event.imageUrl = req.file.path;
       }
     } else {
-      event.organizer = organizer || event.organizer;
-      event.date = date || event.date;
-      event.venue = venue || event.venue;
-      event.startDate = startDate || event.startDate;
-      event.endDate = endDate || event.endDate;
-      event.mode = mode || event.mode;
-      event.location = location || event.location;
-      event.capacity = capacity ? Number(capacity) : event.capacity;
-      event.category = category || event.category;
-      event.price = price || event.price;
-      event.seats = seats || event.seats;
-      event.tag = tag !== undefined ? tag : event.tag;
+      if (organizer !== undefined) event.organizer = organizer;
+      if (date !== undefined) event.date = date;
+      if (venue !== undefined) event.venue = venue;
+      if (startDate !== undefined) event.startDate = startDate;
+      if (endDate !== undefined) event.endDate = endDate;
+      if (mode !== undefined) event.mode = mode;
+      if (location !== undefined) event.location = location;
+      event.capacity = capacity !== undefined ? Number(capacity) : event.capacity;
+      if (category !== undefined) event.category = category;
+      if (price !== undefined) event.price = price;
+      if (seats !== undefined) event.seats = seats;
+      if (tag !== undefined) event.tag = tag;
       if (req.file) {
         event.image = req.file.path;
       }

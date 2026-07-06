@@ -143,11 +143,7 @@ const EventDetail = ({ hash }: { hash?: string }) => {
             .prize-card.pos-2 { background: linear-gradient(180deg, #fff 0%, #e2e8f0 100%); border-color: #cbd5e1; }
             .prize-card.pos-3 { background: linear-gradient(180deg, #fff 0%, #fed7aa 100%); border-color: #fdba74; }
             
-            .timeline-container { position: relative; padding-left: 40px; }
-            .timeline-container::before {
-               content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px;
-               background: repeating-linear-gradient(to bottom, #cbd5e1 0, #cbd5e1 4px, transparent 4px, transparent 8px);
-            }
+            .timeline-container { position: relative; }
 
             @media (max-width: 768px) {
               .event-detail-main { padding: 5rem 1.25rem 3rem !important; }
@@ -155,7 +151,6 @@ const EventDetail = ({ hash }: { hash?: string }) => {
               .event-title { font-size: 2rem !important; margin-bottom: 1rem !important; }
               
               /* Timeline Mobile Fix */
-              .timeline-dot { left: -46px !important; } 
               .timeline-card { margin-left: 0 !important; padding: 1rem !important; }
               
               /* Registration Mobile Fix */
@@ -178,40 +173,33 @@ const EventDetail = ({ hash }: { hash?: string }) => {
             </motion.div>
 
             {/* Eligibility Card */}
-            <div className="info-box">
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a' }}>Eligibility</h3>
-              <ul style={{ display: 'flex', flexDirection: 'column', gap: '1rem', listStyle: 'none', padding: 0, margin: 0 }}>
-                {rawEvent?.eligibility ? rawEvent.eligibility.split('\n').map((line: string, i: number) => (
-                   <li key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                     <div style={{ background: '#fdf2f8', color: '#db2777', padding: '0.4rem', borderRadius: '8px' }}>
-                       <GraduationCap size={16} />
-                     </div>
-                     <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4, alignSelf: 'center' }}>
-                       {line}
-                     </div>
-                   </li>
-                )) : (
-                  <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                    <div style={{ background: '#fdf2f8', color: '#db2777', padding: '0.4rem', borderRadius: '8px' }}>
-                      <GraduationCap size={16} />
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4, alignSelf: 'center' }}>
-                      Open to all students
-                    </div>
-                  </li>
-                )}
-                {(rawEvent?.teamMin || rawEvent?.teamMax) && (
-                   <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                     <div style={{ background: '#f3e8ff', color: '#9333ea', padding: '0.4rem', borderRadius: '8px' }}>
-                       <Users size={16} />
-                     </div>
-                     <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4, alignSelf: 'center' }}>
-                       Min {rawEvent.teamMin || 1} • Max {rawEvent.teamMax || 1} members per team
-                     </div>
-                   </li>
-                )}
-              </ul>
-            </div>
+            {(rawEvent?.eligibility || (rawEvent?.participantType === 'team' && (rawEvent?.teamMin || rawEvent?.teamMax))) && (
+              <div className="info-box">
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a' }}>Eligibility</h3>
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: '1rem', listStyle: 'none', padding: 0, margin: 0 }}>
+                  {rawEvent?.eligibility && rawEvent.eligibility.split('\n').map((line: string, i: number) => (
+                     <li key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                       <div style={{ background: '#fdf2f8', color: '#db2777', padding: '0.4rem', borderRadius: '8px' }}>
+                         <GraduationCap size={16} />
+                       </div>
+                       <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4, alignSelf: 'center' }}>
+                         {line}
+                       </div>
+                     </li>
+                  ))}
+                  {rawEvent?.participantType === 'team' && (rawEvent?.teamMin || rawEvent?.teamMax) && (
+                     <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                       <div style={{ background: '#f3e8ff', color: '#9333ea', padding: '0.4rem', borderRadius: '8px' }}>
+                         <Users size={16} />
+                       </div>
+                       <div style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500, lineHeight: 1.4, alignSelf: 'center' }}>
+                         Min {rawEvent.teamMin || 1} • Max {rawEvent.teamMax || 1} members per team
+                       </div>
+                     </li>
+                  )}
+                </ul>
+              </div>
+            )}
 
             {/* Organized by Card */}
             <div className="info-box">
@@ -251,25 +239,27 @@ const EventDetail = ({ hash }: { hash?: string }) => {
             </div>
             
              {/* More / Rules */}
-            <div style={{ marginTop: '0.5rem' }}>
-               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a' }}>More</h3>
-               <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
-                 <button onClick={() => setShowRules(!showRules)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'transparent', border: 'none', cursor: 'pointer' }}>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                     <FileText size={16} color="#475569" />
-                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Rules and Regulations</span>
-                   </div>
-                   {showRules ? <ChevronUp size={16} color="#94a3b8" /> : <ChevronRight size={16} color="#94a3b8" />}
-                 </button>
-                 {showRules && (
-                   <div style={{ padding: '0 1rem 1rem 1rem', fontSize: '0.8rem', color: '#475569', lineHeight: 1.6, whiteSpace: 'pre-wrap', borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
-                     {rawEvent?.rules || 'No rules specified.'}
-                   </div>
-                 )}
+             {rawEvent?.rules && (
+               <div style={{ marginTop: '0.5rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a' }}>More</h3>
+                  <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
+                    <button onClick={() => setShowRules(!showRules)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <FileText size={16} color="#475569" />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Rules and Regulations</span>
+                      </div>
+                      {showRules ? <ChevronUp size={16} color="#94a3b8" /> : <ChevronRight size={16} color="#94a3b8" />}
+                    </button>
+                    {showRules && (
+                      <div style={{ padding: '0 1rem 1rem 1rem', fontSize: '0.8rem', color: '#475569', lineHeight: 1.6, whiteSpace: 'pre-wrap', borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
+                        {rawEvent.rules}
+                      </div>
+                    )}
+                  </div>
                </div>
-            </div>
+             )}
 
-            {/* Announcements */}
+             {/* Announcements */}
             {rawEvent?.announcements && rawEvent.announcements.length > 0 && (
               <div style={{ marginTop: '2rem' }}>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -359,28 +349,28 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                 </div>
 
                 {/* Team Size */}
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ background: '#f3e8ff', color: '#a855f7', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Users size={20} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>Team Size</div>
-                    <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
-                      {rawEvent?.participantType === 'individual' 
-                        ? '1 Member / Individual' 
-                        : (rawEvent?.teamMin && rawEvent?.teamMax 
+                {rawEvent?.participantType === 'team' && (
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ background: '#f3e8ff', color: '#a855f7', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Users size={20} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>Team Size</div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+                        {rawEvent?.teamMin && rawEvent?.teamMax 
                             ? `${rawEvent.teamMin} - ${rawEvent.teamMax} Members / Team` 
-                            : '1 - 4 Members / Team')}
+                            : 'Team'}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
             {/* Registration Card */}
             <div className="reg-card" style={{ background: '#f8fafc', borderRadius: '12px', padding: '1.5rem', marginBottom: '2.5rem', border: '1px solid #f1f5f9' }}>
               <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, marginBottom: '1rem' }}>
-                Registration closes on {new Date(currentEvent.startDate || currentEvent.date).toLocaleString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })}
+                Registration closes on {new Date(rawEvent?.registrationDeadline || currentEvent.startDate || currentEvent.date).toLocaleString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })}
               </div>
               <div className="reg-card-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
@@ -422,14 +412,13 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', color: '#0f172a' }}>Stages & Timeline</h2>
                 <div className="timeline-container">
                    {rawEvent.timeline.map((item: any, i: number) => (
-                     <div key={i} style={{ display: 'flex', gap: '1.25rem', position: 'relative', marginBottom: i === rawEvent.timeline.length - 1 ? 0 : '2rem' }}>
-                        <div className="timeline-dot" style={{ background: '#fff', border: i % 2 === 0 ? '1px solid #ec4899' : '1px solid #3b82f6', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'absolute', left: '-46px', top: 0, zIndex: 2 }}>
-                          <div style={{ background: i % 2 === 0 ? '#ec4899' : '#3b82f6', width: '100%', textAlign: 'center', color: '#fff', fontSize: '0.5rem', fontWeight: 800, padding: '0.1rem 0' }}>
-                            {new Date(item.startDate?.split(',')[0] || item.date).toLocaleString('en-US', { month: 'short' }).toUpperCase()}
-                          </div>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#111', lineHeight: 1.2, marginTop: '1px' }}>
-                            {new Date(item.startDate?.split(',')[0] || item.date).getDate() || item.date?.split(' ')[0]}
-                          </div>
+                     <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: i === rawEvent.timeline.length - 1 ? 0 : '1.5rem', position: 'relative' }}>
+                        {i !== rawEvent.timeline.length - 1 && (
+                          <div style={{ position: 'absolute', left: '21px', top: '36px', bottom: '-24px', borderLeft: '2px dotted #cbd5e1', zIndex: 0 }} />
+                        )}
+                        <div className="timeline-date-label" style={{ width: '45px', flexShrink: 0, textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: i % 2 === 0 ? '#ec4899' : '#3b82f6', lineHeight: 1.1, paddingTop: '0.2rem', zIndex: 1, background: '#fafafa' }}>
+                          {new Date(item.startDate?.split(',')[0] || item.date).getDate() || item.date?.split(' ')[0]}<br/>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>{new Date(item.startDate?.split(',')[0] || item.date).toLocaleString('en-US', { month: 'short' }).toUpperCase()}</span>
                         </div>
                         <div className="timeline-card" style={{ flex: 1, background: '#fff', border: '1px solid #f1f5f9', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>

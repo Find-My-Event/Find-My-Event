@@ -86,7 +86,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
             </button>
 
             {success ? (
-              <div style={{ textAlign: 'center', py: '2rem' }}>
+              <div style={{ textAlign: 'center', padding: '2rem 0' }}>
                 <ShieldCheck size={64} color="#10B981" style={{ margin: '0 auto 1rem auto' }} />
                 <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#111', margin: '0 0 0.5rem 0' }}>Success!</h3>
                 <p style={{ color: '#666' }}>{success}</p>

@@ -8,6 +8,11 @@ export interface Club {
   aboutUs: string;
   glimpses: string[];
   tags: string[];
+  foundedOn?: string;
+  venue?: string;
+  eventsConducted?: number;
+  detailedDescription?: string;
+  leadership?: any[];
 }
 
 export const fallbackClubs: Club[] = [

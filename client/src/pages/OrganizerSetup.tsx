@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Camera, ArrowRight, X, Plus, Trash2, Upload, Users, Image as ImageIcon } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../contexts/AuthContext';
-import { motion } from 'framer-motion';
 
 export default function OrganizerSetup() {
   const { refreshUser } = useAuth();
