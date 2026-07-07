@@ -88,6 +88,7 @@ const Navbar: React.FC = () => {
     { name: 'Home', href: '#home', icon: Home },
     { name: 'Clubs', href: '#clubs', icon: Award },
     { name: 'Events', href: '#registered-events', icon: Calendar },
+    { name: 'Gallery', href: '#gallery', icon: LayoutGrid },
     { name: 'Profile', href: '', icon: User, isProfile: true },
   ] : [
     { name: 'Home', href: '#home', icon: Home },
@@ -361,8 +362,8 @@ const Navbar: React.FC = () => {
                </div>
             )}
 
-            {/* Nav Links */}
-            {navLinks.map(link => (
+            {/* Nav Links (Only for guests on mobile) */}
+            {!isLoggedIn && navLinks.map(link => (
               <a key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)}
                 style={{ textDecoration: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', padding: '0.5rem 0.5rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <span style={{ color: '#8B5CF6', opacity: 0.8 }}><ChevronDown size={14} style={{ transform: 'rotate(-90deg)' }}/></span> {link.name}

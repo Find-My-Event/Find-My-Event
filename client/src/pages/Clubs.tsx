@@ -53,6 +53,7 @@ export default function Clubs() {
   const marker1Ref = useRef<HTMLSpanElement>(null);
   const marker2Ref = useRef<HTMLSpanElement>(null);
   const [clubs, setClubs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -63,7 +64,8 @@ export default function Clubs() {
           setClubs(res.data);
         }
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setLoading(false));
 
     if (heroRef.current) {
       const lines = heroRef.current.querySelectorAll('.hero-line');
@@ -81,6 +83,8 @@ export default function Clubs() {
 
   const initiativesList = clubs.filter(c => c.type === 'Initiative');
   const clubsList = clubs.filter(c => c.type === 'Club');
+
+
 
   return (
     <div style={{ backgroundColor: '#FAFAFA', minHeight: '100vh', fontFamily: "'Inter', 'SF Pro Display', sans-serif", color: '#111', position: 'relative', overflowX: 'hidden' }}>
@@ -188,38 +192,54 @@ export default function Clubs() {
           </div>
         </section>
 
-        {/* All Initiatives Section */}
-        {initiativesList.length > 0 && (
-          <section className="clubs-section-container" style={{ maxWidth: '1440px', margin: '2rem auto 4rem', padding: '0 2.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
-              <h2 className="clubs-section-title" style={{ fontSize: '3rem', fontWeight: 700, fontFamily: "'Inter', sans-serif", color: '#111', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
-                All Initiatives
-              </h2>
+        {loading ? (
+          <div style={{ padding: '6rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#111' }}>
+            <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.5rem' }}>
+              <motion.div animate={{ y: [0, -15, 0], scale: [1, 1.2, 1] }} transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut' }} style={{ width: '14px', height: '14px', background: 'linear-gradient(135deg, #8B5CF6, #C084FC)', borderRadius: '50%', boxShadow: '0 4px 10px rgba(139,92,246,0.3)' }} />
+              <motion.div animate={{ y: [0, -15, 0], scale: [1, 1.2, 1] }} transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut', delay: 0.15 }} style={{ width: '14px', height: '14px', background: 'linear-gradient(135deg, #EC4899, #F472B6)', borderRadius: '50%', boxShadow: '0 4px 10px rgba(236,72,153,0.3)' }} />
+              <motion.div animate={{ y: [0, -15, 0], scale: [1, 1.2, 1] }} transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }} style={{ width: '14px', height: '14px', background: 'linear-gradient(135deg, #3B82F6, #60A5FA)', borderRadius: '50%', boxShadow: '0 4px 10px rgba(59,130,246,0.3)' }} />
             </div>
-            
-            <div className="clubs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
-              {initiativesList.map((club) => (
-                <ClubCard key={club.id} club={club} />
-              ))}
-            </div>
-          </section>
-        )}
+            <h2 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '0.75rem', letterSpacing: '-0.02em', background: 'linear-gradient(90deg, #111, #444)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Loading...</h2>
+            <p style={{ color: '#6B7280', fontSize: '1.05rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              Curating the best events and clubs for you
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* All Initiatives Section */}
+            {initiativesList.length > 0 && (
+              <section className="clubs-section-container" style={{ maxWidth: '1440px', margin: '2rem auto 4rem', padding: '0 2.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+                  <h2 className="clubs-section-title" style={{ fontSize: '3rem', fontWeight: 700, fontFamily: "'Inter', sans-serif", color: '#111', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
+                    All Initiatives
+                  </h2>
+                </div>
+                
+                <div className="clubs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
+                  {initiativesList.map((club) => (
+                    <ClubCard key={club.id} club={club} />
+                  ))}
+                </div>
+              </section>
+            )}
 
-        {/* All Clubs Section */}
-        {clubsList.length > 0 && (
-          <section className="clubs-section-container" style={{ maxWidth: '1440px', margin: '2rem auto 6rem', padding: '0 2.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
-              <h2 className="clubs-section-title" style={{ fontSize: '3rem', fontWeight: 700, fontFamily: "'Inter', sans-serif", color: '#111', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
-                All Clubs
-              </h2>
-            </div>
-            
-            <div className="clubs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
-              {clubsList.map((club) => (
-                <ClubCard key={club.id} club={club} />
-              ))}
-            </div>
-          </section>
+            {/* All Clubs Section */}
+            {clubsList.length > 0 && (
+              <section className="clubs-section-container" style={{ maxWidth: '1440px', margin: '2rem auto 6rem', padding: '0 2.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+                  <h2 className="clubs-section-title" style={{ fontSize: '3rem', fontWeight: 700, fontFamily: "'Inter', sans-serif", color: '#111', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
+                    All Clubs
+                  </h2>
+                </div>
+                
+                <div className="clubs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
+                  {clubsList.map((club) => (
+                    <ClubCard key={club.id} club={club} />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
         
       </main>
