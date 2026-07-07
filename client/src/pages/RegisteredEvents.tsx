@@ -101,7 +101,7 @@ export default function RegisteredEvents() {
         
         {/* Header */}
         <div className="header-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
-          <h1 className="header-title" style={{ fontSize: '3.5rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#111827' }}>
+          <h1 className="header-title" style={{ fontSize: '3.5rem', fontWeight: 600, margin: 0, letterSpacing: '-0.02em', color: '#111827' }}>
             My Events<span style={{ color: '#ec4899' }}>.</span>
           </h1>
 
