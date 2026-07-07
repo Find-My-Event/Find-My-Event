@@ -1242,14 +1242,6 @@ const MarqueeStrip = () => (
             fontWeight: 600,
             cursor: 'default'
           }}
-          onMouseEnter={(e) => {
-            gsap.to(e.currentTarget, { background: '#111', color: '#fff', borderColor: '#111', duration: 0.3, ease: 'power2.out' });
-            gsap.to(e.currentTarget.querySelector('svg'), { stroke: '#fff', duration: 0.3, ease: 'power2.out' });
-          }}
-          onMouseLeave={(e) => {
-            gsap.to(e.currentTarget, { background: '#ffffff', color: '#111', borderColor: 'rgba(0,0,0,0.1)', duration: 0.3, ease: 'power2.out' });
-            gsap.to(e.currentTarget.querySelector('svg'), { stroke: '#8B5CF6', duration: 0.3, ease: 'power2.out' });
-          }}
         >
           <tag.icon size={14} color="#8B5CF6" strokeWidth={2.5} />
           {tag.label}

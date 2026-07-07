@@ -14,10 +14,8 @@ const EVENT_CARDS = [
   { label: 'Hackathon', bg: 'url(https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=400&auto=format&fit=crop)' },
 ];
 
-/* Floating labels */
 const FLOAT_LABELS = [
   { label: 'Comedy',    top: '-10%', left: 'calc(50% - 35vw)', bg: '#0066FF', dtLeft: 'calc(50% - 500px)', dtTop: '-35px' },
-  { label: 'Sports',    top: '90%', left: 'calc(50% - 25vw)', bg: '#A855F7', dtLeft: 'calc(50% - 300px)', dtTop: '295px' },
   { label: 'Concert',   top: '90%', left: 'calc(50% + 25vw)', bg: '#22C55E', dtLeft: 'calc(50% + 300px)', dtTop: '295px' },
   { label: 'Hackathon', top: '-10%', left: 'calc(50% + 35vw)', bg: '#EC4899', dtLeft: 'calc(50% + 500px)', dtTop: '-35px' },
 ];

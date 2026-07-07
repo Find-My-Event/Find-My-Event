@@ -123,7 +123,7 @@ const ProblemStory = () => {
 
         // ── PHASE 4: Transition to Solution Text ──
         tl.addLabel("solution");
-        
+
         tl.to(textChaosRef.current, { opacity: 0, y: -20, duration: 0.5, ease: 'power2.in' }, "solution");
         tl.to(textSolutionRef.current, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, "solution+=0.4");
         tl.to({}, { duration: 0.2 });
@@ -224,10 +224,18 @@ const ProblemStory = () => {
           zIndex: 5,
           transform: 'translate(-50%, -50%)',
         }}>
+          <style>{`
+            .ps-svg-desktop { display: block !important; }
+            .ps-svg-mobile { display: none !important; }
+            @media (max-width: 768px) {
+              .ps-svg-desktop { display: none !important; }
+              .ps-svg-mobile { display: block !important; }
+            }
+          `}</style>
           <svg width="0" height="0" style={{ position: 'absolute' }}>
             <defs>
-              <marker id="arrow-down" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 2 L 8 5 L 0 8" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <marker id="arrow-forward" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M 0 2 L 8 5 L 0 8" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </marker>
             </defs>
           </svg>
@@ -237,11 +245,11 @@ const ProblemStory = () => {
             <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#222', fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
               Fragmented Discovery
             </span>
-            <svg width="220" height="270" className="ps-svg ps-svg-desktop" style={{ display: 'block', marginTop: '10px', marginLeft: '20px' }}>
-              <path d="M 20,20 Q 120,50 200,250" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerStart="url(#arrow-down)" />
+            <svg width="220" height="270" className="ps-svg ps-svg-desktop" style={{ marginTop: '10px', marginLeft: '20px', overflow: 'visible' }}>
+              <path d="M 200,250 Q -40,120 40,20" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerEnd="url(#arrow-forward)" />
             </svg>
-            <svg width="60" height="90" className="ps-svg ps-svg-mobile" style={{ display: 'none', margin: '4px auto 0' }}>
-              <path d="M 30,0 Q 50,45 30,85" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerStart="url(#arrow-down)" />
+            <svg width="80" height="80" className="ps-svg ps-svg-mobile" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', overflow: 'visible' }}>
+              <path d="M 60,75 Q 10,40 40,5" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerEnd="url(#arrow-forward)" />
             </svg>
           </div>
 
@@ -250,11 +258,11 @@ const ProblemStory = () => {
             <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#222', fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
               Disconnected Experience
             </span>
-            <svg width="150" height="330" className="ps-svg ps-svg-desktop" style={{ display: 'block', marginTop: '10px', marginLeft: '30px' }}>
-              <path d="M 20,20 Q 80,100 130,310" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerStart="url(#arrow-down)" />
+            <svg width="150" height="330" className="ps-svg ps-svg-desktop" style={{ marginTop: '10px', marginLeft: '30px', overflow: 'visible' }}>
+              <path d="M 130,310 Q -40,150 40,20" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerEnd="url(#arrow-forward)" />
             </svg>
-            <svg width="60" height="50" className="ps-svg ps-svg-mobile" style={{ display: 'none', margin: '4px auto 0' }}>
-              <path d="M 30,0 Q 10,25 30,45" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerStart="url(#arrow-down)" />
+            <svg width="80" height="80" className="ps-svg ps-svg-mobile" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', overflow: 'visible' }}>
+              <path d="M 60,75 Q 50,40 40,5" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerEnd="url(#arrow-forward)" />
             </svg>
           </div>
 
@@ -263,11 +271,11 @@ const ProblemStory = () => {
             <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#222', fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
               Clubs efforts to reach students
             </span>
-            <svg width="100" height="330" className="ps-svg ps-svg-desktop" style={{ display: 'block', marginTop: '10px', marginLeft: '20px' }}>
-              <path d="M 20,20 Q 60,100 80,310" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerStart="url(#arrow-down)" />
+            <svg width="100" height="330" className="ps-svg ps-svg-desktop" style={{ marginTop: '10px', marginLeft: '20px', overflow: 'visible' }}>
+              <path d="M 80,310 Q 100,150 20,20" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerEnd="url(#arrow-forward)" />
             </svg>
-            <svg width="60" height="60" className="ps-svg ps-svg-mobile" style={{ display: 'none', margin: '4px auto 0' }}>
-              <path d="M 30,0 Q 50,30 30,55" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerStart="url(#arrow-down)" />
+            <svg width="80" height="80" className="ps-svg ps-svg-mobile" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', overflow: 'visible' }}>
+              <path d="M 20,75 Q 30,40 40,5" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerEnd="url(#arrow-forward)" />
             </svg>
           </div>
 
@@ -276,11 +284,11 @@ const ProblemStory = () => {
             <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#222', fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
               Zero Personalization
             </span>
-            <svg width="100" height="270" className="ps-svg ps-svg-desktop" style={{ display: 'block', marginTop: '10px', marginLeft: '-20px' }}>
-              <path d="M 80,20 Q 40,50 20,250" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerStart="url(#arrow-down)" />
+            <svg width="100" height="270" className="ps-svg ps-svg-desktop" style={{ marginTop: '10px', marginLeft: '-20px', overflow: 'visible' }}>
+              <path d="M 20,250 Q 140,120 60,20" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerEnd="url(#arrow-forward)" />
             </svg>
-            <svg width="60" height="90" className="ps-svg ps-svg-mobile" style={{ display: 'none', margin: '4px auto 0' }}>
-              <path d="M 30,0 Q 10,45 30,85" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerStart="url(#arrow-down)" />
+            <svg width="80" height="80" className="ps-svg ps-svg-mobile" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', overflow: 'visible' }}>
+              <path d="M 20,75 Q 70,40 40,5" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round" markerEnd="url(#arrow-forward)" />
             </svg>
           </div>
         </div>

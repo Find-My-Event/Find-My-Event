@@ -84,6 +84,18 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const mobileTabs: Array<{ name: string; href: string; icon: any; isProfile?: boolean }> = isLoggedIn ? [
+    { name: 'Home', href: '#home', icon: Home },
+    { name: 'Clubs', href: '#clubs', icon: Award },
+    { name: 'Events', href: '#registered-events', icon: Calendar },
+    { name: 'Profile', href: '', icon: User, isProfile: true },
+  ] : [
+    { name: 'Home', href: '#home', icon: Home },
+    { name: 'Clubs', href: '#clubs', icon: Award },
+    { name: 'Gallery', href: '#gallery', icon: LayoutGrid },
+    { name: 'Sign In', href: '#signin', icon: User },
+  ];
+
   return (
     <>
       <div
@@ -149,10 +161,7 @@ const Navbar: React.FC = () => {
 
         {/* ── Right actions ── */}
         <div className="mobile-hidden" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          {/* Search */}
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: isInnerPage ? 'rgba(255,255,255,0.6)' : '#333' }} aria-label="Search">
-            <Search size={20} strokeWidth={2} />
-          </button>
+
 
           {isLoggedIn ? (
             <>
@@ -293,7 +302,7 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* ── Mobile toggle ── */}
-        <div className="mobile-only" style={{ display: 'none', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
+        <div style={{ display: 'none', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
           <button
             style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: isInnerPage ? '#fff' : '#222', display: 'flex', alignItems: 'center' }}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -314,11 +323,11 @@ const Navbar: React.FC = () => {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -16, x: '-50%' }}
+            initial={{ opacity: 0, y: 20, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: -16, x: '-50%' }}
+            exit={{ opacity: 0, y: 20, x: '-50%' }}
             style={{
-              position: 'fixed', top: '5rem', left: '50%',
+              position: 'fixed', bottom: '4.5rem', left: '50%',
               width: 'min(94%, 420px)',
               background: isInnerPage ? 'var(--bg-card)' : 'rgba(255,255,255,0.97)',
               backdropFilter: 'blur(20px)', borderRadius: '24px',
@@ -394,6 +403,98 @@ const Navbar: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Bottom Tab Bar (Mobile Only) ── */}
+      {isMobile && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          background: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(0,0,0,0.06)',
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          padding: '6px 0 max(10px, env(safe-area-inset-bottom, 10px))',
+          boxShadow: '0 -2px 20px rgba(0,0,0,0.04)',
+        }}>
+          {mobileTabs.map(tab => {
+            const isActive = tab.isProfile
+              ? isMobileMenuOpen
+              : (hash === tab.href || (!hash && tab.href === '#home'));
+            const TabIcon = tab.icon;
+            return (
+              <button
+                key={tab.name}
+                onClick={() => {
+                  if (tab.isProfile) {
+                    setIsMobileMenuOpen(!isMobileMenuOpen);
+                  } else {
+                    window.location.hash = tab.href;
+                    setIsMobileMenuOpen(false);
+                  }
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '2px',
+                  cursor: 'pointer',
+                  padding: '6px 16px',
+                  position: 'relative',
+                  fontFamily: 'Inter, sans-serif',
+                }}
+              >
+                {isActive && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-6px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '24px',
+                    height: '3px',
+                    background: 'linear-gradient(90deg, #8B5CF6, #EC4899)',
+                    borderRadius: '2px',
+                  }} />
+                )}
+                {tab.isProfile && isLoggedIn ? (
+                  <img
+                    src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'}
+                    alt="Profile"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: isActive ? '2px solid #8B5CF6' : '2px solid transparent',
+                    }}
+                  />
+                ) : (
+                  <TabIcon
+                    size={22}
+                    strokeWidth={isActive ? 2.5 : 1.8}
+                    color={isActive ? '#8B5CF6' : '#999'}
+                  />
+                )}
+                <span style={{
+                  fontSize: '0.62rem',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#8B5CF6' : '#999',
+                  letterSpacing: '0.01em',
+                }}>
+                  {tab.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 };
