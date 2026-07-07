@@ -201,7 +201,10 @@ const Auth: React.FC = () => {
                 whileHover={{ y: -2, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
                 whileTap={{ scale: 0.98 }}
                 type="button" 
-                onClick={() => window.location.href = 'http://localhost:5000/auth/google'} 
+                onClick={() => {
+                  const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
+                  window.location.href = `${baseUrl}/auth/google`;
+                }} 
                 style={btnDark}
               >
                 <GoogleIcon /> Sign In with Google

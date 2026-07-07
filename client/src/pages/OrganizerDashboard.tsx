@@ -81,7 +81,7 @@ export default function OrganizerDashboard() {
   // Fetch Events from API
   const fetchEvents = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/organizer/events', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/organizer/events`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -147,7 +147,7 @@ export default function OrganizerDashboard() {
     formData.append('image', imageFile);
 
     try {
-      const res = await fetch('http://localhost:5000/api/organizer/events', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/organizer/events`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
