@@ -100,12 +100,15 @@ app.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: 'http://localhost:5173/#signin' }),
+  (req, res, next) => {
+    passport.authenticate('google', { failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:5173'}/#signin` })(req, res, next);
+  },
   (req, res) => {
     // Successful authentication, generate token and redirect home.
     const jwt = require('jsonwebtoken');
     const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.redirect(`http://localhost:5173/?token=${token}#home`);
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    res.redirect(`${clientUrl}/?token=${token}#home`);
   });
 
 const PORT = process.env.PORT || 5000;
