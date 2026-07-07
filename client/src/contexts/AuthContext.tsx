@@ -26,6 +26,7 @@ interface AuthContextType {
   verifyOtp: (email: string, otp: string) => Promise<any>;
   resendOtp: (email: string) => Promise<any>;
   handleLogin: (email: string, password: string) => Promise<any>;
+  loginWithToken: (token: string) => Promise<void>;
   setupProfile: (profileData: any) => Promise<any>;
   uploadAvatar: (file: File) => Promise<string>;
   updateProfile: (profileData: any) => Promise<any>;
@@ -118,6 +119,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return data;
   };
 
+  const loginWithToken = async (newToken: string) => {
+    setToken(newToken);
+    localStorage.setItem('token', newToken);
+    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    try {
+      const { data } = await api.get<User>('/auth/me');
+      setUser({ ...data, id: String(data.id) });
+    } catch (err) {
+      setToken(null);
+      localStorage.removeItem('token');
+      delete api.defaults.headers.common['Authorization'];
+    }
+  };
+
   const setupProfile = async (profileData: any) => {
     if (!user) throw new Error('User not registered in session');
     const { data } = await api.post('/auth/setup-profile', { userId: user.id || (user as any)._id, ...profileData });
@@ -174,7 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isLoggedIn = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, register, verifyOtp, resendOtp, handleLogin, setupProfile, uploadAvatar, updateProfile, updateSettings, refreshUser, logout, mockLogin, isLoggedIn }}>
+    <AuthContext.Provider value={{ user, token, loading, register, verifyOtp, resendOtp, handleLogin, loginWithToken, setupProfile, uploadAvatar, updateProfile, updateSettings, refreshUser, logout, mockLogin, isLoggedIn }}>
       {children}
     </AuthContext.Provider>
   );

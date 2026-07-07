@@ -189,10 +189,21 @@ const Auth: React.FC = () => {
               </div>
               <button type="submit" style={btnPrimary}>Continue with Email</button>
             </form>
-            <div style={{ height: '1px', background: '#eee', margin: '1.5rem 0' }} />
+            <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0' }}>
+              <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+              <span style={{ margin: '0 1rem', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>or continue with</span>
+              <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <button style={btnDark}><GoogleIcon /> Sign In with Google</button>
-              <button style={btnDark}><span style={{ fontSize: '1.1rem' }}>&#63743;</span> Sign In with Apple</button>
+              <motion.button 
+                whileHover={{ y: -2, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
+                whileTap={{ scale: 0.98 }}
+                type="button" 
+                onClick={() => window.location.href = 'http://localhost:5000/auth/google'} 
+                style={btnDark}
+              >
+                <GoogleIcon /> Sign In with Google
+              </motion.button>
             </div>
           </>
         )}

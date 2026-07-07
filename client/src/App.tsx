@@ -57,9 +57,19 @@ gsap.registerPlugin(ScrollTrigger);
 ══════════════════════════════════════════════ */
 function AppContent() {
   const [currentRoute, setCurrentRoute] = useState(window.location.hash || '');
-  const { user, isLoggedIn, loading }   = useAuth();
+  const { user, isLoggedIn, loading, loginWithToken }   = useAuth();
 
-  /* ── Hash routing & Scroll Reset ── */
+  /* ── Token Parsing & Hash routing & Scroll Reset ── */
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+      loginWithToken(token).then(() => {
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+      });
+    }
+  }, [loginWithToken]);
+
   useEffect(() => {
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
