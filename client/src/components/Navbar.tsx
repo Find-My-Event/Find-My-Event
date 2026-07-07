@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Heart, Home, Globe, LayoutGrid, Command, Award } from 'lucide-react';
+import { Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Heart, Home, Globe, LayoutGrid, Command, Award } from 'lucide-react';
 import gsap from 'gsap';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
