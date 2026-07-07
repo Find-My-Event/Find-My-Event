@@ -896,6 +896,7 @@ function ParticipantsTab({ event }: { event: any }) {
   const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'detailed'>('list');
+  const [expandedTeams, setExpandedTeams] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let interval: any;
@@ -1067,7 +1068,7 @@ function ParticipantsTab({ event }: { event: any }) {
                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                            <img src={p.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.name}`} alt="" style={{ width: 48, height: 48, borderRadius: '50%', border: '1px solid #eaeaea' }} />
                            <div>
-                             <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#111' }}>{p.name}</h4>
+                             <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#111', display: 'flex', alignItems: 'center', gap: '6px' }}>{p.name} {p.isTeam && <span style={{fontSize: '0.75rem', background: '#FEF3C7', color: '#D97706', padding: '2px 6px', borderRadius: '4px'}}>👑 Leader</span>}</h4>
                              <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '2px' }}>{p.email}</div>
                              <div style={{ fontSize: '0.8rem', color: '#666' }}>{p.phone || 'No phone'}</div>
                            </div>
@@ -1107,6 +1108,42 @@ function ParticipantsTab({ event }: { event: any }) {
                            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px dashed #cbd5e1', color: '#64748b', fontSize: '0.85rem', textAlign: 'center', fontWeight: 500 }}>
                              No extra registration data provided.
                            </div>
+                         )}
+
+                         {p.isTeam && p.teamMembers && p.teamMembers.length > 1 && (
+                            <div style={{ marginTop: '1rem', borderTop: '1px solid #eaeaea', paddingTop: '1rem' }}>
+                               <button 
+                                 onClick={() => setExpandedTeams(prev => ({...prev, [p.id]: !prev[p.id]}))}
+                                 style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}
+                               >
+                                 {expandedTeams[p.id] ? 'Hide Team Members ↑' : `View All Team Members (${p.teamMembers.length - 1}) ↓`}
+                               </button>
+                               
+                               {expandedTeams[p.id] && (
+                                 <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {p.teamMembers.slice(1).map((m: any, mIdx: number) => (
+                                      <div key={mIdx} style={{ background: '#F1F5F9', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                                        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1E293B', display: 'flex', justifyContent: 'space-between' }}>
+                                           <span>{m.name}</span>
+                                           <span style={{ fontSize: '0.75rem', color: '#64748B' }}>Member {mIdx + 2}</span>
+                                        </div>
+                                        <div style={{ fontSize: '0.8rem', color: '#64748B', margin: '2px 0 8px 0' }}>{m.email} • {m.phone || 'N/A'}</div>
+                                        
+                                        {m.customAnswers && m.customAnswers.length > 0 && (
+                                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+                                             {m.customAnswers.map((ans: any, aIdx: number) => (
+                                               <div key={aIdx} style={{ background: '#ffffff', padding: '8px 12px', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column' }}>
+                                                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748B' }}>{ans.question}</span>
+                                                  <span style={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>{ans.answer || 'N/A'}</span>
+                                               </div>
+                                             ))}
+                                           </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                 </div>
+                               )}
+                            </div>
                          )}
                        </div>
                        <div style={{ display: 'flex', gap: '8px', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #eaeaea' }}>

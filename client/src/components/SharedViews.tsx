@@ -274,16 +274,46 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
 
 // ─── Shared Register View ───────────────────────────────────────────────────────────
 export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void }) => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1); // 1 = Form, 2 = Success/Ticket
   const [loading, setLoading] = useState(false);
   const { isLoggedIn, user } = useAuth();
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', team: '' });
-  const [customAnswers, setCustomAnswers] = useState<any[]>([]);
+  
+  const isTeam = event?.participantType === 'team';
+  const minTeam = event?.teamMin || 1;
+  const maxTeam = event?.teamMax || 4;
+  
+  const [teamSize, setTeamSize] = useState(isTeam ? minTeam : 1);
+  const [teamMembers, setTeamMembers] = useState([{ name: user?.name || '', email: user?.email || '', phone: (user as any)?.phone || '', customAnswers: [] as any[] }]);
+  
+  const [currentStep, setCurrentStep] = useState(0); // For multi-step team members
   const [selectedTicket, setSelectedTicket] = useState(event?.tickets?.[0]?.category || 'Free');
-  const [ticketsCount] = useState(1);
+
+  const updateTeamSize = (size: number) => {
+    let newSize = Math.max(isTeam ? minTeam : 1, Math.min(size, isTeam ? maxTeam : 1));
+    setTeamSize(newSize);
+    
+    setTeamMembers(prev => {
+        const newMembers = [...prev];
+        while (newMembers.length < newSize) {
+            newMembers.push({ name: '', email: '', phone: '', customAnswers: [] });
+        }
+        return newMembers.slice(0, newSize);
+    });
+    if (currentStep >= newSize) {
+        setCurrentStep(newSize - 1);
+    }
+  };
+
+  const updateMember = (field: string, value: string) => {
+      setTeamMembers(prev => {
+          const updated = [...prev];
+          updated[currentStep] = { ...updated[currentStep], [field]: value };
+          return updated;
+      });
+  };
 
   const renderTicket = (isAlreadyRegistered: boolean) => (
-    <motion.div key={isAlreadyRegistered ? "is-registered" : "success"} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '1rem 0' }}>
+    <motion.div key={isAlreadyRegistered ? 'is-registered' : 'success'} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '1rem 0' }}>
       <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#111', marginBottom: '1.5rem', marginTop: 0 }}>You're In</h2>
       
       <div style={{ background: '#8B5CF6', borderRadius: '16px', width: '100%', maxWidth: '350px', color: '#fff', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 40px rgba(139, 92, 246, 0.3)' }}>
@@ -302,7 +332,7 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
         <div style={{ padding: '1.5rem', textAlign: 'left', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <div>
             <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.2rem 0' }}>Participant</p>
-            <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>{formData?.name || user?.name || 'Participant'}</p>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>{teamMembers[0]?.name || user?.name || 'Participant'}</p>
           </div>
           <div>
             <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.2rem 0' }}>Pass Type</p>
@@ -331,14 +361,12 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
     </motion.div>
   );
 
-  const isFormValid = formData.name && formData.email && formData.phone;
-
   const handleRazorpayPayment = async (orderData: any) => {
     const options = {
       key: orderData.keyId,
       amount: orderData.amount,
       currency: orderData.currency,
-      name: "Find My Event",
+      name: 'Find My Event',
       description: `Registration for ${event.title}`,
       order_id: orderData.orderId,
       handler: async (response: any) => {
@@ -361,11 +389,11 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
         }
       },
       prefill: {
-        name: formData.name,
-        email: formData.email,
-        contact: formData.phone
+        name: teamMembers[0].name,
+        email: teamMembers[0].email,
+        contact: teamMembers[0].phone
       },
-      theme: { color: "#8B5CF6" }
+      theme: { color: '#8B5CF6' }
     };
 
     const rzp1 = new (window as any).Razorpay(options);
@@ -374,14 +402,20 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
 
   const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
 
-  const handleCustomAnswerChange = (question: string, answer: any) => {
-    setCustomAnswers(prev => {
-      const existing = prev.find(a => a.question === question);
-      if (existing) {
-        return prev.map(a => a.question === question ? { ...a, answer } : a);
+  const handleMemberCustomAnswerChange = (question: string, answer: any) => {
+    setTeamMembers(prev => {
+      const updated = [...prev];
+      const m = updated[currentStep];
+      const existingAnsIdx = m.customAnswers?.findIndex(a => a.question === question) ?? -1;
+      
+      let newAnswers = m.customAnswers ? [...m.customAnswers] : [];
+      if (existingAnsIdx >= 0) {
+          newAnswers[existingAnsIdx].answer = answer;
       } else {
-        return [...prev, { question, answer }];
+          newAnswers.push({ question, answer });
       }
+      updated[currentStep] = { ...m, customAnswers: newAnswers };
+      return updated;
     });
   };
 
@@ -394,7 +428,7 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
       const res = await api.post('/events/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      handleCustomAnswerChange(question, res.data.url);
+      handleMemberCustomAnswerChange(question, res.data.url);
     } catch (err) {
       alert('Failed to upload file');
     } finally {
@@ -402,90 +436,82 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
     }
   };
 
+  const validateCurrentStep = () => {
+    const m = teamMembers[currentStep];
+    if (!m.name || !m.email || !m.phone) return false;
+    
+    // Check Custom Questions
+    if (event.customQuestions?.length > 0) {
+      for (let q of event.customQuestions) {
+        if (q.required === 'Required' || q.required === true) {
+          const answered = m.customAnswers?.find(a => a.question === q.question);
+          if (!answered || !answered.answer) return false;
+        }
+      }
+    }
+    
+    // Check Edu Info
+    const activeEduInfoVal = event.eduInfo?.length > 0 ? event.eduInfo : [
+       { id: 1, name: 'Roll Number', required: 'Optional' },
+       { id: 2, name: 'Course', required: 'Optional' },
+       { id: 3, name: 'Branch', required: 'Optional' },
+       { id: 4, name: 'Year', required: 'Off' }
+    ];
+    for (let eInfo of activeEduInfoVal) {
+      if (eInfo.required === 'Required') {
+        const answered = m.customAnswers?.find(a => a.question === eInfo.name);
+        if (!answered || !answered.answer) return false;
+      }
+    }
+
+    return true;
+  };
+
+  const isCurrentStepValid = validateCurrentStep();
+
   const handleSubmit = async (e: any) => {
      e.preventDefault();
      if (!isLoggedIn) {
        window.location.hash = '#signin';
        return;
      }
-     
-     // Validate custom questions if any are required
-     if (event.customQuestions?.length > 0) {
-       for (let q of event.customQuestions) {
-         if (q.required === 'Required' || q.required === true) {
-           const answered = customAnswers.find(a => a.question === q.question);
-           if (!answered || !answered.answer) {
-             alert(`Please answer the required question: ${q.question}`);
-             return;
-           }
-         }
-       }
-     }
-     
-     // Validate educational info if required
-     const activeEduInfoVal = event.eduInfo?.length > 0 ? event.eduInfo : [
-        { id: 1, name: 'Roll Number', required: 'Optional' },
-        { id: 2, name: 'Course', required: 'Optional' },
-        { id: 3, name: 'Branch', required: 'Optional' },
-        { id: 4, name: 'Year', required: 'Off' }
-     ];
-     if (activeEduInfoVal?.length > 0) {
-       for (let eInfo of activeEduInfoVal) {
-         if (eInfo.required === 'Required') {
-           const answered = customAnswers.find(a => a.question === eInfo.name);
-           if (!answered || !answered.answer) {
-             alert(`Please provide your ${eInfo.name}`);
-             return;
-           }
-         }
-       }
+
+     if (!isCurrentStepValid) {
+       alert("Please fill all required fields for the current member.");
+       return;
      }
 
-     if (!isFormValid) return;
+     if (currentStep < teamSize - 1) {
+        setCurrentStep(prev => prev + 1);
+        return;
+     }
 
      setLoading(true);
      try {
        const actualEventId = event._id || (String(event.id).startsWith('api-') ? event.id.replace('api-', '') : event.id);
        const actualModel = (event._id || String(event.id).startsWith('api-')) ? 'EventSubmission' : 'Event';
 
-       const ticketPrice = event.tickets?.find((t: any) => t.category === selectedTicket)?.price;
-       const isPaidTicket = ticketPrice && ticketPrice !== 'Free' && parseInt(ticketPrice) > 0;
-
-       // Compile all questions, even if unanswered, for comprehensive data
-       const fullAnswers: any[] = [];
-       const activeEduInfoVal = event.eduInfo?.length > 0 ? event.eduInfo : [
-          { id: 1, name: 'Roll Number', required: 'Optional' },
-          { id: 2, name: 'Course', required: 'Optional' },
-          { id: 3, name: 'Branch', required: 'Optional' },
-          { id: 4, name: 'Year', required: 'Off' }
-       ];
-       activeEduInfoVal.forEach((eInfo: any) => {
-         if (eInfo.required !== 'Off') {
-           const answered = customAnswers.find(a => a.question === eInfo.name);
-           fullAnswers.push({ question: eInfo.name, answer: answered ? answered.answer : '' });
-         }
-       });
-       event.customQuestions?.forEach((q: any) => {
-         const answered = customAnswers.find(a => a.question === q.question);
-         fullAnswers.push({ question: q.question, answer: answered ? answered.answer : '' });
-       });
+       const ticketPriceStr = event.tickets?.find((t: any) => t.category === selectedTicket)?.price;
+       const numericPrice = ticketPriceStr === 'Free' || ticketPriceStr === '0' ? 0 : Number(ticketPriceStr || event.pricing?.ticketPrice || 0);
+       const isPaidTicket = numericPrice > 0;
 
        if (event.pricing?.isPaid || isPaidTicket) {
-          // 1. Create Order
           const { data: orderData } = await api.post('/payments/create-order', {
             eventId: actualEventId,
             eventModel: actualModel,
-            ticketsCount,
-            customAnswers: fullAnswers
+            ticketsCount: teamSize,
+            teamSize: teamSize,
+            teamMembers: teamMembers,
+            customAnswers: [] // Backend now reads from teamMembers[idx].customAnswers
           });
           
-          // 2. Open Razorpay
           await handleRazorpayPayment(orderData);
        } else {
-          // Free Registration
           const payload = {
-            customAnswers: fullAnswers,
-            ticketType: selectedTicket
+            ticketType: selectedTicket,
+            teamSize: teamSize,
+            teamMembers: teamMembers,
+            customAnswers: []
           };
           await api.post(`/events/${actualEventId}/register`, payload);
           setStep(2);
@@ -507,6 +533,11 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
     { id: 4, name: 'Year', required: 'Off' }
   ];
 
+  const ticketPriceStr = event.tickets?.find((t: any) => t.category === selectedTicket)?.price;
+  const numericPrice = ticketPriceStr === 'Free' || ticketPriceStr === '0' ? 0 : Number(ticketPriceStr || event.pricing?.ticketPrice || 0);
+  const totalAmount = numericPrice * teamSize;
+  const currentMember = teamMembers[currentStep];
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -515,7 +546,6 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
       className="sv-padding"
       style={{ padding: '6rem 1.5rem 4rem 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', position: 'relative' }}
     >
-       {/* Blobs */}
        <div style={{ position: 'absolute', top: '10%', left: '30%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: -1 }} />
        <div style={{ position: 'absolute', bottom: '10%', right: '30%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: -1 }} />
 
@@ -531,9 +561,9 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
            border: '1px solid rgba(0, 0, 0, 0.04)'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
            <h2 style={{ color: '#111827', fontSize: '2rem', fontWeight: 600, margin: 0 }}>
-              Registration form
+              Registration
            </h2>
            <button type="button" onClick={onBack} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
              <X size={24} color="#6b7280" style={{ strokeWidth: 2.5 }} />
@@ -545,134 +575,164 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
         <motion.form key="form" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
           <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
-             {/* Name */}
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. Full Name *</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.name ? '#ffffff' : '#F3F4F6', border: formData.name ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
-             </div>
+             
+             {isTeam && currentStep === 0 && (
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.5rem', padding: '1rem', background: '#F5F3FF', borderRadius: '12px', border: '1px dashed #8B5CF6' }}>
+                 <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#4c1d95' }}>Configure Team Size</label>
+                 <select
+                   value={teamSize}
+                   onChange={e => updateTeamSize(Number(e.target.value))}
+                   style={{ width: '100%', padding: '0.85rem 1rem', background: '#ffffff', border: '1px solid #c4b5fd', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', cursor: 'pointer' }}
+                 >
+                   {Array.from({ length: maxTeam - minTeam + 1 }, (_, i) => minTeam + i).map(size => (
+                     <option key={size} value={size}>{size} Members</option>
+                   ))}
+                 </select>
+               </div>
+             )}
 
-             {/* Phone */}
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. Mobile Number *</label>
-                <input required type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
-                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.phone ? '#ffffff' : '#F3F4F6', border: formData.phone ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
-             </div>
+             {isTeam && (
+               <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '1rem' }}>
+                 {Array.from({ length: teamSize }).map((_, idx) => (
+                    <div key={idx} style={{ flex: 1, height: '6px', borderRadius: '3px', background: idx <= currentStep ? '#8B5CF6' : '#E5E7EB', transition: 'all 0.3s' }} />
+                 ))}
+               </div>
+             )}
 
-             {/* Email */}
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. Email Address *</label>
-                <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-                  style={{ width: '100%', padding: '0.85rem 1rem', background: formData.email ? '#ffffff' : '#F3F4F6', border: formData.email ? '1px solid #8B5CF6' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} />
-             </div>
+             <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
+                <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <h4 style={{ margin: 0, fontSize: '1.2rem', color: '#334155', fontWeight: 800, display: 'flex', justifyContent: 'space-between' }}>
+                        {isTeam ? `Member ${currentStep + 1} Details ${currentStep === 0 ? '👑 (Leader)' : ''}` : 'Participant Details'}
+                        {isTeam && <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#8B5CF6' }}>{currentStep + 1} of {teamSize}</span>}
+                    </h4>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. Full Name *</label>
+                        <input required type="text" value={currentMember.name} onChange={e => updateMember('name', e.target.value)}
+                        style={{ width: '100%', padding: '0.85rem 1rem', background: currentMember.name ? '#ffffff' : '#F3F4F6', border: currentMember.name ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit' }} />
+                    </div>
 
-             {/* Educational Info */}
-             {activeEduInfo?.filter((eInfo: any) => eInfo.required !== 'Off').map((eInfo: any, i: number) => {
-               const val = customAnswers.find(a => a.question === eInfo.name)?.answer || '';
-               const isReq = eInfo.required === 'Required';
-               return (
-                 <div key={`edu-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {eInfo.name} {isReq && '*'}</label>
-                    <input 
-                      required={isReq} 
-                      type="text" 
-                      value={val} 
-                      onChange={e => handleCustomAnswerChange(eInfo.name, e.target.value)}
-                      style={{ width: '100%', padding: '0.85rem 1rem', background: val ? '#ffffff' : '#F3F4F6', border: val ? '1px solid #D1D5DB' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} 
-                    />
-                 </div>
-               );
-             })}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. Mobile Number *</label>
+                        <input required type="text" value={currentMember.phone} onChange={e => updateMember('phone', e.target.value)}
+                        style={{ width: '100%', padding: '0.85rem 1rem', background: currentMember.phone ? '#ffffff' : '#F3F4F6', border: currentMember.phone ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit' }} />
+                    </div>
 
-             {/* Custom Questions */}
-             {event.customQuestions?.map((q: any, i: number) => {
-               const val = customAnswers.find(a => a.question === q.question)?.answer || '';
-               const isReq = q.required === 'Required' || q.required === true;
-               
-               if (q.type === 'Dropdown') {
-                 return (
-                   <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                     <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {q.question} {isReq && '*'}</label>
-                     <select 
-                       required={isReq}
-                       value={val}
-                       onChange={e => handleCustomAnswerChange(q.question, e.target.value)}
-                       style={{ width: '100%', padding: '0.85rem 1rem', background: val ? '#ffffff' : '#F3F4F6', border: val ? '1px solid #D1D5DB' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', cursor: 'pointer', appearance: 'none' }}
-                     >
-                       <option value="" disabled>Select an option</option>
-                       {q.options?.map((opt: string, idx: number) => (
-                         <option key={idx} value={opt}>{opt}</option>
-                       ))}
-                     </select>
-                   </div>
-                 );
-               }
-               
-               if (q.type === 'Checkbox') {
-                 const selectedOpts = Array.isArray(val) ? val : (val ? val.split(', ') : []);
-                 return (
-                   <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                     <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {q.question} {isReq && '*'}</label>
-                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '4px' }}>
-                       {q.options?.map((opt: string, idx: number) => (
-                         <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer' }}>
-                           <input 
-                             type="checkbox" 
-                             checked={selectedOpts.includes(opt)}
-                             onChange={(e) => {
-                               let newOpts = [...selectedOpts];
-                               if (e.target.checked) newOpts.push(opt);
-                               else newOpts = newOpts.filter(o => o !== opt);
-                               handleCustomAnswerChange(q.question, newOpts.join(', '));
-                             }}
-                             style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', cursor: 'pointer' }}
-                           />
-                           {opt}
-                         </label>
-                       ))}
-                     </div>
-                   </div>
-                 );
-               }
-               
-               if (q.type === 'File Upload') {
-                 return (
-                   <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                     <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {q.question} {isReq && '*'}</label>
-                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                       <input 
-                         type="file" 
-                         accept="image/*,.pdf,.doc,.docx"
-                         onChange={e => handleFileUpload(q.question, e)}
-                         style={{ display: 'none' }}
-                         id={`file-upload-${i}-${q.question.replace(/\s+/g, '-')}`}
-                       />
-                       <label htmlFor={`file-upload-${i}-${q.question.replace(/\s+/g, '-')}`} style={{ background: '#F3F4F6', color: '#4B5563', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, border: '1px dashed #9CA3AF' }}>
-                         {isUploading[q.question] ? 'Uploading...' : 'Choose File'}
-                       </label>
-                       {val && <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>File Attached ✓</span>}
-                     </div>
-                   </div>
-                 );
-               }
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. Email Address *</label>
+                        <input required type="email" value={currentMember.email} onChange={e => updateMember('email', e.target.value)}
+                        style={{ width: '100%', padding: '0.85rem 1rem', background: currentMember.email ? '#ffffff' : '#F3F4F6', border: currentMember.email ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit' }} />
+                    </div>
 
-               return (
-                 <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{qNum++}. {q.question} {isReq && '*'}</label>
-                    <input 
-                      required={isReq} 
-                      type={q.type === 'Text' ? 'text' : 'text'} 
-                      value={val} 
-                      onChange={e => handleCustomAnswerChange(q.question, e.target.value)}
-                      style={{ width: '100%', padding: '0.85rem 1rem', background: val ? '#ffffff' : '#F3F4F6', border: val ? '1px solid #D1D5DB' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', transition: 'all 0.2s' }} 
-                    />
-                 </div>
-               );
-             })}
+                    {/* Educational Info */}
+                    {activeEduInfo?.filter((eInfo: any) => eInfo.required !== 'Off').map((eInfo: any, i: number) => {
+                    const val = currentMember.customAnswers?.find(a => a.question === eInfo.name)?.answer || '';
+                    const isReq = eInfo.required === 'Required';
+                    return (
+                        <div key={`edu-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. {eInfo.name} {isReq && '*'}</label>
+                            <input 
+                            required={isReq} 
+                            type="text" 
+                            value={val} 
+                            onChange={e => handleMemberCustomAnswerChange(eInfo.name, e.target.value)}
+                            style={{ width: '100%', padding: '0.85rem 1rem', background: val ? '#ffffff' : '#F3F4F6', border: val ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} 
+                            />
+                        </div>
+                    );
+                    })}
 
-             {/* Tickets / Passes */}
-             {event.tickets && event.tickets.length > 0 && (
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '1rem' }}>
+                    {/* Custom Questions */}
+                    {event.customQuestions?.map((q: any, i: number) => {
+                    const val = currentMember.customAnswers?.find(a => a.question === q.question)?.answer || '';
+                    const isReq = q.required === 'Required' || q.required === true;
+                    
+                    if (q.type === 'Dropdown') {
+                        return (
+                        <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. {q.question} {isReq && '*'}</label>
+                            <select 
+                            required={isReq}
+                            value={val}
+                            onChange={e => handleMemberCustomAnswerChange(q.question, e.target.value)}
+                            style={{ width: '100%', padding: '0.85rem 1rem', background: val ? '#ffffff' : '#F3F4F6', border: val ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', cursor: 'pointer', appearance: 'none' }}
+                            >
+                            <option value="" disabled>Select an option</option>
+                            {q.options?.map((opt: string, idx: number) => (
+                                <option key={idx} value={opt}>{opt}</option>
+                            ))}
+                            </select>
+                        </div>
+                        );
+                    }
+                    
+                    if (q.type === 'Checkbox') {
+                        const selectedOpts = Array.isArray(val) ? val : (val ? val.split(', ') : []);
+                        return (
+                        <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. {q.question} {isReq && '*'}</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '4px' }}>
+                            {q.options?.map((opt: string, idx: number) => (
+                                <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={selectedOpts.includes(opt)}
+                                    onChange={(e) => {
+                                    let newOpts = [...selectedOpts];
+                                    if (e.target.checked) newOpts.push(opt);
+                                    else newOpts = newOpts.filter(o => o !== opt);
+                                    handleMemberCustomAnswerChange(q.question, newOpts.join(', '));
+                                    }}
+                                    style={{ width: '16px', height: '16px', accentColor: '#8B5CF6', cursor: 'pointer' }}
+                                />
+                                {opt}
+                                </label>
+                            ))}
+                            </div>
+                        </div>
+                        );
+                    }
+                    
+                    if (q.type === 'File Upload') {
+                        return (
+                        <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. {q.question} {isReq && '*'}</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <input 
+                                type="file" 
+                                accept="image/*,.pdf,.doc,.docx"
+                                onChange={e => handleFileUpload(q.question, e)}
+                                style={{ display: 'none' }}
+                                id={`file-upload-${currentStep}-${i}-${q.question.replace(/\s+/g, '-')}`}
+                            />
+                            <label htmlFor={`file-upload-${currentStep}-${i}-${q.question.replace(/\s+/g, '-')}`} style={{ background: '#F3F4F6', color: '#4B5563', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, border: '1px dashed #9CA3AF' }}>
+                                {isUploading[q.question] ? 'Uploading...' : 'Choose File'}
+                            </label>
+                            {val && <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>File Attached ✓</span>}
+                            </div>
+                        </div>
+                        );
+                    }
+
+                    return (
+                        <div key={`custom-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. {q.question} {isReq && '*'}</label>
+                            <input 
+                            required={isReq} 
+                            type={q.type === 'Text' ? 'text' : 'text'} 
+                            value={val} 
+                            onChange={e => handleMemberCustomAnswerChange(q.question, e.target.value)}
+                            style={{ width: '100%', padding: '0.85rem 1rem', background: val ? '#ffffff' : '#F3F4F6', border: val ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', transition: 'all 0.2s' }} 
+                            />
+                        </div>
+                    );
+                    })}
+                </div>
+             </motion.div>
+
+             {/* Tickets / Passes - Show only on last step or independently */}
+             {currentStep === teamSize - 1 && event.tickets && event.tickets.length > 0 && (
+               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '1rem' }}>
                   <label style={{ fontSize: '0.9rem', fontWeight: 800, color: '#111827' }}>Select Pass / Ticket</label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {event.tickets.map((t: any, i: number) => (
@@ -699,28 +759,53 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
                       </div>
                     ))}
                   </div>
-               </div>
+               </motion.div>
+             )}
+
+             {/* Total Amount Counter */}
+             {currentStep === teamSize - 1 && (
+             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#F5F3FF', border: '1px dashed #8B5CF6', borderRadius: '12px', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+                <span style={{ fontSize: '1.05rem', fontWeight: 600, color: '#4c1d95' }}>Total Amount</span>
+                <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#6d28d9' }}>₹{totalAmount}</span>
+             </motion.div>
              )}
 
           </div>
           
-          <motion.button 
-            type="submit"
-            disabled={loading || !isFormValid}
-            whileHover={{ scale: (isFormValid && !loading) ? 1.02 : 1 }} 
-            whileTap={{ scale: (isFormValid && !loading) ? 0.98 : 1 }}
-            style={{ 
-               background: '#8B5CF6',
-               color: '#ffffff',
-               padding: '1rem', borderRadius: '12px', fontWeight: 600, border: 'none', cursor: (isFormValid && !loading) ? 'pointer' : 'not-allowed',
-               marginTop: '1.5rem', fontSize: '1.05rem', fontFamily: 'inherit',
-               transition: 'all 0.3s',
-               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-               opacity: (isFormValid && !loading) ? 1 : 0.5,
-               boxShadow: (isFormValid && !loading) ? '0 10px 25px rgba(139, 92, 246, 0.4)' : 'none'
-            }}>
-            {loading ? <Loader2 size={24} className="spin" /> : 'Pay Now / Register'}
-          </motion.button>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+             {currentStep > 0 && (
+                <button
+                   type="button"
+                   onClick={() => setCurrentStep(prev => prev - 1)}
+                   style={{ background: '#F3F4F6', color: '#4B5563', padding: '1rem', borderRadius: '12px', fontWeight: 600, border: 'none', cursor: 'pointer', flex: 0.4, fontSize: '1.05rem', fontFamily: 'inherit' }}
+                >
+                   Back
+                </button>
+             )}
+             
+             <motion.button 
+                type="submit"
+                disabled={loading || !isCurrentStepValid}
+                whileHover={{ scale: (isCurrentStepValid && !loading) ? 1.02 : 1 }} 
+                whileTap={{ scale: (isCurrentStepValid && !loading) ? 0.98 : 1 }}
+                style={{ 
+                background: '#8B5CF6',
+                color: '#ffffff',
+                padding: '1rem', borderRadius: '12px', fontWeight: 600, border: 'none', cursor: (isCurrentStepValid && !loading) ? 'pointer' : 'not-allowed',
+                fontSize: '1.05rem', fontFamily: 'inherit',
+                transition: 'all 0.3s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                opacity: (isCurrentStepValid && !loading) ? 1 : 0.5,
+                boxShadow: (isCurrentStepValid && !loading) ? '0 10px 25px rgba(139, 92, 246, 0.4)' : 'none',
+                flex: 1
+                }}>
+                {loading ? <Loader2 size={24} className="spin" /> : (
+                   currentStep < teamSize - 1 
+                   ? `Next: Member ${currentStep + 2}` 
+                   : (totalAmount > 0 ? `Pay Now (₹${totalAmount})` : 'Complete Registration')
+                )}
+             </motion.button>
+          </div>
         </motion.form>
         ) : renderTicket(false)}
         </AnimatePresence>
