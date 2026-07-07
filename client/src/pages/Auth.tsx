@@ -33,6 +33,7 @@ const Auth: React.FC = () => {
     setIsSubmitting(true);
     try {
       if (step === 'login') {
+        sessionStorage.setItem('loggingIn', 'true');
         const result = await handleLogin(formData.email, formData.password);
         if (result.user?.role === 'admin') {
           window.location.hash = '#admin';
@@ -41,6 +42,7 @@ const Auth: React.FC = () => {
         } else {
           window.location.hash = '#home';
         }
+        setTimeout(() => sessionStorage.removeItem('loggingIn'), 1000);
       } else if (step === 'signup') {
         await register(formData.name, formData.email, formData.password);
         setStep('otp');
