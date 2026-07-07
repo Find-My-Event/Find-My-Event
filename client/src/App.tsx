@@ -57,15 +57,17 @@ gsap.registerPlugin(ScrollTrigger);
 ══════════════════════════════════════════════ */
 function AppContent() {
   const [currentRoute, setCurrentRoute] = useState(window.location.hash || '');
-  const { user, isLoggedIn, loading, loginWithToken }   = useAuth();
+  const { user, isLoggedIn, loading, loginWithToken, logout }   = useAuth();
 
   /* ── Token Parsing & Hash routing & Scroll Reset ── */
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     if (token) {
+      sessionStorage.setItem('loggingIn', 'true');
       loginWithToken(token).then(() => {
         window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        setTimeout(() => sessionStorage.removeItem('loggingIn'), 1000);
       });
     }
   }, [loginWithToken]);
@@ -124,6 +126,24 @@ function AppContent() {
     
     if (!isLoggedIn && isProtected) {
       window.location.hash = '#signin';
+    }
+
+    // If logged-in user is on signin page
+    if (isLoggedIn && currentRoute === '#signin') {
+      if (sessionStorage.getItem('loggingIn')) {
+        // They are actively logging in, redirect them to dashboard
+        if (user?.role === 'organizer') {
+          window.location.replace('#organizer-dashboard');
+        } else if (user?.role === 'admin') {
+          window.location.replace('#admin');
+        } else {
+          window.location.replace('#home');
+        }
+      } else {
+        // They pressed back button to reach sign-in page -> log them out
+        logout();
+        window.location.replace('');
+      }
     }
   }, [currentRoute, isLoggedIn, loading, user]);
 
