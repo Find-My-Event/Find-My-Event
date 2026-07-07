@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { transporter } = require('../utils/email');
+const { resend } = require('../utils/email');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { requireAuth, syncAdminRole } = require('../middleware/auth');
@@ -53,7 +53,7 @@ router.post('/register', async (req, res) => {
     await user.save();
 
     const mailOptions = {
-      from: `"Eventum" <${process.env.GMAIL_USER}>`,
+      from: `Eventum <support@theeventum.com>`,
       to: email,
       subject: 'Verify your email - Eventum',
       text: `Your OTP for registration is: ${otp}. It expires in 10 minutes.`,
@@ -91,7 +91,7 @@ router.post('/register', async (req, res) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
+    await resend.emails.send(mailOptions);
     res.status(200).json({ message: 'OTP sent to email' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -261,7 +261,7 @@ router.post('/resend-otp', async (req, res) => {
     await user.save();
 
     const mailOptions = {
-      from: `"Eventum" <${process.env.GMAIL_USER}>`,
+      from: `Eventum <support@theeventum.com>`,
       to: email,
       subject: 'Verify your email - Eventum',
       text: `Your new OTP for registration is: ${otp}. It expires in 10 minutes.`,
@@ -290,7 +290,7 @@ router.post('/resend-otp', async (req, res) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
+    await resend.emails.send(mailOptions);
     res.status(200).json({ message: 'New OTP sent to email' });
   } catch (err) {
     res.status(500).json({ message: err.message });
