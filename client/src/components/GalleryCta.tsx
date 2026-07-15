@@ -1,5 +1,8 @@
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const IMAGES = [
   'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=600&auto=format&fit=crop',
@@ -43,11 +46,37 @@ const GalleryCta = () => {
     tl.to(centerTextRef.current, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 'hover+=0.15');
 
     tlRef.current = tl;
-    return () => { tl.kill(); };
+
+    // ScrollTrigger auto-open for mobile
+    const isMobile = window.innerWidth < 768;
+    let st: ScrollTrigger | null = null;
+
+    if (isMobile && gridRef.current) {
+      st = ScrollTrigger.create({
+        trigger: gridRef.current,
+        start: 'top 75%',
+        end: 'bottom 25%',
+        onEnter: () => tl.play(),
+        onLeaveBack: () => tl.reverse(),
+      });
+    }
+
+    return () => {
+      tl.kill();
+      if (st) st.kill();
+    };
   }, []);
 
-  const handleMouseEnter = () => { tlRef.current?.play(); };
-  const handleMouseLeave = () => { tlRef.current?.reverse(); };
+  const handleMouseEnter = () => {
+    if (window.innerWidth >= 768) {
+      tlRef.current?.play();
+    }
+  };
+  const handleMouseLeave = () => {
+    if (window.innerWidth >= 768) {
+      tlRef.current?.reverse();
+    }
+  };
 
   return (
     <section

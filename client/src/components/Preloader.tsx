@@ -40,7 +40,7 @@ const Preloader: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
           scale: { duration: 0.8, ease: "easeOut" },
           opacity: { duration: 0.8, ease: "easeOut" }
         }}
-        style={{ marginBottom: '1.5rem' }}
+        style={{ marginBottom: '0.75rem' }}
       >
         <img 
           src={darkLogo} 
@@ -57,7 +57,7 @@ const Preloader: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
         style={{
           fontSize: '2rem',
           fontWeight: 600,
-          letterSpacing: '0.15em',
+          letterSpacing: '0.02em',
           color: '#000',
           margin: 0,
           fontFamily: 'Inter, sans-serif'

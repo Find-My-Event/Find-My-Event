@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Heart, Home, Globe, LayoutGrid, Command, Award } from 'lucide-react';
+import { Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Home, Globe, LayoutGrid, Command, Award } from 'lucide-react';
 import gsap from 'gsap';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
@@ -16,6 +16,23 @@ const Navbar: React.FC = () => {
   const { user, isLoggedIn, logout }            = useAuth();
   const [notifications, setNotifications]       = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [dismissedNotifications, setDismissedNotifications] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('dismissed_notifications');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleDismissNotification = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = [...dismissedNotifications, id];
+    setDismissedNotifications(updated);
+    localStorage.setItem('dismissed_notifications', JSON.stringify(updated));
+  };
+
+  const visibleNotifications = notifications.filter(n => !dismissedNotifications.includes(n._id));
 
 
 
@@ -187,7 +204,7 @@ const Navbar: React.FC = () => {
                   onClick={() => setShowNotifications(!showNotifications)}
                 >
                   <Bell size={18} strokeWidth={2} />
-                  {notifications.length > 0 && (
+                  {visibleNotifications.length > 0 && (
                     <span style={{ position: 'absolute', top: '2px', right: '2px', width: '7px', height: '7px', background: '#8B5CF6', borderRadius: '50%', border: '1.5px solid #fff' }} />
                   )}
                 </motion.div>
@@ -206,12 +223,22 @@ const Navbar: React.FC = () => {
                       }}
                     >
                       <h4 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.75rem', color: isInnerPage ? '#fff' : '#111' }}>Notifications</h4>
-                      {notifications.length === 0 ? (
+                      {visibleNotifications.length === 0 ? (
                         <p style={{ color: '#999', fontSize: '0.8rem', textAlign: 'center', padding: '1rem' }}>No new notifications</p>
-                      ) : notifications.map(n => (
-                        <div key={n._id} style={{ padding: '0.65rem', background: 'rgba(139,92,246,0.05)', borderRadius: '8px', borderLeft: '3px solid #8B5CF6', marginBottom: '0.5rem' }}>
-                          <p style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '2px', color: isInnerPage ? '#fff' : '#111' }}>{n.title}</p>
-                          <p style={{ fontSize: '0.75rem', color: '#777', lineHeight: 1.4 }}>{n.message}</p>
+                      ) : visibleNotifications.map(n => (
+                        <div key={n._id} style={{ padding: '0.65rem', background: 'rgba(139,92,246,0.05)', borderRadius: '8px', borderLeft: '3px solid #8B5CF6', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                          <div style={{ flex: 1 }}>
+                            <p style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '2px', color: isInnerPage ? '#fff' : '#111', textAlign: 'left' }}>{n.title}</p>
+                            <p style={{ fontSize: '0.75rem', color: '#777', lineHeight: 1.4, textAlign: 'left' }}>{n.message}</p>
+                          </div>
+                          <button 
+                            onClick={(e) => handleDismissNotification(n._id, e)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: '#94a3b8', transition: 'color 0.2s' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+                          >
+                            <X size={14} />
+                          </button>
                         </div>
                       ))}
                     </motion.div>
@@ -253,7 +280,6 @@ const Navbar: React.FC = () => {
                         { icon: User,     label: 'Edit Profile',      href: '#edit-profile' },
                         ...( (user?.role === 'admin' || user?.role === 'organizer') ? [{ icon: Calendar, label: 'Your Events', href: '#your-events' }] : [] ),
                         { icon: Calendar, label: 'Registered Events', href: '#registered-events' },
-                        { icon: Heart,    label: 'Favourites',        href: '#favourites' },
                       ].map(item => (
                         <button key={item.label} type="button" className={`dropdown-item${isInnerPage ? ' dropdown-item-dark' : ''}`}
                           onClick={() => { setIsProfileOpen(false); window.location.hash = item.href; }}>

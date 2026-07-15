@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, MoreHorizontal, Grid, List, Loader2, Heart } from 'lucide-react';
+import { Calendar, MapPin, MoreHorizontal, Grid, List, Loader2 } from 'lucide-react';
 import api from '../api/axios';
-import { useLikedEvents } from '../hooks/useLikedEvents';
+
 import { useAuth } from '../contexts/AuthContext';
 import '../index.css';
 
@@ -11,9 +11,7 @@ import { EventDetail, RegisterView } from '../components/SharedViews';
 
 // ─── Timeline View Card ───────────────────────────────────────────────────────
 const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index: number, onViewMore: () => void, onRegister: () => void }) => {
-  const { isLiked: checkLiked, toggleLike } = useLikedEvents();
   const { user } = useAuth();
-  const liked = checkLiked(String(event.id));
   const isOrganizer = user && (event.organizer === user.name || event.organizer === user.id);
 
   return (
@@ -60,17 +58,7 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
           }}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
         />
-        <motion.button 
-            onClick={(e: React.MouseEvent) => { e.stopPropagation(); toggleLike(String(event.id)); }} 
-            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-            style={{
-              position: 'absolute', top: '10px', right: '10px',
-              width: '35px', height: '35px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)',
-              border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', backdropFilter: 'blur(8px)', zIndex: 10
-            }}>
-            <Heart size={16} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : 'var(--text-primary)'} />
-        </motion.button>
+        {/* Heart button removed for now */}
       </div>
       
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -149,9 +137,7 @@ const EventCard = ({ event, index, onViewMore, onRegister }: { event: any, index
 
 // ─── Grid View Card ───────────────────────────────────────────────────────────
 const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, index: number, onViewMore: () => void, onRegister: () => void }) => {
-  const { isLiked: checkLiked, toggleLike } = useLikedEvents();
   const { user } = useAuth();
-  const liked = checkLiked(String(event.id));
   const isOrganizer = user && (event.organizer === user.name || event.organizer === user.id);
 
   return (
@@ -192,17 +178,7 @@ const GridEventCard = ({ event, index, onViewMore, onRegister }: { event: any, i
           }}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
         />
-        <motion.button 
-            onClick={(e: React.MouseEvent) => { e.stopPropagation(); toggleLike(String(event.id)); }} 
-            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-            style={{
-              position: 'absolute', top: '10px', right: '10px',
-              width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)',
-              border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', backdropFilter: 'blur(8px)', zIndex: 10
-            }}>
-            <Heart size={14} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : 'var(--text-primary)'} />
-        </motion.button>
+        {/* Heart button removed for now */}
       </div>
       
       <div style={{ marginBottom: '1rem' }}>
