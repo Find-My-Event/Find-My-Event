@@ -13,6 +13,9 @@ export interface Club {
   eventsConducted?: number;
   detailedDescription?: string;
   leadership?: any[];
+  linkedinUrl?: string;
+  instagramUrl?: string;
+  gmailUrl?: string;
 }
 
 export const fallbackClubs: Club[] = [

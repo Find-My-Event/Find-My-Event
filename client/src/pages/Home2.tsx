@@ -106,7 +106,10 @@ const Home2 = () => {
   
   const displayedClubs = showAllClubs ? clubs : clubs.filter(c => c.type === 'Initiative');
 
-
+  const top5Events = eventsList.slice(0, 5);
+  const displayEvents = top5Events.length > 0 
+    ? [0, 1, 2, 3, 4].map(i => top5Events[i % top5Events.length])
+    : [1, 2, 3, 4, 5].map(item => ({ id: `loading-${item}`, title: `Loading...`, isLoading: true }));
 
   return (
     <div className="home2-page" style={{ background: '#FFFFFF', minHeight: '100vh', color: '#111', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -139,8 +142,8 @@ const Home2 = () => {
         }
         .marker-highlight {
           position: absolute;
-          top: 6%;
-          bottom: 6%;
+          top: 45%;
+          bottom: 0%;
           left: -10px;
           right: -10px;
           border-radius: 999px;
@@ -197,7 +200,7 @@ const Home2 = () => {
         </h1>
 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '3rem', position: 'relative', height: isMobile ? '400px' : '500px', width: '100%', overflow: 'hidden' }}>
-          {[1, 2, 3, 4, 5].map((item, index) => {
+          {displayEvents.map((event, index) => {
             const offset = (index - activeIndex + 5) % 5;
 
             const isCenter = offset === 0;
@@ -213,34 +216,38 @@ const Home2 = () => {
 
             if (isMobile) {
               if (isCenter) {
-                zIndex = 10; left = '50%'; height = '360px'; width = '60vw';
+                zIndex = 10; left = '50%'; height = '360px'; width = '255px';
               } else if (isAdjLeft) {
-                zIndex = 5; left = '15%'; height = '280px'; width = '45vw';
+                zIndex = 5; left = '20%'; height = '280px'; width = '198px';
               } else if (isAdjRight) {
-                zIndex = 5; left = '85%'; height = '280px'; width = '45vw';
+                zIndex = 5; left = '80%'; height = '280px'; width = '198px';
               } else if (isFarLeft) {
-                zIndex = 2; left = '-15%'; height = '220px'; width = '35vw';
+                zIndex = 2; left = '-5%'; height = '220px'; width = '156px';
               } else if (isFarRight) {
-                zIndex = 2; left = '115%'; height = '220px'; width = '35vw';
+                zIndex = 2; left = '105%'; height = '220px'; width = '156px';
               }
             } else {
               if (isCenter) {
-                zIndex = 10; left = '50%'; height = '480px'; width = '28vw';
+                zIndex = 10; left = '50%'; height = '480px'; width = '340px';
               } else if (isAdjLeft) {
-                zIndex = 5; left = '28%'; height = '380px'; width = '22vw';
+                zIndex = 5; left = '35%'; height = '380px'; width = '269px';
               } else if (isAdjRight) {
-                zIndex = 5; left = '72%'; height = '380px'; width = '22vw';
+                zIndex = 5; left = '65%'; height = '380px'; width = '269px';
               } else if (isFarLeft) {
-                zIndex = 2; left = '10%'; height = '300px'; width = '18vw';
+                zIndex = 2; left = '22%'; height = '300px'; width = '212px';
               } else if (isFarRight) {
-                zIndex = 2; left = '90%'; height = '300px'; width = '18vw';
+                zIndex = 2; left = '78%'; height = '300px'; width = '212px';
               }
             }
 
             return (
               <motion.div
-                key={item}
-                onClick={() => window.location.hash = `#event-detail-c${item}`}
+                key={index}
+                onClick={() => {
+                  if (event && event.id && !event.id.toString().startsWith('static-')) {
+                    window.location.hash = `#event-detail-${event.id}`;
+                  }
+                }}
                 initial={false}
                 animate={{
                   width,
@@ -257,14 +264,28 @@ const Home2 = () => {
                   top: '50%',
                   transform: 'translate(-50%, -50%)',
                   overflow: 'hidden',
-                  background: '#111'
+                  background: '#111',
+                  border: '2px solid #000',
+                  cursor: 'pointer'
                 }}
               >
-                <img
-                  src={`/hero-images/Rectangle 3${item}.png`}
-                  alt={`Event ${item}`}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+                {event.isLoading ? (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <motion.svg
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </motion.svg>
+                  </div>
+                ) : (
+                  <img
+                    src={event.img}
+                    alt={event.title || 'Event'}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)' }}
+                  />
+                )}
               </motion.div>
             )
           })}
@@ -274,30 +295,28 @@ const Home2 = () => {
       {/* Categories Section */}
       <section className="categories-section" style={{ maxWidth: '1440px', margin: '0 auto', padding: '2rem 2.5rem' }}>
         <h2 className="categories-title" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem' }}>Explore Events Categories</h2>
-        <div className="categories-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1.5rem' }}>
+        <div className="categories-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '1.5rem' }}>
           {categories.map((cat) => (
             <motion.div
               key={cat.name}
               className="category-card"
-              whileHover={{ y: -5 }}
+              whileHover={{ y: -8, boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }}
               style={{
-                background: '#fff',
+                background: `linear-gradient(to bottom, #ffffff 30%, ${cat.color}77 100%)`,
                 borderRadius: '16px',
-                padding: '1rem',
+                border: '1px solid rgba(0,0,0,0.06)',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                aspectRatio: '1',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                aspectRatio: '3/4',
                 position: 'relative',
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
             >
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: `linear-gradient(to top, ${cat.color}88, transparent)` }} />
-              <span className="category-icon" style={{ fontSize: '2.5rem', marginBottom: '0.5rem', zIndex: 1 }}>{cat.icon}</span>
-              <span className="category-text" style={{ fontSize: '0.8rem', fontWeight: 600, zIndex: 1, textAlign: 'center' }}>{cat.name}</span>
+              <span className="category-text" style={{ fontSize: '0.95rem', fontWeight: 700, color: '#334155', zIndex: 1, textAlign: 'center', marginTop: '1.25rem', padding: '0 0.5rem', lineHeight: 1.2 }}>{cat.name}</span>
+              <span className="category-icon" style={{ fontSize: '4.5rem', zIndex: 1, marginTop: 'auto', marginBottom: '0.75rem', filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.15))' }}>{cat.icon}</span>
             </motion.div>
           ))}
         </div>

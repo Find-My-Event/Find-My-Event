@@ -98,19 +98,20 @@ export default function Clubs() {
           color: #111111;
           margin: 0 auto 3rem;
           max-width: 900px;
+          padding: 0 1rem;
           letter-spacing: -1.5px;
         }
         @media (min-width: 1200px) {
-          .premium-hero-heading { font-size: 72px; }
+          .premium-hero-heading { font-size: 56px; }
         }
         @media (min-width: 1024px) and (max-width: 1199px) {
-          .premium-hero-heading { font-size: 64px; }
+          .premium-hero-heading { font-size: 48px; }
         }
         @media (min-width: 768px) and (max-width: 1023px) {
-          .premium-hero-heading { font-size: 54px; }
+          .premium-hero-heading { font-size: 40px; }
         }
         @media (max-width: 767px) {
-          .premium-hero-heading { font-size: 38px; }
+          .premium-hero-heading { font-size: 32px; }
         }
         .hero-line {
           display: block;
@@ -118,8 +119,8 @@ export default function Clubs() {
         }
         .marker-highlight {
           position: absolute;
-          top: 6%;
-          bottom: 6%;
+          top: 45%;
+          bottom: 0%;
           left: -10px;
           right: -10px;
           border-radius: 999px;
@@ -135,7 +136,8 @@ export default function Clubs() {
         
         @media (max-width: 768px) {
           .clubs-hero-section { padding: 6rem 1.25rem 2.5rem !important; }
-          .clubs-hero-img { height: 260px !important; border-radius: 24px !important; }
+          .clubs-hero-img-container { border-radius: 24px !important; }
+          .clubs-hero-img { height: 250px !important; border-radius: 24px !important; }
           
           .clubs-section-container { padding: 0 1.25rem !important; margin-bottom: 3rem !important; }
           .clubs-section-title { font-size: 2.25rem !important; margin-bottom: 1.5rem !important; }
@@ -179,10 +181,10 @@ export default function Clubs() {
           </h1>
 
           {/* Hero Image */}
-          <div style={{ position: 'relative', width: '100%', margin: '0 auto', borderRadius: '40px', overflow: 'hidden', boxShadow: '0 30px 60px rgba(139,92,246,0.2)' }}>
+          <div className="clubs-hero-img-container" style={{ position: 'relative', width: '100%', maxWidth: '1250px', margin: '0 auto', borderRadius: '40px', overflow: 'hidden', background: '#000', border: '2px solid #000', boxShadow: '0 30px 60px rgba(139,92,246,0.2)' }}>
             <motion.img 
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1 }}
+              initial={{ scale: 1.12 }}
+              animate={{ scale: 1.07 }}
               transition={{ duration: 1.5, ease: 'easeOut' }}
               src="/jecrc_image.png" 
               alt="JECRC University Campus" 

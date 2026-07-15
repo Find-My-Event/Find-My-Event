@@ -325,9 +325,9 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
         </div>
 
         <div style={{ position: 'relative', height: '20px', display: 'flex', alignItems: 'center' }}>
-          <div style={{ position: 'absolute', left: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#fff' }} />
+          <div style={{ position: 'absolute', left: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#ffffff' }} />
           <div style={{ width: '100%', borderTop: '2px dashed rgba(255,255,255,0.4)', margin: '0 15px' }} />
-          <div style={{ position: 'absolute', right: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#fff' }} />
+          <div style={{ position: 'absolute', right: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#ffffff' }} />
         </div>
 
         <div style={{ padding: '1.5rem', textAlign: 'left', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -351,7 +351,7 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
 
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 5px', marginBottom: '-10px' }}>
            {[1,2,3,4,5,6,7,8].map(i => (
-             <div key={i} style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#fff' }} />
+             <div key={i} style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#ffffff' }} />
            ))}
         </div>
       </div>
