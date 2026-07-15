@@ -88,6 +88,11 @@ const paymentRoutes = require('./routes/payments');
 const clubRoutes = require('./routes/clubs');
 const organizerRoutes = require('./routes/organizer');
 
+// Add a simple health check route for UptimeRobot
+app.get('/api', (req, res) => {
+  res.status(200).json({ message: 'Eventum API is running!' });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/events', eventRoutes);

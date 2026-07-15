@@ -37,13 +37,20 @@ router.get('/approved', softAuth, async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
+    // Fetch all pricing details in one query
+    const eventIds = list.map(e => e._id);
+    const pricingDetails = await PaidEventDetail.find({ event: { $in: eventIds } }).lean();
+    const pricingMap = {};
+    pricingDetails.forEach(p => {
+      p.isPaid = true;
+      pricingMap[p.event.toString()] = p;
+    });
+
     // Attach pricing details and check registration for each approved submission
-    const listWithPricing = await Promise.all(list.map(async (event) => {
-      const pricing = await PaidEventDetail.findOne({ event: event._id }).lean();
-      if (pricing) pricing.isPaid = true;
+    const listWithPricing = list.map((event) => {
       const isRegistered = req.user ? event.registeredUsers?.some(id => id.toString() === req.user._id.toString()) : false;
-      return { ...event, pricing, isRegistered };
-    }));
+      return { ...event, pricing: pricingMap[event._id.toString()], isRegistered };
+    });
 
     res.json(listWithPricing);
   } catch (err) {
@@ -372,20 +379,26 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
 router.get('/', softAuth, async (req, res) => {
   try {
     const events = await Event.find({ visibility: { $nin: ['Private', 'Unlisted'] } }).sort({ date: 1 }).lean();
-    const eventsWithPricing = await Promise.all(events.map(async (event) => {
-      const pricing = await PaidEventDetail.findOne({ event: event._id }).lean();
-      if (pricing) pricing.isPaid = true;
-      const isRegistered = req.user ? event.registeredUsers?.some(id => id.toString() === req.user._id.toString()) : false;
-      return { ...event, pricing, isRegistered, isAdminEvent: true };
-    }));
-
     const clubsEvents = await ClubsEvent.find({ visibility: { $nin: ['Private', 'Unlisted'] } }).sort({ createdAt: -1 }).lean();
-    const clubsEventsWithPricing = await Promise.all(clubsEvents.map(async (event) => {
-      const pricing = await PaidEventDetail.findOne({ event: event._id }).lean();
-      if (pricing) pricing.isPaid = true;
+
+    // Fetch all pricing details in one query
+    const allEventIds = [...events.map(e => e._id), ...clubsEvents.map(e => e._id)];
+    const pricingDetails = await PaidEventDetail.find({ event: { $in: allEventIds } }).lean();
+    const pricingMap = {};
+    pricingDetails.forEach(p => {
+      p.isPaid = true;
+      pricingMap[p.event.toString()] = p;
+    });
+
+    const eventsWithPricing = events.map(event => {
       const isRegistered = req.user ? event.registeredUsers?.some(id => id.toString() === req.user._id.toString()) : false;
-      return { ...event, pricing, isRegistered, isClubEvent: true };
-    }));
+      return { ...event, pricing: pricingMap[event._id.toString()], isRegistered, isAdminEvent: true };
+    });
+
+    const clubsEventsWithPricing = clubsEvents.map(event => {
+      const isRegistered = req.user ? event.registeredUsers?.some(id => id.toString() === req.user._id.toString()) : false;
+      return { ...event, pricing: pricingMap[event._id.toString()], isRegistered, isClubEvent: true };
+    });
 
     const allEvents = [...eventsWithPricing, ...clubsEventsWithPricing];
     res.json(allEvents);
@@ -415,9 +428,21 @@ router.get('/registered', requireAuth, async (req, res) => {
       return null;
     };
     
+    // Fetch all pricing details in one query
+    const allRegisteredEventIds = [
+      ...submissions.map(s => s._id),
+      ...events.map(e => e._id),
+      ...clubsEvents.map(ce => ce._id)
+    ];
+    const pricingDetails = await PaidEventDetail.find({ event: { $in: allRegisteredEventIds } }).lean();
+    const pricingMap = {};
+    pricingDetails.forEach(p => {
+      pricingMap[p.event.toString()] = p;
+    });
+
     // Normalize format and add pricing
-    const mappedSubmissions = await Promise.all(submissions.map(async (s) => {
-      const pricing = await PaidEventDetail.findOne({ event: s._id }).lean();
+    const mappedSubmissions = submissions.map((s) => {
+      const pricing = pricingMap[s._id.toString()];
       const qrToken = s.generateQRCode ? jwt.sign({ userId: req.user._id, eventId: s._id, model: 'EventSubmission' }, process.env.JWT_SECRET || 'secret') : null;
       return {
         ...s,
@@ -429,16 +454,16 @@ router.get('/registered', requireAuth, async (req, res) => {
         qrToken,
         rollNo: getRollNo(s._id)
       };
-    }));
+    });
 
-    const eventsWithPricing = await Promise.all(events.map(async (e) => {
-      const pricing = await PaidEventDetail.findOne({ event: e._id }).lean();
+    const eventsWithPricing = events.map((e) => {
+      const pricing = pricingMap[e._id.toString()];
       const qrToken = e.generateQRCode ? jwt.sign({ userId: req.user._id, eventId: e._id, model: 'Event' }, process.env.JWT_SECRET || 'secret') : null;
       return { ...e, pricing, qrToken, rollNo: getRollNo(e._id) };
-    }));
+    });
 
-    const mappedClubsEvents = await Promise.all(clubsEvents.map(async (ce) => {
-      const pricing = await PaidEventDetail.findOne({ event: ce._id }).lean();
+    const mappedClubsEvents = clubsEvents.map((ce) => {
+      const pricing = pricingMap[ce._id.toString()];
       const qrToken = ce.generateQRCode ? jwt.sign({ userId: req.user._id, eventId: ce._id, model: 'ClubsEvent' }, process.env.JWT_SECRET || 'secret') : null;
       return {
         ...ce,
@@ -446,7 +471,7 @@ router.get('/registered', requireAuth, async (req, res) => {
         qrToken,
         rollNo: getRollNo(ce._id)
       };
-    }));
+    });
 
     const combined = [...eventsWithPricing, ...mappedSubmissions, ...mappedClubsEvents].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json(combined);
@@ -571,11 +596,17 @@ router.get('/club/:id', async (req, res) => {
     }
     const events = await ClubsEvent.find({ clubId: club._id, visibility: { $nin: ['Private', 'Unlisted'] } }).sort({ createdAt: -1 }).lean();
     
-    const eventsWithPricing = await Promise.all(events.map(async (event) => {
-      const pricing = await PaidEventDetail.findOne({ event: event._id }).lean();
-      if (pricing) pricing.isPaid = true;
-      return { ...event, pricing };
-    }));
+    const eventIds = events.map(e => e._id);
+    const pricingDetails = await PaidEventDetail.find({ event: { $in: eventIds } }).lean();
+    const pricingMap = {};
+    pricingDetails.forEach(p => {
+      p.isPaid = true;
+      pricingMap[p.event.toString()] = p;
+    });
+
+    const eventsWithPricing = events.map((event) => {
+      return { ...event, pricing: pricingMap[event._id.toString()] };
+    });
 
     res.json(eventsWithPricing);
   } catch (error) {

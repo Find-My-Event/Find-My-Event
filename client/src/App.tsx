@@ -111,10 +111,7 @@ function AppContent() {
         window.location.hash = '#organizer-setup';
         return;
       }
-      if (user.hasCompletedProfile && currentRoute === '#organizer-setup') {
-        window.location.hash = '#organizer-dashboard';
-        return;
-      }
+      // Allow organizers to revisit setup page to edit their profile
     }
 
     const protected_ = [
@@ -187,7 +184,7 @@ function AppContent() {
     if (currentRoute === '#favourites')       return <Favourites />;
     if (currentRoute === '#gallery')          return <Gallery />;
     if (currentRoute === '#organizer-setup') {
-      if (!isLoggedIn || user?.role !== 'organizer') return null;
+      if (!isLoggedIn) return null;
       return <OrganizerSetup />;
     }
     if (currentRoute.startsWith('#organizer-dashboard')) {

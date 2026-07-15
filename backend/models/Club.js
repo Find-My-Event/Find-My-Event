@@ -59,6 +59,15 @@ const clubSchema = new mongoose.Schema({
   presidentEmail: {
     type: String,
   },
+  linkedinUrl: {
+    type: String,
+  },
+  instagramUrl: {
+    type: String,
+  },
+  gmailUrl: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now

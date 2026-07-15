@@ -19,6 +19,9 @@ export default function OrganizerSetup() {
   const [foundedOn, setFoundedOn] = useState('');
   const [eventsConducted, setEventsConducted] = useState<number | ''>('');
   const [presidentEmail, setPresidentEmail] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [gmailUrl, setGmailUrl] = useState('');
   
   // Arrays
   const [glimpses, setGlimpses] = useState<string[]>([]);
@@ -54,6 +57,9 @@ export default function OrganizerSetup() {
       setTags(data.tags ? data.tags.join(', ') : '');
       setEventsConducted(data.eventsConducted || '');
       setPresidentEmail(data.presidentEmail || '');
+      setLinkedinUrl(data.linkedinUrl || '');
+      setInstagramUrl(data.instagramUrl || '');
+      setGmailUrl(data.gmailUrl || '');
       setGlimpses(data.glimpses || []);
       setLeadership(data.leadership || []);
       
@@ -145,7 +151,10 @@ export default function OrganizerSetup() {
         eventsConducted: eventsConducted === '' ? 0 : Number(eventsConducted),
         presidentEmail,
         glimpses,
-        leadership
+        leadership,
+        linkedinUrl,
+        instagramUrl,
+        gmailUrl
       });
       
       await refreshUser();
@@ -272,8 +281,24 @@ export default function OrganizerSetup() {
 
             <div>
               <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>President / Official Contact Email</label>
-              <input type="email" value={presidentEmail} onChange={(e) => setPresidentEmail(e.target.value)} placeholder="president@club.com" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} required />
+              <input type="email" value={presidentEmail} onChange={(e) => setPresidentEmail(e.target.value)} placeholder="president@club.com" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
               <p style={{ fontSize: '0.85rem', color: '#888', margin: '0.5rem 0 0 0' }}>Used for security purposes (like OTP for password changes). Must be an active email address.</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>LinkedIn Profile URL</label>
+                <input type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/company/yourclub" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Instagram Profile URL</label>
+                <input type="url" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/yourclub" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Public Contact Email (Optional)</label>
+              <input type="email" value={gmailUrl} onChange={(e) => setGmailUrl(e.target.value)} placeholder="hello@yourclub.com" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
             </div>
           </div>
 

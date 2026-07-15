@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, MapPin, QrCode, X } from 'lucide-react';
+import { Loader2, MapPin, QrCode, X, Calendar } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -28,27 +28,41 @@ export default function RegisteredEvents() {
   };
 
   const parseDateInfo = (dateStr: string, ev?: any) => {
-    const d = new Date(dateStr);
-    if (!dateStr || isNaN(d.getTime())) {
-      // Fallback if date is just a random string
+    if (!dateStr) {
+      return { day: '📅', month: '', shortMonth: 'DATE', weekday: '', fullDate: 'TBA', time: ev?.time || 'TBA', timelineDate: 'TBA', timelineDay: '' };
+    }
+
+    // Handle "YYYY-MM-DD • HH:MM" format
+    let datePart = dateStr;
+    let timePart = ev?.time || '';
+    
+    if (dateStr.includes('•')) {
+      const parts = dateStr.split('•').map(s => s.trim());
+      datePart = parts[0];
+      timePart = parts[1] || timePart;
+    }
+
+    const d = new Date(datePart);
+    if (isNaN(d.getTime())) {
       return {
         day: '📅',
         month: '',
         shortMonth: 'DATE',
         weekday: '',
-        fullDate: dateStr || 'TBA',
-        time: ev?.time || 'TBA',
-        timelineDate: dateStr || 'TBA',
+        fullDate: dateStr,
+        time: timePart || 'TBA',
+        timelineDate: datePart,
         timelineDay: ''
       };
     }
+
     const day = d.getDate();
     const month = d.toLocaleString('default', { month: 'long' });
     const shortMonth = d.toLocaleString('default', { month: 'short' }).toUpperCase();
     const weekday = d.toLocaleString('default', { weekday: 'long' });
     
-    let time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    if (time === '12:00 AM') time = '3:30 PM - 4:30 PM'; // Assume default if no time set
+    let time = timePart || d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (time === '12:00 AM') time = 'TBA';
 
     return {
       day: day.toString(),
@@ -97,11 +111,26 @@ export default function RegisteredEvents() {
         zIndex: 0
       }} />
 
+      <style>{`
+        @media (max-width: 768px) {
+          .events-container { padding: 6rem 1rem 3rem 1rem !important; }
+          .header-flex { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; margin-bottom: 2.5rem !important; }
+          .header-title { font-size: 2.2rem !important; }
+          .timeline-wrap { gap: 1.5rem !important; }
+          .timeline-line { left: 85px !important; }
+          .timeline-item { gap: 1rem !important; }
+          .timeline-date { width: 70px !important; }
+          .timeline-date > div:first-child { font-size: 0.95rem !important; }
+          .timeline-date > div:last-child { font-size: 0.7rem !important; padding: 1px 6px !important; }
+          .event-card { padding: 1rem !important; flex-direction: column !important; border-radius: 16px !important; }
+        }
+      `}</style>
+
       <div className="events-container" style={{ position: 'relative', zIndex: 1, maxWidth: '1000px', margin: '0 auto', padding: '8rem 2rem 4rem 2rem' }}>
         
         {/* Header */}
         <div className="header-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
-          <h1 className="header-title" style={{ fontSize: '3.5rem', fontWeight: 600, margin: 0, letterSpacing: '-0.02em', color: '#111827' }}>
+          <h1 className="header-title" style={{ fontSize: '2.5rem', fontWeight: 600, margin: 0, letterSpacing: '-0.02em', color: '#111827' }}>
             My Events<span style={{ color: '#ec4899' }}>.</span>
           </h1>
 
@@ -187,8 +216,17 @@ export default function RegisteredEvents() {
                   >
                     {/* Left Timeline Date */}
                     <div className="timeline-date" style={{ width: '100px', textAlign: 'left', paddingTop: '10px' }}>
-                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#111827' }}>{dateInfo.timelineDate}</div>
-                      <div style={{ color: '#6b7280', fontSize: '0.9rem', fontWeight: 500 }}>{dateInfo.timelineDay}</div>
+                      <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#111827', lineHeight: 1.3 }}>
+                        {dateInfo.timelineDate}
+                      </div>
+                      {dateInfo.timelineDay && (
+                        <div style={{ color: '#9ca3af', fontSize: '0.72rem', fontWeight: 500, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {dateInfo.timelineDay}
+                        </div>
+                      )}
+                      <div style={{ color: '#9ca3af', fontSize: '0.75rem', fontWeight: 400, marginTop: '4px' }}>
+                        {dateInfo.time}
+                      </div>
                     </div>
 
                     {/* Dot */}
@@ -227,45 +265,43 @@ export default function RegisteredEvents() {
                         </p>
 
                         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem', alignItems: 'flex-start' }}>
-                          {/* Calendar Box */}
+                          {/* Calendar Icon */}
                           <div style={{ 
-                            background: '#ffffff',
-                            border: '1px solid #f3f4f6',
-                            borderRadius: '12px',
-                            padding: '0.4rem',
-                            textAlign: 'center',
-                            minWidth: '60px',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                            background: '#fdf2f8', 
+                            color: '#ec4899', 
+                            borderRadius: '50%', 
+                            width: '40px', 
+                            height: '40px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            boxShadow: '0 4px 12px rgba(236,72,153,0.15)'
                           }}>
-                            <div style={{ background: '#ec4899', color: '#fff', fontSize: '0.7rem', fontWeight: 700, borderRadius: '6px', padding: '2px 0' }}>
-                              {dateInfo.shortMonth}
-                            </div>
-                            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#111827', marginTop: '2px' }}>
-                              {dateInfo.day}
-                            </div>
+                            <Calendar size={20} />
                           </div>
 
-                          <div style={{ paddingTop: '0.2rem' }}>
+                          <div>
                             <div style={{ fontWeight: 600, color: '#4b5563', fontSize: '1rem' }}>{dateInfo.fullDate}</div>
                             <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>{dateInfo.time}</div>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '2rem' }}>
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '2rem' }}>
                           <div style={{ 
                             background: '#e0e7ff', 
                             color: '#4f46e5', 
                             borderRadius: '50%', 
-                            width: '36px', 
-                            height: '36px', 
+                            width: '40px', 
+                            height: '40px', 
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center',
                             flexShrink: 0
                           }}>
-                            <MapPin size={18} />
+                            <MapPin size={20} />
                           </div>
-                          <div style={{ paddingTop: '0.2rem' }}>
+                          <div>
                             <div style={{ fontWeight: 600, color: '#4b5563', fontSize: '1rem' }}>{ev.venue || 'Cafeteria, JECRC University'}</div>
                             <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>{ev.location || 'Jaipur, Rajasthan'}</div>
                           </div>
