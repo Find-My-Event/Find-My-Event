@@ -134,37 +134,72 @@ export default function Clubs() {
           background-color: #49D8F6;
         }
         
-        @media (max-width: 768px) {
-          .clubs-hero-section { padding: 6rem 1.25rem 2.5rem !important; }
-          .clubs-hero-img-container { border-radius: 24px !important; }
-          .clubs-hero-img { height: 250px !important; border-radius: 24px !important; }
-          
+        .clubs-hero-img-container {
+          position: relative;
+          width: calc(100% - 3rem);
+          max-width: 1200px;
+          margin: 0 auto;
+          border-radius: 24px;
+          overflow: hidden;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+          border: 1px solid rgba(0,0,0,0.05);
+        }
+        .clubs-hero-img {
+          width: 100%;
+          height: 480px;
+          object-fit: cover;
+          display: block;
+          transform: scale(1.16) !important;
+          transform-origin: center center;
+        }
+
+        /* ── Small Mobile: 320px - 480px ── */
+        @media (max-width: 480px) {
+          .clubs-hero-img-container { border-radius: 16px !important; width: calc(100% - 2rem) !important; }
+          .clubs-hero-img { height: 180px !important; transform: scale(1.22) !important; object-position: center center !important; }
+          .clubs-section-container { padding: 0 1rem !important; margin-bottom: 2.5rem !important; }
+          .clubs-section-title { font-size: 2rem !important; margin-bottom: 1.25rem !important; }
+          .clubs-grid { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+          .club-card-logo { width: 75px !important; height: 75px !important; border-radius: 10px !important; }
+        }
+        /* ── Large Mobile: 481px - 767px ── */
+        @media (min-width: 481px) and (max-width: 767px) {
+          .clubs-hero-img-container { border-radius: 20px !important; width: calc(100% - 2.5rem) !important; }
+          .clubs-hero-img { height: 220px !important; transform: scale(1.20) !important; object-position: center center !important; }
           .clubs-section-container { padding: 0 1.25rem !important; margin-bottom: 3rem !important; }
           .clubs-section-title { font-size: 2.25rem !important; margin-bottom: 1.5rem !important; }
-          
           .clubs-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
-          .club-card-container { padding: 1rem !important; gap: 1rem !important; }
           .club-card-logo { width: 85px !important; height: 85px !important; border-radius: 12px !important; }
+        }
+        /* ── Tablet: 768px - 1023px ── */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .clubs-hero-img-container { border-radius: 24px !important; width: calc(100% - 4rem) !important; }
+          .clubs-hero-img { height: 320px !important; transform: scale(1.18) !important; object-position: center 40% !important; }
+          .clubs-section-container { padding: 0 2rem !important; margin-bottom: 3.5rem !important; }
+          .clubs-section-title { font-size: 2.5rem !important; }
+          .clubs-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 1.25rem !important; }
+          .club-card-logo { width: 90px !important; height: 90px !important; }
+        }
+        /* ── Small Laptop: 1024px - 1279px ── */
+        @media (min-width: 1024px) and (max-width: 1279px) {
+          .clubs-hero-img-container { width: calc(100% - 4rem) !important; }
+          .clubs-hero-img { height: 400px !important; transform: scale(1.16) !important; object-position: center 40% !important; }
+          .clubs-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        /* ── Large Desktop: 1280px+ ── */
+        @media (min-width: 1280px) {
+          .clubs-hero-img-container { width: calc(100% - 6rem) !important; }
+          .clubs-hero-img { height: 480px !important; transform: scale(1.16) !important; object-position: center 40% !important; }
+          .clubs-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
       `}</style>
 
-      {/* Background Gradient */}
-      <div style={{ 
-        position: 'absolute', 
-        top: 0, 
-        left: 0,
-        right: 0, 
-        height: '800px', 
-        background: 'radial-gradient(ellipse at top, rgba(239, 230, 255, 1) 0%, #FAFAFA 80%)', 
-        zIndex: 0, 
-        pointerEvents: 'none',
-      }} />
+
 
       <main style={{ position: 'relative', zIndex: 1 }}>
         
-        {/* Massive Hero Section */}
-        <section className="clubs-hero-section" style={{ padding: '8rem 2rem 4rem', textAlign: 'center', maxWidth: '1400px', margin: '0 auto', position: 'relative' }}>
-          
+        {/* Heading Section */}
+        <section style={{ padding: '9rem 1.5rem 3rem', textAlign: 'center' }}>
           <h1 ref={heroRef} className="premium-hero-heading">
             <span className="hero-line">
               JECRC <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic', zIndex: 1, marginLeft: '0.1em' }}>
@@ -179,20 +214,19 @@ export default function Clubs() {
               </span> and initiatives.
             </span>
           </h1>
-
-          {/* Hero Image */}
-          <div className="clubs-hero-img-container" style={{ position: 'relative', width: '100%', maxWidth: '1250px', margin: '0 auto', borderRadius: '40px', overflow: 'hidden', background: '#000', border: '2px solid #000', boxShadow: '0 30px 60px rgba(139,92,246,0.2)' }}>
-            <motion.img 
-              initial={{ scale: 1.12 }}
-              animate={{ scale: 1.07 }}
-              transition={{ duration: 1.5, ease: 'easeOut' }}
-              src="/jecrc_image.png" 
-              alt="JECRC University Campus" 
-              className="clubs-hero-img"
-              style={{ width: '100%', height: '500px', objectFit: 'cover', display: 'block' }} 
-            />
-          </div>
         </section>
+
+        {/* Rounded Premium Image Container */}
+        <div className="clubs-hero-img-container">
+          <motion.img
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.9, ease: 'easeOut' }}
+            src="/jecrc_image.png"
+            alt="JECRC University Campus"
+            className="clubs-hero-img"
+          />
+        </div>
 
         {loading ? (
           <div style={{ padding: '6rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#111' }}>

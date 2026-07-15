@@ -11,6 +11,32 @@ const BuildForBoth = () => {
       flexDirection: 'column',
       alignItems: 'center',
     }}>
+      <style>{`
+        .bfb-card {
+          height: 519px;
+        }
+        .bfb-img-left {
+          width: 110%;
+          bottom: -20px;
+        }
+        .bfb-img-right {
+          width: 100%;
+          bottom: 0;
+        }
+        @media (max-width: 768px) {
+          .bfb-card {
+            height: 410px !important;
+          }
+          .bfb-img-left {
+            width: 80% !important;
+            bottom: -10px !important;
+          }
+          .bfb-img-right {
+            width: 75% !important;
+            bottom: 0 !important;
+          }
+        }
+      `}</style>
 
       {/* ── HEADING ── */}
       <h2 style={{
@@ -45,18 +71,20 @@ const BuildForBoth = () => {
       }}>
 
         {/* ── LEFT CARD: Students ── */}
-        <div style={{
-          width: '100%',
-          maxWidth: '420px',
-          height: '519px',
-          borderRadius: '24px',
-          background: 'linear-gradient(180deg, #f0abfc 0%, #f9a8d4 50%, #fbcfe8 100%)',
-          position: 'relative',
-          overflow: 'hidden',
-          padding: '2rem',
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
+        <div 
+          className="bfb-card"
+          style={{
+            width: '100%',
+            maxWidth: '420px',
+            borderRadius: '24px',
+            background: 'linear-gradient(180deg, #f0abfc 0%, #f9a8d4 50%, #fbcfe8 100%)',
+            position: 'relative',
+            overflow: 'hidden',
+            padding: '2rem',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           {/* Rounded clip for the card bg */}
           <div style={{
             position: 'absolute',
@@ -69,12 +97,11 @@ const BuildForBoth = () => {
             <img
               src={studentCrowdImg}
               alt="Students crowd"
+              className="bfb-img-left"
               style={{
                 position: 'absolute',
-                bottom: '-20px',
                 left: '50%',
                 transform: 'translateX(-50%)',
-                width: '110%',
                 objectFit: 'cover',
                 pointerEvents: 'none',
               }}
@@ -125,18 +152,20 @@ const BuildForBoth = () => {
         </div>
 
         {/* ── RIGHT CARD: Clubs & Initiatives ── */}
-        <div style={{
-          width: '100%',
-          maxWidth: '420px',
-          height: '519px',
-          borderRadius: '24px',
-          background: '#111',
-          position: 'relative',
-          overflow: 'hidden',
-          padding: '2rem',
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
+        <div 
+          className="bfb-card"
+          style={{
+            width: '100%',
+            maxWidth: '420px',
+            borderRadius: '24px',
+            background: '#111',
+            position: 'relative',
+            overflow: 'hidden',
+            padding: '2rem',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           {/* Label */}
           <span style={{
             display: 'inline-block',
@@ -181,12 +210,11 @@ const BuildForBoth = () => {
           <img
             src={clubsImg}
             alt="Clubs illustration"
+            className="bfb-img-right"
             style={{
               position: 'absolute',
-              bottom: '0',
               left: '50%',
               transform: 'translateX(-50%)',
-              width: '100%',
               objectFit: 'cover',
               pointerEvents: 'none',
             }}

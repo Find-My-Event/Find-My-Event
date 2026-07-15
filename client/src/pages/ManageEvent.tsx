@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/axios';
 import { LayoutGrid, Plus, Bell, Search, Image as ImageIcon, MapPin, ChevronDown, CheckCircle, Users, Trophy, ArrowRight, Edit2, Check, Trash2, Download, Link as LinkIcon, Send, User, Mail, Phone, Calendar, X } from 'lucide-react';
 import darkLogo from '../logo/dark logo.png';
@@ -61,10 +62,12 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const handleAddTimeline = async () => {
     if(!newTimeline.title) return;
     const updated = [...timeline, { id: Date.now(), date: newTimeline.start || 'New', startDate: newTimeline.start, endDate: newTimeline.end, title: newTimeline.title, desc: newTimeline.desc }];
-    setTimeline(updated);
-    await saveEvent({ timeline: updated });
-    setShowAddTimeline(false);
-    setNewTimeline({ title: '', desc: '', start: '', end: '' });
+    const success = await saveEvent({ timeline: updated });
+    if (success) {
+      setTimeline(updated);
+      setShowAddTimeline(false);
+      setNewTimeline({ title: '', desc: '', start: '', end: '' });
+    }
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -562,10 +565,12 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                     <button onClick={async () => {
                       if(newPrize.rewardType && newPrize.position) {
                         const updated = [...prizes, newPrize];
-                        setPrizes(updated);
-                        await saveEvent({ prizes: updated });
-                        setNewPrize({ rewardType: 'Cash Prize', position: '1st Place', amount: '' });
-                        setIsAddingPrize(false);
+                        const success = await saveEvent({ prizes: updated });
+                        if (success) {
+                          setPrizes(updated);
+                          setNewPrize({ rewardType: 'Cash Prize', position: '1st Place', amount: '' });
+                          setIsAddingPrize(false);
+                        }
                       }
                     }} style={{ flex: 1, background: '#1a1a1a', color: '#fff', border: 'none', padding: '14px', borderRadius: '8px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}>Add Reward</button>
                   </div>
@@ -684,10 +689,12 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                   <button onClick={async () => {
                      if(newTicket.category) {
                         const updated = [...tickets, { id: Date.now(), ...newTicket }];
-                        setTickets(updated);
-                        await saveEvent({ tickets: updated });
-                        setNewTicket({ category: '', price: '' });
-                        setIsAddingTicket(false);
+                        const success = await saveEvent({ tickets: updated });
+                        if (success) {
+                           setTickets(updated);
+                           setNewTicket({ category: '', price: '' });
+                           setIsAddingTicket(false);
+                        }
                      }
                   }} style={{ background: '#111', color: '#fff', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Save</button>
                </div>
@@ -733,10 +740,12 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                         <button onClick={async () => {
                            if(newPersonalField) {
                               const updated = [...personalInfo, { id: Date.now(), name: newPersonalField, required: 'Optional' }];
-                              setPersonalInfo(updated);
-                              await saveEvent({ personalInfo: updated });
-                              setNewPersonalField('');
-                              setIsAddingPersonal(false);
+                              const success = await saveEvent({ personalInfo: updated });
+                              if (success) {
+                                 setPersonalInfo(updated);
+                                 setNewPersonalField('');
+                                 setIsAddingPersonal(false);
+                              }
                            }
                         }} style={{ background: '#111', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Add</button>
                      </div>
@@ -854,10 +863,12 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                            <button onClick={async () => {
                               if(newQuestion.question) {
                                  const updated = [...customQuestions, { id: Date.now(), ...newQuestion }];
-                                 setCustomQuestions(updated);
-                                 await saveEvent({ customQuestions: updated });
-                                 setNewQuestion({ question: '', type: 'Text', required: 'Optional', options: [] });
-                                 setIsAddingQuestion(false);
+                                 const success = await saveEvent({ customQuestions: updated });
+                                 if (success) {
+                                    setCustomQuestions(updated);
+                                    setNewQuestion({ question: '', type: 'Text', required: 'Optional', options: [] });
+                                    setIsAddingQuestion(false);
+                                 }
                               }
                            }} style={{ background: '#111', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Save Question</button>
                         </div>
@@ -1179,10 +1190,23 @@ function AnnouncementTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const handleSend = async () => {
     if (!newAnnouncement.trim()) return;
     const updated = [...announcements, { title: 'Announcement', content: newAnnouncement, date: new Date() }];
-    setAnnouncements(updated);
-    await saveEvent({ announcements: updated });
-    setNewAnnouncement('');
+    const success = await saveEvent({ announcements: updated });
+    if (success) {
+      setAnnouncements(updated);
+      setNewAnnouncement('');
+    }
   };
+
+  const handleDelete = async (indexToDelete: number) => {
+    if (window.confirm('Are you sure you want to delete this announcement?')) {
+      const updated = announcements.filter((_, idx) => idx !== indexToDelete);
+      const success = await saveEvent({ announcements: updated });
+      if (success) {
+        setAnnouncements(updated);
+      }
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
        <div>
@@ -1216,10 +1240,20 @@ function AnnouncementTab({ event, saveEvent }: { event: any, saveEvent: any }) {
             ) : announcements.map((ann, idx) => (
                <div key={idx} style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1.5rem', borderRadius: '12px', display: 'flex', gap: '1rem' }}>
                   <img src={user?.avatar || darkLogo} alt="Club Logo" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
-                  <div>
-                     <div style={{ fontWeight: 800, fontSize: '1rem', color: '#111', marginBottom: '0.5rem' }}>{ann.title || 'Announcement'} <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 'normal', marginLeft: '8px' }}>{new Date(ann.date).toLocaleDateString()}</span></div>
-                     <div style={{ fontSize: '0.9rem', color: '#555', marginBottom: '1rem', whiteSpace: 'pre-wrap' }}>{ann.content}</div>
-                     <div style={{ fontSize: '0.75rem', color: '#888' }}>Sent to All Participants</div>
+                  <div style={{ flex: 1 }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div style={{ fontWeight: 800, fontSize: '1rem', color: '#111', marginBottom: '0.5rem', textAlign: 'left' }}>
+                           {ann.title || 'Announcement'} <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 'normal', marginLeft: '8px' }}>{new Date(ann.date).toLocaleDateString()}</span>
+                        </div>
+                        <button 
+                          onClick={() => handleDelete(idx)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                     </div>
+                     <div style={{ fontSize: '0.9rem', color: '#555', marginBottom: '1rem', whiteSpace: 'pre-wrap', textAlign: 'left' }}>{ann.content}</div>
+                     <div style={{ fontSize: '0.75rem', color: '#888', textAlign: 'left' }}>Sent to All Participants</div>
                   </div>
                </div>
             ))}
@@ -1344,10 +1378,12 @@ function SettingsTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                   <button onClick={async () => {
                      if(newMember.name) {
                         const updated = [...teamMembers, { id: Date.now(), ...newMember, color: getRoleColor(newMember.role) }];
-                        setTeamMembers(updated);
-                        await saveEvent({ organizingTeam: updated });
-                        setNewMember({ name: '', email: '', phone: '', role: 'Coordinator' });
-                        setIsAddingMember(false);
+                        const success = await saveEvent({ organizingTeam: updated });
+                        if (success) {
+                           setTeamMembers(updated);
+                           setNewMember({ name: '', email: '', phone: '', role: 'Coordinator' });
+                           setIsAddingMember(false);
+                        }
                      }
                   }} style={{ background: '#111', color: '#fff', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Invite</button>
                </div>
@@ -1380,6 +1416,7 @@ export default function ManageEvent() {
   const [error, setError] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -1492,8 +1529,62 @@ export default function ManageEvent() {
 
             {/* Right: Icons (Desktop) */}
             <div className="mobile-nav-hide" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex' }}><Search size={20} /></button>
-              <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex' }}><Bell size={20} /></button>
+              <button 
+                onClick={() => {
+                  sessionStorage.setItem('triggerSearch', 'true');
+                  window.location.hash = '#organizer-dashboard/my-events';
+                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex' }}
+              >
+                <Search size={20} />
+              </button>
+              
+              <div 
+                style={{ position: 'relative' }} 
+                onMouseEnter={() => setIsNotificationsOpen(true)}
+                onMouseLeave={() => setIsNotificationsOpen(false)}
+              >
+                <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: isNotificationsOpen ? '#ec4899' : '#111', display: 'flex', position: 'relative' }}>
+                  <Bell size={20} />
+                  <span style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%' }} />
+                </button>
+                
+                <AnimatePresence>
+                  {isNotificationsOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      style={{
+                        position: 'absolute', top: '120%', right: 0,
+                        background: '#fff',
+                        borderRadius: '14px', boxShadow: '0 16px 48px rgba(0,0,0,0.12)',
+                        border: '1px solid rgba(0,0,0,0.06)', padding: '1rem',
+                        minWidth: '280px', zIndex: 2000,
+                      }}
+                    >
+                      <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#111', marginBottom: '0.8rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.5rem', textAlign: 'left' }}>
+                        Notifications
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left' }}>
+                          <div style={{ color: '#111', fontWeight: 700 }}>🎉 Welcome to Eventum Organizer Dashboard!</div>
+                          <div style={{ fontSize: '0.7rem', color: '#aaa' }}>Just now</div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left' }}>
+                          <div style={{ color: '#111', fontWeight: 700 }}>✅ Your event submission has been approved by Admin.</div>
+                          <div style={{ fontSize: '0.7rem', color: '#aaa' }}>2 hours ago</div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left' }}>
+                          <div style={{ color: '#666', fontWeight: 500 }}>👤 New attendee registration received for your event.</div>
+                          <div style={{ fontSize: '0.7rem', color: '#aaa' }}>1 day ago</div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              
               <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer' }}>
                 <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer"} alt="Profile" style={{ width: '100%', height: '100%' }} />
               </div>

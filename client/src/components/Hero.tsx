@@ -130,13 +130,13 @@ const Hero = () => {
     >
       {/* ── Top Text ── */}
       <div ref={topTextRef} style={{ textAlign: 'center', position: 'relative', zIndex: 1, marginBottom: '2.5rem', padding: '0 1rem' }}>
-        <h1 style={{ fontWeight: 600, fontSize: 'clamp(2.5rem, 6vw, 56px)', fontFamily: 'Inter, sans-serif', margin: 0, color: '#111' }}>
+        <h1 style={{ fontWeight: 600, fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontFamily: 'Inter, sans-serif', margin: 0, color: '#111' }}>
           Never Miss, What&apos;s Happening!
         </h1>
-        <h2 style={{ fontWeight: 800, fontSize: 'clamp(3rem, 7vw, 64px)', fontFamily: 'Inter, sans-serif', margin: 0, marginTop: '-5px', color: '#111' }}>
+        <h2 style={{ fontWeight: 800, fontSize: 'clamp(2.25rem, 6.5vw, 4rem)', fontFamily: 'Inter, sans-serif', margin: 0, marginTop: '-5px', color: '#111' }}>
           AROUND YOU
         </h2>
-        <p style={{ fontWeight: 600, fontSize: 'clamp(1.2rem, 2.5vw, 24px)', fontFamily: 'Inter, sans-serif', margin: 0, marginTop: '1rem', color: '#333' }}>
+        <p style={{ fontWeight: 600, fontSize: 'clamp(1rem, 2.5vw, 1.5rem)', fontFamily: 'Inter, sans-serif', margin: 0, marginTop: '1rem', color: '#333' }}>
           Whether it&apos;s a...
         </p>
       </div>

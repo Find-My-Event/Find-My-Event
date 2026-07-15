@@ -85,9 +85,25 @@ export default function RegisteredEvents() {
   }
 
   // Filter based on activeTab
-  const filteredEvents = registeredEvents.filter(() => {
-    if (activeTab === 'past') return false; 
-    return true; 
+  const filteredEvents = registeredEvents.filter((ev) => {
+    const dateStr = ev.date || ev.startDate || '';
+    if (!dateStr) return activeTab === 'upcoming';
+    
+    let datePart = dateStr;
+    if (dateStr.includes('•')) {
+      datePart = dateStr.split('•')[0].trim();
+    }
+    
+    const d = new Date(datePart);
+    if (isNaN(d.getTime())) {
+      return activeTab === 'upcoming';
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const isPast = d < today;
+    return activeTab === 'past' ? isPast : !isPast;
   });
 
   return (

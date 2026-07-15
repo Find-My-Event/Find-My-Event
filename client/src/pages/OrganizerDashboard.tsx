@@ -21,6 +21,9 @@ export default function OrganizerDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchBar, setShowSearchBar] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   
   const { user, logout } = useAuth();
 
@@ -32,6 +35,11 @@ export default function OrganizerDashboard() {
         setActiveTab('create');
       } else {
         setActiveTab('events');
+        const trigger = sessionStorage.getItem('triggerSearch');
+        if (trigger === 'true') {
+          setShowSearchBar(true);
+          sessionStorage.removeItem('triggerSearch');
+        }
       }
     };
 
@@ -233,6 +241,11 @@ export default function OrganizerDashboard() {
 
   const filteredEvents = processedEvents
     .filter(ev => eventFilter === 'upcoming' ? !ev.isPast : ev.isPast)
+    .filter(ev => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return (ev.name?.toLowerCase().includes(query) || ev.location?.toLowerCase().includes(query));
+    })
     .sort((a, b) => {
       if (eventFilter === 'upcoming') {
         return a.startObj.getTime() - b.startObj.getTime();
@@ -344,12 +357,63 @@ export default function OrganizerDashboard() {
 
         {/* Right: Icons (Desktop) */}
         <div className="mobile-nav-hide" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex' }}>
+          <button 
+            onClick={() => {
+              setShowSearchBar(!showSearchBar);
+              if (activeTab !== 'events') {
+                navigateTo('events');
+              }
+            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: showSearchBar ? '#ec4899' : '#111', display: 'flex' }}
+          >
             <Search size={20} />
           </button>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex' }}>
-            <Bell size={20} />
-          </button>
+          
+          <div 
+            style={{ position: 'relative' }} 
+            onMouseEnter={() => setIsNotificationsOpen(true)}
+            onMouseLeave={() => setIsNotificationsOpen(false)}
+          >
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: isNotificationsOpen ? '#ec4899' : '#111', display: 'flex', position: 'relative' }}>
+              <Bell size={20} />
+              <span style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%' }} />
+            </button>
+            
+            <AnimatePresence>
+              {isNotificationsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  style={{
+                    position: 'absolute', top: '120%', right: 0,
+                    background: '#fff',
+                    borderRadius: '14px', boxShadow: '0 16px 48px rgba(0,0,0,0.12)',
+                    border: '1px solid rgba(0,0,0,0.06)', padding: '1rem',
+                    minWidth: '280px', zIndex: 2000,
+                  }}
+                >
+                  <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#111', marginBottom: '0.8rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.5rem' }}>
+                    Notifications
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left' }}>
+                      <div style={{ color: '#111', fontWeight: 700 }}>🎉 Welcome to Eventum Organizer Dashboard!</div>
+                      <div style={{ fontSize: '0.7rem', color: '#aaa' }}>Just now</div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left' }}>
+                      <div style={{ color: '#111', fontWeight: 700 }}>✅ Your event submission has been approved by Admin.</div>
+                      <div style={{ fontSize: '0.7rem', color: '#aaa' }}>2 hours ago</div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left' }}>
+                      <div style={{ color: '#666', fontWeight: 500 }}>👤 New attendee registration received for your event.</div>
+                      <div style={{ fontSize: '0.7rem', color: '#aaa' }}>1 day ago</div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           <div 
             style={{ position: 'relative' }} 
             onMouseEnter={() => setIsProfileOpen(true)}
@@ -466,10 +530,25 @@ export default function OrganizerDashboard() {
 
           {/* Action Icons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', paddingTop: '1rem', borderTop: '1px solid #eaeaea' }}>
-            <button style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: '#555' }}>
+            <button 
+              onClick={() => {
+                setShowSearchBar(!showSearchBar);
+                setIsMobileMenuOpen(false);
+                if (activeTab !== 'events') {
+                  navigateTo('events');
+                }
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: showSearchBar ? '#ec4899' : '#555' }}
+            >
               <Search size={20} /> Search
             </button>
-            <button style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: '#555' }}>
+            <button 
+              onClick={() => {
+                alert("You have 2 new notifications: \n1. Welcome to Eventum Organizer Dashboard!\n2. Your event submission has been approved.");
+                setIsMobileMenuOpen(false);
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: '#555' }}
+            >
               <Bell size={20} /> Notifications
             </button>
           </div>
@@ -512,6 +591,28 @@ export default function OrganizerDashboard() {
                   </button>
                 </div>
              </div>
+             
+             {/* Search Bar Input */}
+             {showSearchBar && (
+                <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '8px', background: '#f3f4f6', padding: '8px 16px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                  <Search size={18} color="#888" />
+                  <input 
+                    type="text" 
+                    placeholder="Search by event title or location..." 
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '0.95rem', fontWeight: 500, color: '#111' }}
+                  />
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex' }}
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+             )}
              
              {eventsList.length === 0 ? (
                <div style={{ padding: '4rem', textAlign: 'center', border: '1px dashed #ccc', borderRadius: '16px' }}>
