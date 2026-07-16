@@ -14,23 +14,45 @@ const Footer = () => (
         </p>
         {/* Social links */}
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-          {['𝕏', 'ig', 'in'].map(s => (
+          {[
+            { 
+              icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                </svg>
+              ), 
+              href: 'https://www.instagram.com/theeventum/' 
+            },
+            { 
+              icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                  <rect width="4" height="12" x="2" y="9"/>
+                  <circle cx="4" cy="4" r="2"/>
+                </svg>
+              ), 
+              href: 'https://www.linkedin.com/company/theeventum' 
+            }
+          ].map((s, idx) => (
             <motion.a
-              key={s}
-              href="#"
-              whileHover={{ scale: 1.1, background: 'rgba(139,92,246,0.3)' }}
+              key={idx}
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.1, background: 'rgba(139,92,246,0.3)', color: '#fff' }}
               style={{
                 width: '36px', height: '36px', borderRadius: '10px',
                 background: 'rgba(255,255,255,0.08)',
                 border: '1px solid rgba(255,255,255,0.1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '0.75rem', fontWeight: 700,
                 color: 'rgba(255,255,255,0.6)',
                 textDecoration: 'none',
-                transition: 'background 0.2s',
+                transition: 'background 0.2s, color 0.2s',
               }}
             >
-              {s}
+              {s.icon}
             </motion.a>
           ))}
         </div>
@@ -43,8 +65,6 @@ const Footer = () => (
             label: 'Product',
             links: [
               { name: 'Home',     href: '#home' },
-              { name: 'Events',   href: '#events' },
-              { name: 'Discover', href: '#discover' },
               { name: 'Clubs',    href: '#clubs' },
               { name: 'Gallery',  href: '#gallery' },
             ],
@@ -70,7 +90,18 @@ const Footer = () => (
           <div key={col.label} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             <span className="lp-footer-label">{col.label}</span>
             {col.links.map(l => (
-              <a key={l.name} href={l.href} className="lp-footer-link">
+              <a 
+                key={l.name} 
+                href={l.href} 
+                onClick={(e) => {
+                  if (l.name === 'Home') {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    window.location.hash = '';
+                  }
+                }}
+                className="lp-footer-link"
+              >
                 {l.name}
               </a>
             ))}
