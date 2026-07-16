@@ -59,6 +59,7 @@ export default function CreateEvent() {
   const [isRefundable, setIsRefundable] = useState(false);
   const [paymentDescription, setPaymentDescription] = useState('');
   const [entryConditions, setEntryConditions] = useState('');
+  const [generateQRCode, setGenerateQRCode] = useState(false);
 
   const pollStatus = useCallback(async () => {
     if (!submissionId) return;
@@ -105,6 +106,7 @@ export default function CreateEvent() {
       formData.append('mode', mode.trim());
       formData.append('location', location.trim());
       formData.append('capacity', capacity ? capacity.toString() : '0');
+      formData.append('generateQRCode', generateQRCode.toString());
       
       // Paid Fields
       formData.append('isPaid', isPaid.toString());
@@ -302,6 +304,28 @@ export default function CreateEvent() {
                         </div>
                       </motion.div>
                     )}
+                  </div>
+
+                  {/* QR Code Ticketing Section */}
+                  <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', borderRadius: 20, border: '1px solid var(--border-subtle)', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <h4 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>QR Code Ticketing</h4>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Generate digital QR code tickets for attendees</p>
+                      </div>
+                      <div 
+                        onClick={() => setGenerateQRCode(!generateQRCode)}
+                        style={{ 
+                          width: 50, height: 26, background: generateQRCode ? '#3b82f6' : 'var(--border-color)', 
+                          borderRadius: 20, position: 'relative', cursor: 'pointer', transition: '0.3s' 
+                        }}
+                      >
+                        <div style={{ 
+                          width: 20, height: 20, background: '#fff', borderRadius: '50%', position: 'absolute', 
+                          top: 3, left: generateQRCode ? 27 : 3, transition: '0.3s' 
+                        }} />
+                      </div>
+                    </div>
                   </div>
 
                 <motion.button

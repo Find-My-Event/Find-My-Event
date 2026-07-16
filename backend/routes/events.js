@@ -157,7 +157,8 @@ router.put('/submission/:id', requireAuth, upload.single('image'), async (req, r
     const { 
       title, description, startDate, endDate, mode, location, capacity, imageUrl,
       participantType, teamMin, teamMax, eligibility, timeline, rules, contacts, announcements, customQuestions,
-      tickets, prizes, visibility, registrationControl, personalInfo, eduInfo, organizingTeam, registrationDeadline
+      tickets, prizes, visibility, registrationControl, personalInfo, eduInfo, organizingTeam, registrationDeadline,
+      generateQRCode
     } = req.body;
     
     if (title !== undefined) s.title = title;
@@ -191,6 +192,7 @@ router.put('/submission/:id', requireAuth, upload.single('image'), async (req, r
     if (eduInfo !== undefined) s.eduInfo = eduInfo;
     if (organizingTeam !== undefined) s.organizingTeam = organizingTeam;
     if (registrationDeadline !== undefined) s.registrationDeadline = registrationDeadline;
+    if (generateQRCode !== undefined) s.generateQRCode = generateQRCode === true || generateQRCode === 'true';
 
     await s.save();
     res.json({ submission: s });
@@ -519,6 +521,40 @@ router.delete('/scanner-link/:id', requireAuth, requireAdmin, async (req, res) =
   try {
     await ScannerLink.findByIdAndDelete(req.params.id);
     res.json({ message: 'Link revoked successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @desc    Verify and lock Magic Scanner Link on page load
+// @route   GET /api/events/verify-scanner/:token
+router.get('/verify-scanner/:token', async (req, res) => {
+  const { token } = req.params;
+  const { deviceId } = req.query;
+
+  if (!token || !deviceId) {
+    return res.status(400).json({ message: "Missing scanner token or device ID" });
+  }
+
+  try {
+    const link = await ScannerLink.findOne({ token, isActive: true });
+    if (!link) {
+      return res.status(403).json({ message: "Invalid or revoked scanner link." });
+    }
+
+    if (new Date() > new Date(link.expiresAt)) {
+      return res.status(403).json({ message: "This scanner link has expired." });
+    }
+
+    // Device locking check
+    if (!link.lockedDeviceId) {
+      link.lockedDeviceId = deviceId;
+      await link.save();
+    } else if (link.lockedDeviceId !== deviceId) {
+      return res.status(403).json({ message: "Link active on another device." });
+    }
+
+    res.json({ message: "Scanner verified successfully", link });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
