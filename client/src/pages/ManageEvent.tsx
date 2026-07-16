@@ -1417,6 +1417,24 @@ export default function ManageEvent() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/organizer/notifications`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchNotifications();
+  }, []);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -1546,7 +1564,9 @@ export default function ManageEvent() {
               >
                 <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: isNotificationsOpen ? '#ec4899' : '#111', display: 'flex', position: 'relative' }}>
                   <Bell size={20} />
-                  <span style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%' }} />
+                  {notifications.length > 0 && (
+                    <span style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%' }} />
+                  )}
                 </button>
                 
                 <AnimatePresence>
@@ -1566,27 +1586,26 @@ export default function ManageEvent() {
                       <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#111', marginBottom: '0.8rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.5rem', textAlign: 'left' }}>
                         Notifications
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left' }}>
-                          <div style={{ color: '#111', fontWeight: 700 }}>🎉 Welcome to Eventum Organizer Dashboard!</div>
-                          <div style={{ fontSize: '0.7rem', color: '#aaa' }}>Just now</div>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left' }}>
-                          <div style={{ color: '#111', fontWeight: 700 }}>✅ Your event submission has been approved by Admin.</div>
-                          <div style={{ fontSize: '0.7rem', color: '#aaa' }}>2 hours ago</div>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left' }}>
-                          <div style={{ color: '#666', fontWeight: 500 }}>👤 New attendee registration received for your event.</div>
-                          <div style={{ fontSize: '0.7rem', color: '#aaa' }}>1 day ago</div>
-                        </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxHeight: '300px', overflowY: 'auto' }}>
+                        {notifications.length === 0 ? (
+                          <div style={{ fontSize: '0.8rem', color: '#888', textAlign: 'center', padding: '1rem 0' }}>No new notifications</div>
+                        ) : (
+                          notifications.map(n => (
+                            <div key={n._id} style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                              <div style={{ color: '#111', fontWeight: 700 }}>{n.title}</div>
+                              <div style={{ color: '#555', marginTop: '2px' }}>{n.message}</div>
+                              <div style={{ fontSize: '0.7rem', color: '#aaa', marginTop: '4px' }}>{new Date(n.createdAt).toLocaleDateString()}</div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
               
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer' }}>
-                <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer"} alt="Profile" style={{ width: '100%', height: '100%' }} />
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', border: '1px solid rgba(0,0,0,0.1)' }}>
+                <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer"} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
             </div>
           </>
@@ -1629,13 +1648,7 @@ export default function ManageEvent() {
               {eventData?.title || 'Event Name'}<span style={{ color: '#ec4899' }}>.</span>
             </h1>
           )}
-          <button style={{ 
-            background: '#7c3aed', color: '#fff', border: 'none', padding: '10px 20px', 
-            borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: '8px'
-          }}>
-            View Event <ArrowRight size={16} />
-          </button>
+
         </div>
 
         {/* Tabs */}

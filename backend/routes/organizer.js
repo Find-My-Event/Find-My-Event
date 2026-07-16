@@ -230,4 +230,19 @@ router.post('/events', requireAuth, requireOrganizer, upload.single('image'), as
   }
 });
 
+// GET /api/organizer/notifications
+// Fetch notifications for the organizer
+router.get('/notifications', requireAuth, requireOrganizer, async (req, res) => {
+  try {
+    const Notification = require('../models/Notification');
+    // Fetch global notifications or notifications assigned to this user
+    // Since the schema has createdBy but no recipient, we will fetch recent ones globally for now, or you can filter.
+    const notifications = await Notification.find().sort({ createdAt: -1 }).limit(10);
+    res.status(200).json(notifications);
+  } catch (err) {
+    console.error('Error fetching notifications:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
