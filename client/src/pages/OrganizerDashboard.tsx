@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Bell, Plus, LayoutGrid, Image as ImageIcon, MapPin, Ticket, Users, ChevronDown, X, Menu, User, Lock, UserCircle, LogOut } from 'lucide-react';
+import { Search, Bell, Plus, LayoutGrid, Image as ImageIcon, MapPin, Ticket, Users, ChevronDown, X, Menu, User, Lock, UserCircle, LogOut, Send } from 'lucide-react';
 import darkLogo from '../logo/dark logo.png';
 import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../api/axios';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import { AnimatePresence } from 'framer-motion';
 
@@ -25,17 +26,16 @@ export default function OrganizerDashboard() {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [isSendNotificationModalOpen, setIsSendNotificationModalOpen] = useState(false);
+  const [newNotificationTitle, setNewNotificationTitle] = useState('');
+  const [newNotificationMessage, setNewNotificationMessage] = useState('');
+  const [isSendingNotification, setIsSendingNotification] = useState(false);
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/organizer/notifications`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setNotifications(data);
-        }
+        const { data } = await api.get('/organizer/notifications');
+        setNotifications(data);
       } catch (err) {
         console.error(err);
       }
@@ -473,6 +473,9 @@ export default function OrganizerDashboard() {
                   </button>
                   <button type="button" className="dropdown-item" onClick={() => { setIsProfileOpen(false); window.location.hash = '#home'; }}>
                     <UserCircle size={15} /> <span>User Dashboard</span>
+                  </button>
+                  <button type="button" className="dropdown-item" onClick={() => { setIsProfileOpen(false); setIsSendNotificationModalOpen(true); }}>
+                    <Send size={15} /> <span>Send Notification</span>
                   </button>
                   <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', margin: '0.4rem 0' }} />
                   <button type="button" className="dropdown-item logout" onClick={logout}>
@@ -1126,6 +1129,111 @@ export default function OrganizerDashboard() {
       <Footer />
       {/* Modals */}
       <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />
+
+      {/* Send Notification Modal */}
+      <AnimatePresence>
+        {isSendNotificationModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+              background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+            }}
+            onClick={() => !isSendingNotification && setIsSendNotificationModalOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: '#fff', borderRadius: '20px', padding: '2rem',
+                width: '90%', maxWidth: '400px', boxShadow: '0 24px 48px rgba(0,0,0,0.2)'
+              }}
+            >
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#111', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Send size={24} color="#7c3aed" /> Broadcast
+              </h2>
+              <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1.5rem' }}>Send a notification to all users and clubs.</p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#111', marginBottom: '0.5rem' }}>Title</label>
+                  <input
+                    type="text"
+                    value={newNotificationTitle}
+                    onChange={(e) => setNewNotificationTitle(e.target.value)}
+                    placeholder="Enter notification title"
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #eaeaea', fontSize: '0.95rem', outline: 'none' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#111', marginBottom: '0.5rem' }}>Message</label>
+                  <textarea
+                    value={newNotificationMessage}
+                    onChange={(e) => setNewNotificationMessage(e.target.value)}
+                    placeholder="Type your message here..."
+                    rows={4}
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #eaeaea', fontSize: '0.95rem', outline: 'none', resize: 'none' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsSendNotificationModalOpen(false)}
+                  disabled={isSendingNotification}
+                  style={{
+                    flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid #eaeaea',
+                    background: '#fff', color: '#111', fontWeight: 600, cursor: isSendingNotification ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!newNotificationTitle.trim() || !newNotificationMessage.trim()) return;
+                    setIsSendingNotification(true);
+                    try {
+                      const { data } = await api.post('/organizer/notifications', {
+                        title: newNotificationTitle,
+                        message: newNotificationMessage
+                      });
+                      
+                      setNotifications(prev => [data.notification, ...prev]);
+                      setNewNotificationTitle('');
+                      setNewNotificationMessage('');
+                      setIsSendNotificationModalOpen(false);
+                      
+                      // Also trigger a window event or broadcast channel if needed, 
+                      // but local state update is enough for this window
+                    } catch (err: any) {
+                        const errMsg = err.response?.data?.message || err.message || 'Failed to broadcast';
+                        alert(`Error: ${errMsg}`);
+                      console.error(err);
+                    } finally {
+                      setIsSendingNotification(false);
+                    }
+                  }}
+                  disabled={isSendingNotification || !newNotificationTitle.trim() || !newNotificationMessage.trim()}
+                  style={{
+                    flex: 1, padding: '0.75rem', borderRadius: '8px', border: 'none',
+                    background: '#7c3aed', color: '#fff', fontWeight: 600, cursor: (isSendingNotification || !newNotificationTitle.trim() || !newNotificationMessage.trim()) ? 'not-allowed' : 'pointer',
+                    opacity: (isSendingNotification || !newNotificationTitle.trim() || !newNotificationMessage.trim()) ? 0.7 : 1
+                  }}
+                >
+                  {isSendingNotification ? 'Sending...' : 'Broadcast'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

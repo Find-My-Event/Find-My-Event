@@ -245,4 +245,29 @@ router.get('/notifications', requireAuth, requireOrganizer, async (req, res) => 
   }
 });
 
+// POST /api/organizer/notifications
+// Create a new notification sent by the organizer
+router.post('/notifications', requireAuth, requireOrganizer, async (req, res) => {
+  try {
+    const { title, message, type } = req.body;
+    if (!title || !message) {
+      return res.status(400).json({ message: 'Title and message are required' });
+    }
+    
+    const Notification = require('../models/Notification');
+    const notification = new Notification({
+      title,
+      message,
+      type: type || 'info',
+      createdBy: req.user._id
+    });
+    
+    await notification.save();
+    res.status(201).json({ message: 'Notification sent successfully', notification });
+  } catch (err) {
+    console.error('Error creating notification:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

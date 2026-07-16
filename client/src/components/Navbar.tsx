@@ -64,11 +64,15 @@ const Navbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
-  /* ── Notifications ── */
-  useEffect(() => {
+  const fetchNotifications = () => {
     if (isLoggedIn) {
       api.get('/notifications').then(r => setNotifications(r.data)).catch(() => {});
     }
+  };
+
+  /* ── Notifications ── */
+  useEffect(() => {
+    fetchNotifications();
   }, [isLoggedIn]);
 
   // Determine which links to show based on login status
@@ -201,7 +205,10 @@ const Navbar: React.FC = () => {
                   whileHover={{ scale: 1.1 }}
                   className="nav-icon-button"
                   style={{ cursor: 'pointer', color: isInnerPage ? 'rgba(255,255,255,0.6)' : '#666' }}
-                  onClick={() => setShowNotifications(!showNotifications)}
+                  onClick={() => {
+                    if (!showNotifications) fetchNotifications();
+                    setShowNotifications(!showNotifications);
+                  }}
                 >
                   <Bell size={18} strokeWidth={2} />
                   {visibleNotifications.length > 0 && (

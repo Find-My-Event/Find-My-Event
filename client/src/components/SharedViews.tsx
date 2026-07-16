@@ -456,6 +456,10 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
     if (!m.name) return { valid: false, message: "Name is required" };
     if (!m.email) return { valid: false, message: "Email is required" };
     if (!m.phone) return { valid: false, message: "Phone number is required" };
+
+    const phoneDigits = m.phone.replace(/[^0-9]/g, '');
+    if (phoneDigits.length !== 10) return { valid: false, message: "Please enter a valid 10-digit mobile number" };
+
     
     // Check Custom Questions
     if (event.customQuestions?.length > 0) {
