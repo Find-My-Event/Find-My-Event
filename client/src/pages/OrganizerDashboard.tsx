@@ -300,6 +300,7 @@ export default function OrganizerDashboard() {
           
           .mobile-form-row { flex-direction: column !important; gap: 0.5rem !important; align-items: flex-start !important; }
           .mobile-form-col { width: 100% !important; }
+          .mobile-filter-row { width: 100% !important; justify-content: space-between !important; }
         }
 
         /* Set global font for inputs and placeholders */
@@ -487,8 +488,60 @@ export default function OrganizerDashboard() {
           </div>
         </div>
 
-        {/* Hamburger Icon (Mobile Only) */}
-        <div className="mobile-nav-show" style={{ display: 'none', alignItems: 'center' }}>
+        {/* Hamburger Icon & Mobile Bell (Mobile Only) */}
+        <div className="mobile-nav-show" style={{ display: 'none', alignItems: 'center', gap: '1rem' }}>
+          {/* Notification Bell */}
+          <div style={{ position: 'relative' }}>
+            <button 
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex', position: 'relative', padding: '4px' }}
+            >
+              <Bell size={22} />
+              {notifications.length > 0 && (
+                <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%' }} />
+              )}
+            </button>
+            
+            <AnimatePresence>
+              {isNotificationsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  style={{
+                    position: 'fixed', top: '64px', right: '12px',
+                    width: 'calc(100vw - 24px)', maxWidth: '300px',
+                    background: '#fff',
+                    borderRadius: '14px', boxShadow: '0 16px 48px rgba(0,0,0,0.12)',
+                    border: '1px solid rgba(0,0,0,0.06)', padding: '1rem',
+                    zIndex: 2000,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.5rem' }}>
+                    <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#111', textAlign: 'left' }}>
+                      Notifications
+                    </div>
+                    <button onClick={() => setIsNotificationsOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex' }}><X size={16} /></button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxHeight: '250px', overflowY: 'auto' }}>
+                    {notifications.length === 0 ? (
+                      <div style={{ fontSize: '0.8rem', color: '#888', textAlign: 'center', padding: '1rem 0' }}>No new notifications</div>
+                    ) : (
+                      notifications.map(n => (
+                        <div key={n._id} style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                          <div style={{ color: '#111', fontWeight: 700 }}>{n.title}</div>
+                          <div style={{ color: '#555', marginTop: '2px' }}>{n.message}</div>
+                          <div style={{ fontSize: '0.7rem', color: '#aaa', marginTop: '4px' }}>{new Date(n.createdAt).toLocaleDateString()}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Hamburger Icon */}
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex' }}
@@ -549,31 +602,6 @@ export default function OrganizerDashboard() {
           >
             <Plus size={20} /> Create Event
           </button>
-
-          {/* Action Icons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', paddingTop: '1rem', borderTop: '1px solid #eaeaea' }}>
-            <button 
-              onClick={() => {
-                setShowSearchBar(!showSearchBar);
-                setIsMobileMenuOpen(false);
-                if (activeTab !== 'events') {
-                  navigateTo('events');
-                }
-              }}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: showSearchBar ? '#ec4899' : '#555' }}
-            >
-              <Search size={20} /> Search
-            </button>
-            <button 
-              onClick={() => {
-                alert("You have 2 new notifications: \n1. Welcome to Eventum Organizer Dashboard!\n2. Your event submission has been approved.");
-                setIsMobileMenuOpen(false);
-              }}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: '#555' }}
-            >
-              <Bell size={20} /> Notifications
-            </button>
-          </div>
         </div>
       )}
 
@@ -588,30 +616,45 @@ export default function OrganizerDashboard() {
                   <h1 className="mobile-header-title" style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0, letterSpacing: '-1px' }}>My Events<span style={{ color: '#ec4899' }}>.</span></h1>
                 </div>
                 
-                <div style={{ display: 'flex', background: '#eaeaea', borderRadius: '8px', padding: '4px' }}>
-                  <button 
-                    onClick={() => setEventFilter('upcoming')}
-                    style={{ 
-                      background: eventFilter === 'upcoming' ? '#fff' : 'transparent', 
-                      color: eventFilter === 'upcoming' ? '#111' : '#888',
-                      border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
-                      boxShadow: eventFilter === 'upcoming' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none', transition: 'all 0.2s'
-                    }}
-                  >
-                    Upcoming
-                  </button>
-                  <button 
-                    onClick={() => setEventFilter('past')}
-                    style={{ 
-                      background: eventFilter === 'past' ? '#fff' : 'transparent', 
-                      color: eventFilter === 'past' ? '#111' : '#888',
-                      border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
-                      boxShadow: eventFilter === 'past' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none', transition: 'all 0.2s'
-                    }}
-                  >
-                    Past
-                  </button>
-                </div>
+                <div className="mobile-filter-row" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                   <div style={{ display: 'flex', background: '#eaeaea', borderRadius: '8px', padding: '4px' }}>
+                     <button 
+                       onClick={() => setEventFilter('upcoming')}
+                       style={{ 
+                         background: eventFilter === 'upcoming' ? '#fff' : 'transparent', 
+                         color: eventFilter === 'upcoming' ? '#111' : '#888',
+                         border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+                         boxShadow: eventFilter === 'upcoming' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none', transition: 'all 0.2s'
+                       }}
+                     >
+                       Upcoming
+                     </button>
+                     <button 
+                       onClick={() => setEventFilter('past')}
+                       style={{ 
+                         background: eventFilter === 'past' ? '#fff' : 'transparent', 
+                         color: eventFilter === 'past' ? '#111' : '#888',
+                         border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+                         boxShadow: eventFilter === 'past' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none', transition: 'all 0.2s'
+                       }}
+                     >
+                       Past
+                     </button>
+                   </div>
+
+                   <button 
+                     onClick={() => setShowSearchBar(!showSearchBar)}
+                     style={{ 
+                       background: 'none', border: 'none', cursor: 'pointer', 
+                       color: showSearchBar ? '#ec4899' : '#555', display: 'flex',
+                       padding: '8px', borderRadius: '8px', transition: 'background 0.2s' 
+                     }}
+                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
+                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                   >
+                     <Search size={20} />
+                   </button>
+                 </div>
              </div>
              
              {/* Search Bar Input */}

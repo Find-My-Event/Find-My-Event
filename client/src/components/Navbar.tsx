@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Plus, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Home, Globe, LayoutGrid, Command, Award } from 'lucide-react';
+import { Bell, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Home, Globe, LayoutGrid, Command, Award } from 'lucide-react';
 import gsap from 'gsap';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
@@ -285,7 +285,7 @@ const Navbar: React.FC = () => {
                       {[
                         { icon: Settings, label: 'General Settings', href: '#settings' },
                         { icon: User,     label: 'Edit Profile',      href: '#edit-profile' },
-                        ...( (user?.role === 'admin' || user?.role === 'organizer') ? [{ icon: Calendar, label: 'Your Events', href: '#your-events' }] : [] ),
+                        ...( (user?.role === 'admin' || user?.role === 'organizer') ? [{ icon: LayoutGrid, label: 'Organizer Dashboard', href: '#organizer-dashboard' }] : [] ),
                         { icon: Calendar, label: 'Registered Events', href: '#registered-events' },
                       ].map(item => (
                         <button key={item.label} type="button" className={`dropdown-item${isInnerPage ? ' dropdown-item-dark' : ''}`}
@@ -297,12 +297,6 @@ const Navbar: React.FC = () => {
                         <button type="button" className={`dropdown-item${isInnerPage ? ' dropdown-item-dark' : ''}`}
                           onClick={() => { setIsProfileOpen(false); window.location.hash = '#admin'; }}>
                           <Shield size={15} /> <span>Admin</span>
-                        </button>
-                      )}
-                      {user?.role === 'organizer' && (
-                        <button type="button" className={`dropdown-item${isInnerPage ? ' dropdown-item-dark' : ''}`}
-                          onClick={() => { setIsProfileOpen(false); window.location.hash = '#organizer-dashboard'; }}>
-                          <LayoutGrid size={15} /> <span>Organizer Dash</span>
                         </button>
                       )}
                       <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', margin: '0.4rem 0' }} />
@@ -334,6 +328,64 @@ const Navbar: React.FC = () => {
             </button>
           )}
         </div>
+
+        {/* Mobile Bell Action */}
+        {isMobile && isLoggedIn && (
+          <div style={{ marginLeft: 'auto', marginRight: '0.25rem', position: 'relative' }}>
+             <motion.div
+               whileHover={{ scale: 1.1 }}
+               style={{ cursor: 'pointer', color: isInnerPage ? 'rgba(255,255,255,0.6)' : '#666', position: 'relative', display: 'flex', padding: '6px' }}
+               onClick={() => {
+                 if (!showNotifications) fetchNotifications();
+                 setShowNotifications(!showNotifications);
+               }}
+             >
+               <Bell size={22} strokeWidth={2} />
+               {visibleNotifications.length > 0 && (
+                 <span style={{ position: 'absolute', top: '4px', right: '4px', width: '7px', height: '7px', background: '#ec4899', borderRadius: '50%', border: '1.5px solid #fff' }} />
+               )}
+             </motion.div>
+             
+             <AnimatePresence>
+               {showNotifications && (
+                 <motion.div
+                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                   animate={{ opacity: 1, y: 0, scale: 1 }}
+                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                   style={{
+                     position: 'fixed', top: '64px', right: '12px',
+                     width: 'calc(100vw - 24px)', maxWidth: '340px',
+                     background: isInnerPage ? 'var(--bg-card)' : '#fff',
+                     borderRadius: '16px', border: '1px solid rgba(0,0,0,0.06)',
+                     boxShadow: '0 20px 60px rgba(0,0,0,0.12)', zIndex: 10000,
+                     padding: '1rem', maxHeight: '350px', overflowY: 'auto',
+                   }}
+                 >
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.5rem' }}>
+                     <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: isInnerPage ? '#fff' : '#111', margin: 0 }}>Notifications</h4>
+                     <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex', padding: '4px' }}><X size={16} /></button>
+                   </div>
+                   {visibleNotifications.length === 0 ? (
+                     <p style={{ color: '#999', fontSize: '0.8rem', textAlign: 'center', padding: '1.5rem' }}>No new notifications</p>
+                   ) : visibleNotifications.map(n => (
+                     <div key={n._id} style={{ padding: '0.65rem', background: 'rgba(139,92,246,0.05)', borderRadius: '8px', borderLeft: '3px solid #8B5CF6', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                       <div style={{ flex: 1 }}>
+                         <p style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '2px', color: isInnerPage ? '#fff' : '#111', textAlign: 'left' }}>{n.title}</p>
+                         <p style={{ fontSize: '0.75rem', color: '#777', lineHeight: 1.4, textAlign: 'left' }}>{n.message}</p>
+                       </div>
+                       <button 
+                         onClick={(e) => handleDismissNotification(n._id, e)}
+                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: '#94a3b8' }}
+                       >
+                         <X size={14} />
+                       </button>
+                     </div>
+                   ))}
+                 </motion.div>
+               )}
+             </AnimatePresence>
+          </div>
+        )}
 
         {/* ── Mobile toggle ── */}
         <div style={{ display: 'none', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
@@ -406,11 +458,7 @@ const Navbar: React.FC = () => {
             {/* Logged-in Extra Options */}
             {isLoggedIn && (
               <>
-                {(user?.role === 'admin' || user?.role === 'organizer') && (
-                  <button type="button" onClick={() => { window.location.hash = '#create-event'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
-                    <span style={{ color: '#EC4899', opacity: 0.8 }}><Plus size={16} /></span> Create Event
-                  </button>
-                )}
+
                 <button type="button" onClick={() => { window.location.hash = '#edit-profile'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
                   <span style={{ color: '#8B5CF6', opacity: 0.8 }}><User size={16} /></span> Edit Profile
                 </button>
@@ -418,8 +466,8 @@ const Navbar: React.FC = () => {
                   <span style={{ color: '#8B5CF6', opacity: 0.8 }}><Settings size={16} /></span> Settings
                 </button>
                 {(user?.role === 'admin' || user?.role === 'organizer') && (
-                  <button type="button" onClick={() => { window.location.hash = '#your-events'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
-                    <span style={{ color: '#EC4899', opacity: 0.8 }}><Calendar size={16} /></span> Your Events
+                  <button type="button" onClick={() => { window.location.hash = '#organizer-dashboard'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
+                    <span style={{ color: '#8B5CF6', opacity: 0.8 }}><LayoutGrid size={16} /></span> Organizer Dashboard
                   </button>
                 )}
               </>

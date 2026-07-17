@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/axios';
-import { LayoutGrid, Plus, Bell, Search, Image as ImageIcon, MapPin, ChevronDown, CheckCircle, Users, Trophy, Edit2, Check, Trash2, Download, Link as LinkIcon, Send, User, Mail, Phone, Calendar, X } from 'lucide-react';
+import { LayoutGrid, Plus, Bell, Search, Image as ImageIcon, MapPin, ChevronDown, CheckCircle, Users, Trophy, Edit2, Check, Trash2, Download, Link as LinkIcon, Send, User, Mail, Phone, Calendar, X, Menu } from 'lucide-react';
 import darkLogo from '../logo/dark logo.png';
 import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
@@ -74,8 +74,7 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
 
   return (
     <div>
-      {/* 1. Poster & Dates/Location */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 1.2fr', gap: '2.5rem', marginBottom: '2rem' }}>
+      <div className="mobile-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 1.2fr', gap: '2.5rem', marginBottom: '2rem' }}>
         
         {/* Left Column - Poster (A4 size ratio) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -159,42 +158,42 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>Start</div>
                    {isEditingDates ? (
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                         <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
-                         <input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                      <div className="mobile-form-row" style={{ display: 'flex', gap: '8px' }}>
+                         <input className="mobile-form-col" type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                         <input className="mobile-form-col" type="time" value={startTime} onChange={e=>setStartTime(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
                       </div>
                    ) : (
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{startDate}</div>
-                        <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{startTime}</div>
+                      <div className="mobile-form-row" style={{ display: 'flex', gap: '8px' }}>
+                        <div className="mobile-form-col" style={{ background: '#dcdcdc', textAlign: 'center', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{startDate}</div>
+                        <div className="mobile-form-col" style={{ background: '#dcdcdc', textAlign: 'center', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{startTime}</div>
                       </div>
                    )}
                  </div>
                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>End</div>
                     {isEditingDates ? (
-                       <div style={{ display: 'flex', gap: '8px' }}>
-                          <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
-                          <input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                       <div className="mobile-form-row" style={{ display: 'flex', gap: '8px' }}>
+                          <input className="mobile-form-col" type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                          <input className="mobile-form-col" type="time" value={endTime} onChange={e=>setEndTime(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
                        </div>
                     ) : (
-                       <div style={{ display: 'flex', gap: '8px' }}>
-                         <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{endDate}</div>
-                         <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{endTime}</div>
+                       <div className="mobile-form-row" style={{ display: 'flex', gap: '8px' }}>
+                         <div className="mobile-form-col" style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111', textAlign: 'center' }}>{endDate}</div>
+                         <div className="mobile-form-col" style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111', textAlign: 'center' }}>{endTime}</div>
                        </div>
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #dcdcdc', paddingTop: '1rem', marginTop: '0.5rem' }}>
                     <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>Registration Deadline</div>
                     {isEditingDates ? (
-                       <div style={{ display: 'flex', gap: '8px' }}>
-                          <input type="date" value={regDeadlineDate} onChange={e=>setRegDeadlineDate(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
-                          <input type="time" value={regDeadlineTime} onChange={e=>setRegDeadlineTime(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                       <div className="mobile-form-row" style={{ display: 'flex', gap: '8px' }}>
+                          <input className="mobile-form-col" type="date" value={regDeadlineDate} onChange={e=>setRegDeadlineDate(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
+                          <input className="mobile-form-col" type="time" value={regDeadlineTime} onChange={e=>setRegDeadlineTime(e.target.value)} style={{ padding: '6px', borderRadius: '6px', border: 'none', background: '#fff', outline: 'none', fontSize: '0.9rem', fontWeight: 600, color: '#555' }} />
                        </div>
                     ) : (
-                       <div style={{ display: 'flex', gap: '8px' }}>
-                         <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{regDeadlineDate || 'None'}</div>
-                         <div style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{regDeadlineTime || '--:--'}</div>
+                       <div className="mobile-form-row" style={{ display: 'flex', gap: '8px' }}>
+                         <div className="mobile-form-col" style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111', textAlign: 'center' }}>{regDeadlineDate || 'None'}</div>
+                         <div className="mobile-form-col" style={{ background: '#dcdcdc', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700, color: '#111', textAlign: 'center' }}>{regDeadlineTime || '--:--'}</div>
                        </div>
                     )}
                   </div>
@@ -1413,6 +1412,7 @@ export default function ManageEvent() {
   const [activeTab, setActiveTab] = useState<'overview' | 'registration' | 'participants' | 'announcement' | 'settings'>('overview');
   const [eventData, setEventData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [error, setError] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
@@ -1512,6 +1512,26 @@ export default function ManageEvent() {
           font-size: 0.8rem; font-weight: 700; color: #555; cursor: pointer;
           display: flex; alignItems: center; gap: 4px;
         }
+
+        @media (max-width: 768px) {
+          .mobile-main { padding: 6rem 1.25rem 3rem 1.25rem !important; }
+          .mobile-nav-hide { display: none !important; }
+          .mobile-nav-show { display: flex !important; }
+          
+          /* Overview Grid columns */
+          .mobile-grid-2col { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+          .mobile-form-row { flex-direction: column !important; gap: 0.5rem !important; align-items: flex-start !important; }
+          .mobile-form-col { width: 100% !important; }
+          
+          /* Table horizontal scroll wrapper */
+          .mobile-table-scroll { display: block !important; width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+          
+          /* Header Title responsiveness */
+          h1 { font-size: 1.8rem !important; }
+          
+          /* Settings organizing team cards grid */
+          .mobile-team-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       {/* Background Gradient overlay for Navbar */}
@@ -1608,12 +1628,82 @@ export default function ManageEvent() {
                 <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer"} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
             </div>
+            
+            {/* Hamburger Icon (Mobile Only) */}
+            <div className="mobile-nav-show" style={{ display: 'none', alignItems: 'center' }}>
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex' }}
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
           </>
         )}
       </nav>
 
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="mobile-nav-show" style={{
+          display: 'none', flexDirection: 'column', position: 'fixed', top: '64px', left: 0, width: '100%',
+          background: '#fff', borderBottom: '1px solid #eaeaea', boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+          padding: '1.5rem', zIndex: 100, gap: '1.5rem'
+        }}>
+          {/* Profile Section */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1.5rem', borderBottom: '1px solid #eaeaea' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#111', overflow: 'hidden' }}>
+              <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Organizer"} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, color: '#111' }}>{user?.name || 'Organizer'}</div>
+              <div style={{ fontSize: '0.8rem', color: '#888' }}>{user?.email || 'organizer@eventum.com'}</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <button style={{ background: 'none', border: 'none', textAlign: 'left', fontWeight: 600, padding: '0.5rem 0', color: '#111', display: 'flex', alignItems: 'center', gap: '8px' }}
+              onClick={() => { setIsMobileMenuOpen(false); window.location.hash = '#organizer-setup'; }}>
+              <User size={18} /> Edit Profile
+            </button>
+            <button style={{ background: 'none', border: 'none', textAlign: 'left', fontWeight: 600, padding: '0.5rem 0', color: '#111', display: 'flex', alignItems: 'center', gap: '8px' }}
+              onClick={() => { setIsMobileMenuOpen(false); window.location.hash = '#home'; }}>
+              <User size={18} /> User Dashboard
+            </button>
+          </div>
+
+          {/* Nav Links */}
+          <button 
+            onClick={() => { navigateTo('events'); setIsMobileMenuOpen(false); }}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: '#111' }}
+          >
+            <LayoutGrid size={20} /> My Events
+          </button>
+          
+          <button 
+            onClick={() => { navigateTo('create'); setIsMobileMenuOpen(false); }}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: '#111' }}
+          >
+            <Plus size={20} /> Create Event
+          </button>
+
+          {/* Action Icons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', paddingTop: '1rem', borderTop: '1px solid #eaeaea' }}>
+            <button 
+              onClick={() => {
+                sessionStorage.setItem('triggerSearch', 'true');
+                window.location.hash = '#organizer-dashboard/my-events';
+                setIsMobileMenuOpen(false);
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: '#555' }}
+            >
+              <Search size={20} /> Search
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ─── MAIN CONTENT ─── */}
-      <main style={{ flex: 1, padding: '6rem 2rem 3rem 2rem', maxWidth: '1000px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10 }}>
+      <main className="mobile-main" style={{ flex: 1, padding: '6rem 2rem 3rem 2rem', maxWidth: '1000px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10 }}>
         
         {/* Header & Button */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
