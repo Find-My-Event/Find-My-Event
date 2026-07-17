@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion, useInView, type Variants } from 'framer-motion';
-import { Calendar, Mic, Code, Palette, Dumbbell, Camera } from 'lucide-react';
+import { Calendar, Users, Star, Zap, Mic, Code, Palette, Dumbbell, Camera } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
