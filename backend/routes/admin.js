@@ -247,6 +247,21 @@ router.post('/notifications', protect, admin, async (req, res) => {
   }
 });
 
+// @desc    Delete a global notification (Admin only)
+// @route   DELETE /api/admin/notifications/:id
+router.delete('/notifications/:id', protect, admin, async (req, res) => {
+  try {
+    const notification = await Notification.findById(req.params.id);
+    if (!notification) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+    await Notification.deleteOne({ _id: req.params.id });
+    res.json({ message: 'Notification deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // @desc    Get all clubs with organizer details (Admin only)
 // @route   GET /api/admin/clubs
 router.get('/clubs', protect, admin, async (req, res) => {

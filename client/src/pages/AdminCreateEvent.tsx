@@ -13,6 +13,13 @@ const MOCK_LOCATIONS = [
 
 export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
   const isEditing = !!eventId;
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // --- Form State ---
   const [eventName, setEventName] = useState('');
@@ -177,7 +184,7 @@ export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
   };
 
   return (
-    <div style={{ background: '#f9fafb', minHeight: '100vh', padding: '2rem', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: '#f9fafb', minHeight: '100vh', padding: isMobile ? '1rem 0.75rem' : '2rem', fontFamily: "'Inter', sans-serif" }}>
       <button 
         onClick={() => { window.location.hash = '#admin'; }} 
         style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', cursor: 'pointer', color: '#555', fontWeight: 600, marginBottom: '2rem' }}
@@ -188,12 +195,12 @@ export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: 1000, margin: '0 auto' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '2rem', color: '#111' }}>{isEditing ? 'Edit Event' : 'Create Event'}<span style={{ color: '#ec4899' }}>.</span></h1>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 1.2fr', gap: '3rem', alignItems: 'start' }} className="mobile-create-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(300px, 1fr) 1.2fr', gap: isMobile ? '1.5rem' : '3rem', alignItems: 'start' }} className="mobile-create-grid">
            
            {/* Left Column - Image Upload */}
            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
              <label style={{ 
-               aspectRatio: '1 / 1.414', background: '#222', borderRadius: '16px', position: 'relative',
+               aspectRatio: isMobile ? '4 / 3' : '1 / 1.414', background: '#222', borderRadius: '16px', position: 'relative',
                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
              }}>
@@ -258,24 +265,26 @@ export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
               <textarea placeholder="Add Description" value={description} onChange={e => setDescription(e.target.value)} style={{ width: '100%', background: '#eaeaea', border: 'none', padding: '16px 20px', borderRadius: '12px', fontSize: '0.95rem', fontWeight: 600, color: '#555', outline: 'none', minHeight: '100px', resize: 'vertical' }} />
 
               <div style={{ display: 'flex', gap: '1rem', background: '#eaeaea', padding: '20px', borderRadius: '12px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '6px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#111' }} />
-                  <div style={{ width: '2px', flex: 1, borderLeft: '2px dotted #888', margin: '6px 0' }} />
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: '2px solid #111', background: 'transparent' }} />
-                </div>
+                {!isMobile && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '6px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#111' }} />
+                    <div style={{ width: '2px', flex: 1, borderLeft: '2px dotted #888', margin: '6px 0' }} />
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: '2px solid #111', background: 'transparent' }} />
+                  </div>
+                )}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#555' }}>Start</div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                       <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', flex: 1 }} />
-                       <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', width: '130px' }} />
+                    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '8px' }}>
+                       <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', flex: 1, width: isMobile ? '100%' : 'auto' }} />
+                       <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', width: isMobile ? '100%' : '130px' }} />
                     </div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#555' }}>End</div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                       <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', flex: 1 }} />
-                       <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', width: '130px' }} />
+                    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '8px' }}>
+                       <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', flex: 1, width: isMobile ? '100%' : 'auto' }} />
+                       <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} style={{ background: '#dcdcdc', padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#555', border: 'none', outline: 'none', width: isMobile ? '100%' : '130px' }} />
                     </div>
                   </div>
                 </div>

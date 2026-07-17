@@ -285,7 +285,8 @@ const Navbar: React.FC = () => {
                       {[
                         { icon: Settings, label: 'General Settings', href: '#settings' },
                         { icon: User,     label: 'Edit Profile',      href: '#edit-profile' },
-                        ...( (user?.role === 'admin' || user?.role === 'organizer') ? [{ icon: LayoutGrid, label: 'Organizer Dashboard', href: '#organizer-dashboard' }] : [] ),
+                        ...(user?.role === 'admin' ? [{ icon: Shield, label: 'Admin Dashboard', href: '#admin' }] : []),
+                        ...(user?.role === 'organizer' ? [{ icon: LayoutGrid, label: 'Organizer Dashboard', href: '#organizer-dashboard' }] : []),
                         { icon: Calendar, label: 'Registered Events', href: '#registered-events' },
                       ].map(item => (
                         <button key={item.label} type="button" className={`dropdown-item${isInnerPage ? ' dropdown-item-dark' : ''}`}
@@ -293,12 +294,6 @@ const Navbar: React.FC = () => {
                           <item.icon size={15} /> <span>{item.label}</span>
                         </button>
                       ))}
-                      {user?.role === 'admin' && (
-                        <button type="button" className={`dropdown-item${isInnerPage ? ' dropdown-item-dark' : ''}`}
-                          onClick={() => { setIsProfileOpen(false); window.location.hash = '#admin'; }}>
-                          <Shield size={15} /> <span>Admin</span>
-                        </button>
-                      )}
                       <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', margin: '0.4rem 0' }} />
                       <button type="button" className={`dropdown-item logout${isInnerPage ? ' dropdown-item-dark' : ''}`} onClick={logout}>
                         <LogOut size={15} /> <span>Sign Out</span>
@@ -465,7 +460,12 @@ const Navbar: React.FC = () => {
                 <button type="button" onClick={() => { window.location.hash = '#settings'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
                   <span style={{ color: '#8B5CF6', opacity: 0.8 }}><Settings size={16} /></span> Settings
                 </button>
-                {(user?.role === 'admin' || user?.role === 'organizer') && (
+                {user?.role === 'admin' && (
+                  <button type="button" onClick={() => { window.location.hash = '#admin'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
+                    <span style={{ color: '#8B5CF6', opacity: 0.8 }}><Shield size={16} /></span> Admin Dashboard
+                  </button>
+                )}
+                {user?.role === 'organizer' && (
                   <button type="button" onClick={() => { window.location.hash = '#organizer-dashboard'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
                     <span style={{ color: '#8B5CF6', opacity: 0.8 }}><LayoutGrid size={16} /></span> Organizer Dashboard
                   </button>

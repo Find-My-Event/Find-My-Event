@@ -4,10 +4,11 @@ import {
   Users, Calendar, Bell, Plus, Trash2, Edit2, 
   X, Loader2, TrendingUp, Shield, Check,
   Image as ImageIcon, Eye, Info, AlertTriangle, CheckCircle,
-  ChevronLeft, ChevronRight, LayoutGrid, Scan 
+  ChevronLeft, ChevronRight, LayoutGrid, Scan, Menu, LogOut
 } from 'lucide-react';
 import api from '../api/axios';
 import TicketScanner from '../components/TicketScanner';
+import { useAuth } from '../contexts/AuthContext';
 
 const toast = {
   success: (msg: string) => alert(msg),
@@ -17,6 +18,17 @@ const toast = {
 type Tab = 'overview' | 'events' | 'clubs' | 'pending' | 'withdrawals' | 'users' | 'notifications' | 'scan';
 
 const AdminDashboard: React.FC = () => {
+  const { user, logout } = useAuth();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [activeTab, setActiveTab] = useState<Tab>(() => {
     return (localStorage.getItem('adminActiveTab') as Tab) || 'overview';
   });
@@ -309,6 +321,16 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleDeleteNotif = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this notification?')) return;
+    try {
+      await api.delete(`/admin/notifications/${id}`);
+      setNotifications(prev => prev.filter(n => n._id !== id));
+    } catch (err) {
+      console.error('Delete notification failed:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
@@ -320,7 +342,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="admin-layout" style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', display: 'flex', fontFamily: 'Inter, sans-serif' }}>
       {/* Sidebar */}
-      <div className="admin-sidebar" style={{ 
+      <div className="admin-sidebar mobile-hidden" style={{ 
         width: isSidebarCollapsed ? '80px' : '280px', 
         borderRight: '1px solid var(--border-subtle)', 
         padding: isSidebarCollapsed ? '2rem 1rem' : '2rem 1.5rem', 
@@ -376,8 +398,150 @@ const AdminDashboard: React.FC = () => {
         </button>
       </div>
 
+      {/* Mobile Header (Mobile Only) */}
+      {isMobile && (
+        <nav style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '64px',
+          background: '#fff', borderBottom: '1px solid #eaeaea',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 1.5rem', zIndex: 100
+        }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '1.1rem', color: '#111' }}>
+            <div style={{ width: '32px', height: '32px', background: '#8B5CF6', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TrendingUp size={18} color="#fff" />
+            </div>
+            <span>Admin Portal</span>
+          </div>
+
+          {/* Right actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {/* Notification Bell */}
+            <div style={{ position: 'relative' }}>
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex', padding: '6px' }}
+              >
+                <Bell size={22} />
+                {notifications.length > 0 && (
+                  <span style={{ position: 'absolute', top: '4px', right: '4px', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%' }} />
+                )}
+              </button>
+              
+              <AnimatePresence>
+                {isNotificationsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    style={{
+                      position: 'fixed', top: '64px', right: '12px',
+                      width: 'calc(100vw - 24px)', maxWidth: '300px',
+                      background: '#fff',
+                      borderRadius: '14px', boxShadow: '0 16px 48px rgba(0,0,0,0.12)',
+                      border: '1px solid rgba(0,0,0,0.06)', padding: '1rem',
+                      zIndex: 2000,
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.5rem' }}>
+                      <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#111', textAlign: 'left' }}>
+                        System Notifications
+                      </div>
+                      <button onClick={() => setIsNotificationsOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex' }}><X size={16} /></button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxHeight: '250px', overflowY: 'auto' }}>
+                      {notifications.length === 0 ? (
+                        <div style={{ fontSize: '0.8rem', color: '#888', textAlign: 'center', padding: '1rem 0' }}>No new system alerts</div>
+                      ) : (
+                        notifications.map(n => (
+                          <div key={n._id} style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.8rem', textAlign: 'left', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                            <div style={{ color: '#111', fontWeight: 700 }}>{n.title}</div>
+                            <div style={{ color: '#555', marginTop: '2px' }}>{n.message}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Hamburger Toggle */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', display: 'flex' }}
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </nav>
+      )}
+
+      {/* Mobile Drawer (Mobile Only) */}
+      {isMobile && isMobileMenuOpen && (
+        <div style={{
+          position: 'fixed', top: '64px', left: 0, width: '100%', height: 'calc(100vh - 64px)',
+          background: '#fff', zIndex: 99, display: 'flex', flexDirection: 'column',
+          padding: '1.5rem', gap: '1.5rem', overflowY: 'auto'
+        }}>
+          {/* Profile card */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1.5rem', borderBottom: '1px solid #eaeaea' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#111', overflow: 'hidden' }}>
+              <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin"} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, color: '#111' }}>{user?.name || 'Admin'}</div>
+              <div style={{ fontSize: '0.8rem', color: '#888' }}>{user?.email || 'admin@eventum.com'}</div>
+            </div>
+          </div>
+
+          {/* Navigation Items */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
+            {[
+              { id: 'overview', label: 'Overview', icon: TrendingUp },
+              { id: 'scan', label: 'Scan Tickets', icon: Scan },
+              { id: 'events', label: 'Manage Events', icon: Calendar },
+              { id: 'pending', label: 'Pending Approvals', icon: Shield },
+              { id: 'withdrawals', label: 'Withdraw Requests', icon: Trash2 },
+              { id: 'users', label: 'Manage Users', icon: Users },
+              { id: 'notifications', label: 'Notifications', icon: Bell },
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => { setActiveTab(item.id as Tab); setIsMobileMenuOpen(false); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '12px',
+                  background: activeTab === item.id ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
+                  color: activeTab === item.id ? '#8B5CF6' : '#555',
+                  border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '1rem', textAlign: 'left'
+                }}
+              >
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Footer Actions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', borderTop: '1px solid #eaeaea', paddingTop: '1.5rem' }}>
+            <button
+              onClick={() => { setIsMobileMenuOpen(false); window.location.hash = '#home'; }}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: '#555', padding: '8px 0', fontSize: '0.95rem' }}
+            >
+              <LayoutGrid size={18} /> User Dashboard
+            </button>
+            <button
+              onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: '#ef4444', padding: '8px 0', fontSize: '0.95rem', marginTop: '0.5rem' }}
+            >
+              <LogOut size={18} /> Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <div className="admin-main" style={{ flex: 1, padding: '3rem', overflowY: 'auto', maxHeight: '100vh' }}>
+      <div className="admin-main" style={{ flex: 1, padding: isMobile ? '6rem 1.25rem 3rem 1.25rem' : '3rem', overflowY: 'auto', maxHeight: '100vh' }}>
         <header className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
           <div>
             <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>{activeTab === 'pending' ? 'Pending Approvals' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
@@ -479,7 +643,7 @@ const AdminDashboard: React.FC = () => {
                        By: {event.organizer}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
                     <button onClick={() => { window.location.hash = `#edit-event?id=${event._id || event.id}`; }} style={{ background: '#111', border: 'none', color: '#fff', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600, fontSize: '0.85rem' }}>Manage</button>
                     <button onClick={() => viewRegistrations(event)} style={{ background: '#f5f5f5', border: 'none', color: '#111', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }} title="View Registrations"><Eye size={18} /></button>
                     <button onClick={() => { window.location.hash = `#admin-edit-event=${event._id || event.id}`; }} style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: '#3b82f6', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }} title="Edit Event Details"><Edit2 size={18} /></button>
@@ -510,8 +674,8 @@ const AdminDashboard: React.FC = () => {
                     background: 'var(--border-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 16, padding: '1.35rem',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                    <div style={{ flex: 1, minWidth: 200 }}>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: '1.25rem', alignItems: isMobile ? 'stretch' : 'flex-start' }}>
+                    <div style={{ flex: 1, minWidth: isMobile ? 'auto' : 200 }}>
                       <h3 style={{ color: 'var(--text-primary)', fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.35rem' }}>{row.title}</h3>
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: '0.75rem' }}>{row.description}</p>
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
@@ -526,9 +690,9 @@ const AdminDashboard: React.FC = () => {
                       disabled={acting === row._id}
                       onClick={() => approvePending(row._id)}
                       style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 8,
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                         background: '#22c55e', color: '#052e16', border: 'none', padding: '0.65rem 1.25rem',
-                        borderRadius: 12, fontWeight: 800, cursor: acting === row._id ? 'wait' : 'pointer', alignSelf: 'flex-start',
+                        borderRadius: 12, fontWeight: 800, cursor: acting === row._id ? 'wait' : 'pointer', alignSelf: isMobile ? 'stretch' : 'flex-start',
                       }}
                     >
                       <Check size={18} /> Approve
@@ -558,23 +722,23 @@ const AdminDashboard: React.FC = () => {
                     background: 'rgba(239,68,68,0.03)', border: '1px solid rgba(239,68,68,0.1)', borderRadius: 16, padding: '1.5rem',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: '1.25rem', alignItems: isMobile ? 'stretch' : 'center' }}>
                     <div style={{ flex: 1 }}>
                       <h3 style={{ color: 'var(--text-primary)', fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.35rem' }}>{row.title}</h3>
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Requested by: <span style={{ color: 'var(--text-primary)' }}>{row.organizer?.name}</span> ({row.organizer?.email})</p>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '1rem', width: isMobile ? '100%' : 'auto', flexDirection: isMobile ? 'column' : 'row' }}>
                       <button
                         onClick={() => handleWithdrawalAction(row._id, 'approve')}
                         disabled={acting === row._id}
-                        style={{ background: '#ef4444', color: 'var(--text-primary)', border: 'none', padding: '0.6rem 1.2rem', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}
+                        style={{ background: '#ef4444', color: 'var(--text-primary)', border: 'none', padding: '0.6rem 1.2rem', borderRadius: 10, fontWeight: 700, cursor: 'pointer', flex: 1 }}
                       >
                         Approve Withdrawal
                       </button>
                       <button
                         onClick={() => handleWithdrawalAction(row._id, 'reject')}
                         disabled={acting === row._id}
-                        style={{ background: 'var(--border-subtle)', color: 'var(--text-primary)', border: 'none', padding: '0.6rem 1.2rem', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}
+                        style={{ background: 'var(--border-subtle)', color: 'var(--text-primary)', border: 'none', padding: '0.6rem 1.2rem', borderRadius: 10, fontWeight: 700, cursor: 'pointer', flex: 1 }}
                       >
                         Reject
                       </button>
@@ -611,8 +775,8 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {activeUserTab === 'users' ? (
-              <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '24px', overflowX: 'auto', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ textAlign: 'left', background: '#f9f9f9', borderBottom: '1px solid var(--border-subtle)' }}>
                       <th style={{ padding: '1.5rem', color: '#111', fontWeight: 700 }}>User</th>
@@ -741,7 +905,7 @@ const AdminDashboard: React.FC = () => {
                 <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem' }}>Active Links</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {activeLinks.map((link) => (
-                    <div key={link._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                    <div key={link._id} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '1rem' : '1.5rem', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', background: 'var(--bg-app)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
                       <div>
                         <div style={{ fontWeight: 600, fontFamily: 'monospace', color: '#8b5cf6' }}>...{link.token.slice(-10)}</div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
@@ -792,7 +956,7 @@ const AdminDashboard: React.FC = () => {
 
         {/* Notifications Tab */}
         {activeTab === 'notifications' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 450px) 1fr', gap: '3rem' }}>
+          <div className="admin-notif-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(300px, 450px) 1fr', gap: isMobile ? '2rem' : '3rem' }}>
             <form onSubmit={handleSendNotif} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', background: 'var(--bg-card-hover)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--border-subtle)' }}>
                <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Send Global Notification</h3>
                <div>
@@ -820,16 +984,28 @@ const AdminDashboard: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Active Alerts</h3>
                {notifications.map(n => (
-                 <div key={n._id} style={{ padding: '1.5rem', borderRadius: '16px', background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
-                       {n.type === 'info' && <Info size={16} color="#3b82f6" />}
-                       {n.type === 'warning' && <AlertTriangle size={16} color="#facc15" />}
-                       {n.type === 'success' && <CheckCircle size={16} color="#34d399" />}
-                       <span style={{ fontWeight: 700 }}>{n.title}</span>
-                    </div>
-                    <p style={{ opacity: 0.5, fontSize: '0.9rem' }}>{n.message}</p>
-                 </div>
-               ))}
+                  <div key={n._id} style={{ padding: '1.5rem', borderRadius: '16px', background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', position: 'relative' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem', paddingRight: '2rem' }}>
+                        {n.type === 'info' && <Info size={16} color="#3b82f6" />}
+                        {n.type === 'warning' && <AlertTriangle size={16} color="#facc15" />}
+                        {n.type === 'success' && <CheckCircle size={16} color="#34d399" />}
+                        <span style={{ fontWeight: 700 }}>{n.title}</span>
+                     </div>
+                     <p style={{ opacity: 0.5, fontSize: '0.9rem', paddingRight: '2rem' }}>{n.message}</p>
+                     <button
+                       onClick={() => handleDeleteNotif(n._id)}
+                       style={{
+                         position: 'absolute', top: '1.25rem', right: '1.25rem',
+                         background: 'none', border: 'none', color: '#ef4444',
+                         cursor: 'pointer', display: 'flex', padding: '4px',
+                         borderRadius: '50%'
+                       }}
+                       title="Delete Notification"
+                     >
+                       <Trash2 size={16} />
+                     </button>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -840,14 +1016,14 @@ const AdminDashboard: React.FC = () => {
       {/* Create/Edit Club Modal */}
       <AnimatePresence>
         {isClubModalOpen && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '800px', borderRadius: '24px', border: '1px solid var(--border-color)', padding: '2.5rem', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '1rem 0.5rem' : '2rem' }}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '800px', borderRadius: '24px', border: '1px solid var(--border-color)', padding: isMobile ? '1.5rem' : '2.5rem', maxHeight: '90vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>{editingClub ? 'Edit Club' : 'Create New Club'}</h2>
                 <button onClick={() => setIsClubModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}><X size={32} /></button>
               </div>
 
-              <form className="admin-form-grid" onSubmit={handleClubSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              <form className="admin-form-grid" onSubmit={handleClubSubmit} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.5rem' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Club Name</label>
                   <input required placeholder="E.g. JIG" value={clubFormData.name} onChange={e => setClubFormData({...clubFormData, name: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
@@ -859,7 +1035,7 @@ const AdminDashboard: React.FC = () => {
                   </select>
                 </div>
                   <>
-                    <div style={{ gridColumn: '1 / -1', background: 'rgba(59, 130, 246, 0.05)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(59, 130, 246, 0.2)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div style={{ gridColumn: '1 / -1', background: 'rgba(59, 130, 246, 0.05)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(59, 130, 246, 0.2)', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
                       <div style={{ gridColumn: '1 / -1' }}>
                         <label style={{ fontWeight: 600, color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <Shield size={16} /> Organizer Login Credentials
@@ -909,10 +1085,10 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {clubLeadership.map((member, idx) => (
-                      <div key={idx} style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '12px' }}>
+                      <div key={idx} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', alignItems: isMobile ? 'stretch' : 'center', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '12px' }}>
                         <input placeholder="Name" value={member.name} onChange={e => { const newL = [...clubLeadership]; newL[idx].name = e.target.value; setClubLeadership(newL); }} style={{ flex: 1, background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)' }} />
                         <input placeholder="Position" value={member.position} onChange={e => { const newL = [...clubLeadership]; newL[idx].position = e.target.value; setClubLeadership(newL); }} style={{ flex: 1, background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '10px', borderRadius: '8px', color: 'var(--text-primary)' }} />
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px', background: 'var(--border-subtle)', border: '1px dashed var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', background: 'var(--border-subtle)', border: '1px dashed var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
                           <ImageIcon size={16} /> {member.photoFile ? 'File selected' : (member.photoUrl ? 'Photo uploaded' : 'Upload')}
                           <input type="file" hidden accept="image/*" onChange={e => {
                             if (e.target.files && e.target.files[0]) {
@@ -922,7 +1098,9 @@ const AdminDashboard: React.FC = () => {
                             }
                           }} />
                         </label>
-                        <button type="button" onClick={() => { const newL = [...clubLeadership]; newL.splice(idx, 1); setClubLeadership(newL); }} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
+                        <button type="button" onClick={() => { const newL = [...clubLeadership]; newL.splice(idx, 1); setClubLeadership(newL); }} style={{ background: isMobile ? 'rgba(239,68,68,0.1)' : 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: isMobile ? '10px' : '0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Trash2 size={18} /> {isMobile && <span style={{ marginLeft: '8px', fontWeight: 600 }}>Remove Member</span>}
+                        </button>
                       </div>
                     ))}
                     {clubLeadership.length === 0 && <p style={{ fontSize: '0.85rem', color: '#888', textAlign: 'center', margin: '0' }}>No members added yet.</p>}
@@ -954,8 +1132,8 @@ const AdminDashboard: React.FC = () => {
       {/* Registrations Modal */}
       <AnimatePresence>
         {selectedEventForReg && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 1001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '600px', borderRadius: '24px', border: '1px solid var(--border-color)', padding: '2.5rem' }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 1001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '1rem 0.5rem' : '2rem' }}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} style={{ background: 'var(--bg-card)', width: '100%', maxWidth: '600px', borderRadius: '24px', border: '1px solid var(--border-color)', padding: isMobile ? '1.5rem' : '2.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Registered Users</h2>
@@ -968,17 +1146,17 @@ const AdminDashboard: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '50vh', overflowY: 'auto' }}>
                   {registrations.length === 0 ? <p style={{ textAlign: 'center', opacity: 0.5 }}>No one has registered yet.</p> : registrations.map(reg => (
                     <div key={reg._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--border-subtle)', padding: '1rem', borderRadius: '12px' }}>
-                       <img src={reg.avatar || `https://ui-avatars.com/api/?name=${reg.name}`} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
-                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                       <img src={reg.avatar || `https://ui-avatars.com/api/?name=${reg.name}`} style={{ width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0 }} />
+                       <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                           <div>
                             <div style={{ fontWeight: 600 }}>{reg.name}</div>
-                            <div style={{ fontSize: '0.8rem', opacity: 0.5 }}>{reg.email}</div>
+                            <div style={{ fontSize: '0.8rem', opacity: 0.5, wordBreak: 'break-all' }}>{reg.email}</div>
                           </div>
-                          <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', background: reg.checkedIn ? '#dcfce7' : '#f1f5f9', color: reg.checkedIn ? '#166534' : '#475569', fontWeight: 600 }}>
+                          <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', background: reg.checkedIn ? '#dcfce7' : '#f1f5f9', color: reg.checkedIn ? '#166534' : '#475569', fontWeight: 600, alignSelf: isMobile ? 'flex-start' : 'center' }}>
                             {reg.checkedIn ? 'Checked In' : 'Pending'}
                           </span>
                        </div>
-                       <button onClick={() => removeUserFromEvent(reg._id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '8px', borderRadius: '8px', cursor: 'pointer' }} title="Remove User">
+                       <button onClick={() => removeUserFromEvent(reg._id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', color: '#ef4444', padding: '8px', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }} title="Remove User">
                          <Trash2 size={16} />
                        </button>
                     </div>
@@ -996,66 +1174,20 @@ const AdminDashboard: React.FC = () => {
         .spin { animation: spin-anim 1s linear infinite; }
         @keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        @media (max-width: 768px) {
-          .admin-layout { flex-direction: column !important; }
-          .admin-sidebar { 
-            width: 100% !important; 
-            border-right: none !important; 
-            border-bottom: 1px solid var(--border-color); 
-            padding: 5rem 1.5rem 1.5rem 1.5rem !important; 
-          }
-          .admin-nav { 
-            flex-direction: row !important; 
-            overflow-x: auto !important; 
-            padding-bottom: 0.5rem;
-            -webkit-overflow-scrolling: touch;
-          }
-          .admin-nav button { white-space: nowrap; }
-          .admin-nav::-webkit-scrollbar { display: none; }
-          .admin-main { padding: 1.5rem 1rem !important; max-height: none !important; }
-          .admin-header { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; marginBottom: 1.5rem !important; }
-          .admin-header h1 { font-size: 1.5rem !important; }
-          .admin-item-row { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
-          .admin-form-grid { grid-template-columns: 1fr !important; }
-          .admin-event-grid { grid-template-columns: 1fr !important; }
-          .admin-event-dates { grid-template-columns: 1fr !important; }
+        .mobile-hidden {
+          display: flex;
         }
-      `}</style>
-      <style>{`
+
         @media (max-width: 900px) {
           .admin-layout { flex-direction: column !important; }
-          .admin-sidebar { 
-            width: 100% !important; 
-            border-right: none !important; 
-            border-bottom: 1px solid var(--border-subtle) !important;
-            padding: 1rem !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            gap: 1rem !important;
-            overflow-x: auto !important;
-            position: sticky !important;
-            top: 0 !important;
-            background: var(--bg-primary) !important;
-            z-index: 100 !important;
-          }
-          .admin-sidebar > div:first-child { margin-bottom: 0 !important; }
-          .admin-nav { 
-            flex-direction: row !important; 
-            overflow-x: auto !important; 
-            padding-bottom: 5px !important;
-          }
-          .admin-nav button { 
-             white-space: nowrap !important;
-             padding: 8px 12px !important;
-             font-size: 0.8rem !important;
-          }
+          .mobile-hidden { display: none !important; }
+          .mobile-nav-show { display: flex !important; }
           .admin-main { padding: 1.5rem !important; }
           .admin-header { margin-bottom: 2rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
-          table { display: block !important; overflow-x: auto !important; }
+          .admin-item-row { flex-direction: column !important; align-items: flex-start !important; gap: 1.25rem !important; padding: 1.25rem !important; }
+          .admin-item-row img { width: 60px !important; height: 60px !important; border-radius: 12px !important; }
+          .admin-item-row div { width: 100% !important; }
         }
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );

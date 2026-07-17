@@ -36,6 +36,14 @@ const labelStyle: CSSProperties = {
 
 export default function CreateEvent() {
   const { user } = useAuth();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [flow, setFlow] = useState<Flow>('form');
   const [submitting, setSubmitting] = useState(false);
   const [submissionId, setSubmissionId] = useState<string | null>(null);
@@ -165,7 +173,7 @@ export default function CreateEvent() {
               Create Event<span style={{ color: '#3b82f6' }}>.</span>
             </motion.h1>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.15fr)', gap: '2.5rem', alignItems: 'start' }}
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) minmax(0, 1.15fr)', gap: isMobile ? '1.5rem' : '2.5rem', alignItems: 'start' }}
               className="create-event-grid"
             >
               <motion.div
@@ -177,7 +185,7 @@ export default function CreateEvent() {
                   overflow: 'hidden',
                   border: '1px solid var(--border-subtle)',
                   background: 'var(--bg-card)',
-                  aspectRatio: '1',
+                  aspectRatio: isMobile ? '4/3' : '1',
                   maxHeight: 420,
                 }}
               >
@@ -197,7 +205,7 @@ export default function CreateEvent() {
                   <label style={labelStyle}>Description <span style={{ color: '#3b82f6' }}>*</span></label>
                   <textarea style={{ ...inputStyle, minHeight: 100, resize: 'vertical' }} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What the event is about" />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="create-event-dates">
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }} className="create-event-dates">
                   <div>
                     <label style={labelStyle}>Start date & Time <span style={{ color: '#3b82f6' }}>*</span></label>
                     <input style={inputStyle} type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
@@ -215,7 +223,7 @@ export default function CreateEvent() {
                   <label style={labelStyle}>Event location <span style={{ color: '#3b82f6' }}>*</span></label>
                   <input style={inputStyle} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Jaipur, Rajasthan" />
                 </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
                     <div>
                       <label style={labelStyle}>Capacity</label>
                       <input style={inputStyle} type="number" min={0} value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="3000" />
@@ -260,7 +268,7 @@ export default function CreateEvent() {
 
                     {isPaid && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflow: 'hidden' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
                           <div>
                             <label style={labelStyle}>Ticket Price (INR) <span style={{ color: '#3b82f6' }}>*</span></label>
                             <input style={inputStyle} type="number" value={ticketPrice} onChange={(e) => setTicketPrice(e.target.value)} placeholder="e.g. 499" />
@@ -271,7 +279,7 @@ export default function CreateEvent() {
                           </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
                           <div>
                             <label style={labelStyle}>Max Tickets Per User</label>
                             <input style={inputStyle} type="number" value={maxTicketsPerUser} onChange={(e) => setMaxTicketsPerUser(e.target.value)} />
