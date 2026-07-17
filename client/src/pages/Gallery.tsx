@@ -2,12 +2,14 @@ import React from 'react';
 import Footer from '../components/Footer';
 
 const IMAGES = [
-  'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=600&auto=format&fit=crop',
+  '/images/gallery/DSC_0751.jpg.jpeg',
+  '/images/gallery/gallary_2_.jpeg',
+  '/images/gallery/gallary_3_.jpeg',
+  '/images/gallery/gallary_4_.jpeg',
+  '/images/gallery/gallary_5_.jpeg',
+  '/images/gallery/gallary_6_.jpeg',
+  '/images/gallery/gallary_7.jpeg',
+  '/images/gallery/gallary_8.jpeg'
 ];
 
 const Gallery: React.FC = () => {
@@ -35,50 +37,54 @@ const Gallery: React.FC = () => {
         </div>
 
         {/* Grid (Static, without hover interactions) */}
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '1100px',
-            height: '600px',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.5rem',
-            margin: '0 auto',
-          }}
-          className="gallery-masonry"
-        >
-          {/* COLUMN 1 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%' }}>
-            <div style={{ height: '60%', borderRadius: '16px', background: `url(${IMAGES[0]}) center/cover no-repeat`, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }} />
-            <div style={{ height: '40%', borderRadius: '16px', background: `url(${IMAGES[3]}) center/cover no-repeat`, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }} />
-          </div>
-
-          {/* COLUMN 2 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%' }} className="hide-mobile">
-            <div style={{ height: '50%', borderRadius: '16px', background: `url(${IMAGES[1]}) center/cover no-repeat`, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }} />
-            <div style={{ height: '50%', borderRadius: '16px', background: `url(${IMAGES[4]}) center/cover no-repeat`, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }} />
-          </div>
-
-          {/* COLUMN 3 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%' }} className="hide-tablet">
-            <div style={{ height: '40%', borderRadius: '16px', background: `url(${IMAGES[2]}) center/cover no-repeat`, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }} />
-            <div style={{ height: '60%', borderRadius: '16px', background: `url(${IMAGES[5]}) center/cover no-repeat`, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }} />
-          </div>
+        {/* True Masonry Layout using CSS Columns */}
+        <div className="gallery-masonry">
+          {IMAGES.map((imgSrc, i) => (
+            <div key={i} className="gallery-item">
+              <img src={imgSrc} alt={`Gallery event ${i+1}`} loading="lazy" />
+            </div>
+          ))}
         </div>
 
       </div>
 
       <Footer />
 
-      {/* Basic responsive styles */}
+      {/* True Masonry CSS */}
       <style>{`
-        @media (max-width: 900px) {
-          .hide-tablet { display: none !important; }
-          .gallery-masonry { grid-template-columns: 1fr 1fr !important; height: 500px !important; }
+        .gallery-masonry {
+          column-count: 4;
+          column-gap: 1.5rem;
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
         }
-        @media (max-width: 600px) {
-          .hide-mobile { display: none !important; }
-          .gallery-masonry { grid-template-columns: 1fr !important; height: 400px !important; }
+        .gallery-item {
+          break-inside: avoid;
+          margin-bottom: 1.5rem;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+          background: #e5e7eb;
+        }
+        .gallery-item img {
+          width: 100%;
+          display: block;
+          object-fit: cover;
+          transition: transform 0.4s ease;
+        }
+        .gallery-item:hover img {
+          transform: scale(1.05);
+        }
+        
+        @media (max-width: 1024px) {
+          .gallery-masonry { column-count: 3; }
+        }
+        @media (max-width: 768px) {
+          .gallery-masonry { column-count: 2; }
+        }
+        @media (max-width: 480px) {
+          .gallery-masonry { column-count: 1; }
         }
       `}</style>
     </div>

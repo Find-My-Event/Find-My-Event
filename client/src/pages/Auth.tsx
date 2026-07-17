@@ -15,7 +15,13 @@ const Auth: React.FC = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const { register, verifyOtp, resendOtp, handleLogin, setupProfile, uploadAvatar } = useAuth();
+  const { register, verifyOtp, resendOtp, handleLogin, setupProfile, uploadAvatar, user, isLoggedIn } = useAuth();
+
+  React.useEffect(() => {
+    if (isLoggedIn && user && !user.hasCompletedProfile) {
+      setStep('profile');
+    }
+  }, [isLoggedIn, user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -59,6 +65,9 @@ const Auth: React.FC = () => {
     setError('');
     setIsSubmitting(true);
     try {
+      // Ensure they aren't redirected by App.tsx by removing loggingIn flag temporarily
+      // We will set it when the profile is actually completed
+      sessionStorage.removeItem('loggingIn');
       await verifyOtp(formData.email, formData.otp);
       setStep('profile');
     } catch (err: any) {
@@ -108,6 +117,7 @@ const Auth: React.FC = () => {
         hobbies: profileData.hobbies.split(',').map(h => h.trim()).filter(h => h !== '')
       });
       setStep('welcome');
+      sessionStorage.setItem('loggingIn', 'true'); // Now they can be redirected
       setTimeout(() => { window.location.hash = '#home'; }, 3000);
     } catch { setError('Failed to setup profile'); }
     finally { setIsSubmitting(false); }

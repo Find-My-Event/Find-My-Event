@@ -32,13 +32,22 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
     api.get(`/clubs/${clubId}`)
       .then((res) => {
         if (active && res.data) {
-          setClub(res.data);
+          const fetchedClub = res.data;
+          if (clubId === 'jecrc-incubation-centre-jic') {
+            fetchedClub.linkedinUrl = 'https://www.linkedin.com/company/jic-ju/';
+            fetchedClub.instagramUrl = 'https://www.instagram.com/jecrcincubationcentre/';
+          }
+          setClub(fetchedClub);
         }
       })
       .catch((err) => {
         console.error('Failed to fetch club details from API, using fallback:', err);
         if (active) {
           const found = fallbackClubs.find((c) => c.id === clubId);
+          if (found && clubId === 'jecrc-incubation-centre-jic') {
+            found.linkedinUrl = 'https://www.linkedin.com/company/jic-ju/';
+            found.instagramUrl = 'https://www.instagram.com/jecrcincubationcentre/';
+          }
           setClub(found || null);
         }
       })
@@ -317,7 +326,7 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
                <Loader2 className="spin" size={30} color="#0f172a" />
              </div>
           ) : clubEvents.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
               {clubEvents.map((event, idx) => (
                 <div 
                   key={idx} 

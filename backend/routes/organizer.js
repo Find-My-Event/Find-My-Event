@@ -52,7 +52,10 @@ router.put('/club-profile', requireAuth, requireOrganizer, async (req, res) => {
       glimpses,
       leadership,
       eventsConducted,
-      presidentEmail
+      presidentEmail,
+      linkedinUrl,
+      instagramUrl,
+      gmailUrl
     } = req.body;
 
     // Update fields
@@ -68,6 +71,9 @@ router.put('/club-profile', requireAuth, requireOrganizer, async (req, res) => {
     if (leadership) club.leadership = leadership;
     if (eventsConducted !== undefined) club.eventsConducted = Number(eventsConducted);
     if (presidentEmail) club.presidentEmail = presidentEmail;
+    if (linkedinUrl !== undefined) club.linkedinUrl = linkedinUrl;
+    if (instagramUrl !== undefined) club.instagramUrl = instagramUrl;
+    if (gmailUrl !== undefined) club.gmailUrl = gmailUrl;
 
     await club.save();
 

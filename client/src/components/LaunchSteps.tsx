@@ -5,9 +5,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 const CARDS = [
-  '/event1.png',
-  '/event2.png',
-  '/event1.png',
+  '/images/landing_page/image_6.png',
+  '/images/landing_page/image_7.png',
+  '/images/landing_page/image_8_.png',
 ];
 
 const LaunchSteps = () => {

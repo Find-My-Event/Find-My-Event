@@ -285,21 +285,7 @@ export default function OrganizerSetup() {
               <p style={{ fontSize: '0.85rem', color: '#888', margin: '0.5rem 0 0 0' }}>Used for security purposes (like OTP for password changes). Must be an active email address.</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>LinkedIn Profile URL</label>
-                <input type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/company/yourclub" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Instagram Profile URL</label>
-                <input type="url" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/yourclub" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
-              </div>
-            </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Public Contact Email (Optional)</label>
-              <input type="email" value={gmailUrl} onChange={(e) => setGmailUrl(e.target.value)} placeholder="hello@yourclub.com" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
-            </div>
           </div>
 
           {/* Glimpses / Gallery Section */}

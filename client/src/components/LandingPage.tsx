@@ -50,11 +50,12 @@ const SectionPill = ({ text }: { text: string }) => (
 /* ─────────────────────────────────────
    PROBLEM SECTION
 ───────────────────────────────────── */
-const PROBLEMS = [
-  { icon: MapPin,    title: 'Fragmented Discovery',       desc: 'Events scattered across WhatsApp groups, posters, and word-of-mouth. No single source of truth.' },
-  { icon: Users,     title: 'Disconnected Experience',    desc: 'Students and clubs operate in silos. There\'s no shared platform for campus activities.' },
-  { icon: Star,      title: 'Zero Personalization',       desc: 'Generic announcements that don\'t match your interests or schedule.' },
-  { icon: Zap,       title: 'Low Club Visibility',        desc: 'Student clubs struggle to reach beyond their immediate circle despite great events.' },
+const PROBLEM_IMAGES = [
+  '/images/landing_page/image_1_.png',
+  '/images/landing_page/image_2_.png',
+  '/images/landing_page/image_3_.png',
+  '/images/landing_page/image_4.png',
+  '/images/landing_page/image_5.png',
 ];
 
 const ProblemSection = () => {
@@ -105,9 +106,9 @@ const ProblemSection = () => {
     const yMult = isMobile ? 10 : 10;
     const rotMult = isMobile ? 4 : 9;
 
-    const fanX = [-xMult, -xMult / 3, xMult / 3, xMult];
-    const fanY = [yMult, 0, 0, yMult];
-    const fanRot = [-rotMult, -rotMult / 3, rotMult / 3, rotMult];
+    const fanX = [-xMult, -xMult / 2, 0, xMult / 2, xMult];
+    const fanY = [yMult, yMult / 2, 0, yMult / 2, yMult];
+    const fanRot = [-rotMult, -rotMult / 2, 0, rotMult / 2, rotMult];
 
     const ctx = gsap.context(() => {
       /* ─────────────────────────────────────────────
@@ -630,9 +631,9 @@ const ProblemSection = () => {
             </svg>
           )}
 
-          {PROBLEMS.map((p, i) => (
+          {PROBLEM_IMAGES.map((imgSrc, i) => (
             <div
-              key={p.title}
+              key={`problem-card-${i}`}
               ref={el => addCard(el, i)}
               style={{
                 position: 'absolute',
@@ -645,7 +646,7 @@ const ProblemSection = () => {
                 backdropFilter: 'blur(12px)',
                 border: '1px solid rgba(139,92,246,0.1)',
                 borderRadius: '20px',
-                padding: '1.5rem',
+                padding: '0',
                 willChange: 'transform, opacity, box-shadow, filter',
                 transformStyle: 'preserve-3d',
                 transition: 'box-shadow 0.3s ease',
@@ -654,17 +655,8 @@ const ProblemSection = () => {
               onMouseEnter={e => gsap.to(e.currentTarget, { y: -4, boxShadow: '0 24px 64px rgba(139,92,246,0.18)', duration: 0.32, ease: 'power3.out', overwrite: 'auto' })}
               onMouseLeave={e => gsap.to(e.currentTarget, { y: 0,  boxShadow: '0 20px 60px rgba(139,92,246,0.12), 0 4px 16px rgba(0,0,0,0.06)', duration: 0.38, ease: 'power3.out', overwrite: 'auto' })}
             >
-              <div className="lp-card-inner">
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '12px',
-                  background: 'linear-gradient(135deg,rgba(139,92,246,0.12),rgba(192,132,252,0.12))',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: '1rem',
-                }}>
-                  <p.icon size={18} color="#8B5CF6" strokeWidth={2} />
-                </div>
-                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#111', marginBottom: '0.5rem', letterSpacing: '-0.01em' }}>{p.title}</h3>
-                <p style={{ fontSize: '0.82rem', color: '#6B7280', lineHeight: 1.6 }}>{p.desc}</p>
+              <div className="lp-card-inner" style={{ width: '100%', height: '100%' }}>
+                <img src={imgSrc} alt={`Card ${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px' }} />
               </div>
             </div>
           ))}
@@ -953,7 +945,7 @@ const HowItWorksSection = () => {
                 willChange: 'transform, opacity'
               }}
             >
-              <img src="/event1.png" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Step 1" />
+              <img src="/images/landing_page/image_6.png" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Step 1" />
             </div>
 
             {/* Card 2 */}
@@ -967,7 +959,7 @@ const HowItWorksSection = () => {
                 willChange: 'transform, opacity'
               }}
             >
-              <img src="/event2.png" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Step 2" />
+              <img src="/images/landing_page/image_7.png" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Step 2" />
             </div>
 
             {/* Card 3 (Using Photo style) */}
@@ -981,7 +973,7 @@ const HowItWorksSection = () => {
                 willChange: 'transform, opacity'
               }}
             >
-              <img src="/event1.png" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Step 3" />
+              <img src="/images/landing_page/image_8_.png" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Step 3" />
             </div>
           </div>
 

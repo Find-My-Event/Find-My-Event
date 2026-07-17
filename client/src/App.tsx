@@ -127,6 +127,10 @@ function AppContent() {
 
     // If logged-in user is on signin page
     if (isLoggedIn && currentRoute === '#signin') {
+      if (!user?.hasCompletedProfile) {
+        return; // Let them finish onboarding on the Auth page
+      }
+
       if (sessionStorage.getItem('loggingIn')) {
         // They are actively logging in, redirect them to dashboard
         if (user?.role === 'organizer') {

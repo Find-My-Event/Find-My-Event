@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 
 const TABS = [
-  { name: 'Discover', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop' },
-  { name: 'Analytics', img: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1200&auto=format&fit=crop' },
-  { name: 'Notifications', img: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=1200&auto=format&fit=crop' },
-  { name: 'Manage Events', img: 'https://images.unsplash.com/photo-1633477189709-661832fa85e8?q=80&w=1200&auto=format&fit=crop' },
-  { name: 'Club Details', img: 'https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=1200&auto=format&fit=crop' }
+  { name: 'Discover', img: '/images/landing_page/image_9_.png' },
+  { name: 'Analytics', img: '/images/landing_page/image_11.png' },
+  { name: 'Notifications', img: '/images/landing_page/image_12.png' },
+  { name: 'Manage Events', img: '/images/landing_page/image_13.png' },
+  { name: 'Club Details', img: '/images/landing_page/image_19.png' }
 ];
 
 const FeatureTabs = () => {
