@@ -954,6 +954,111 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
+        {/* Scan Tickets Tab */}
+        {activeTab === 'scan' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem' }}>Volunteer Scanner</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '400px' }}>
+                  Generate a Magic Link and send it to your volunteers. They can open it on their phones to scan tickets securely without a password.
+                </p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1rem' }}>
+                <button
+                  onClick={async () => {
+                    setGeneratingLink(true);
+                    try {
+                      const res = await api.post('/events/generate-scanner-link');
+                      setMagicLink(`${window.location.origin}/#scanner=${res.data.link.token}`);
+                      loadLinks();
+                    } catch (error) {
+                      toast.error("Failed to generate link");
+                    } finally {
+                      setGeneratingLink(false);
+                    }
+                  }}
+                  disabled={generatingLink}
+                  className="btn"
+                  style={{ background: '#8b5cf6', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  {generatingLink ? "Generating..." : "Generate Magic Link"}
+                </button>
+                {magicLink && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-app)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                    <input 
+                      readOnly 
+                      value={magicLink} 
+                      style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', width: '250px', outline: 'none' }} 
+                    />
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(magicLink);
+                        toast.success("Copied to clipboard!");
+                      }}
+                      style={{ background: 'var(--border-subtle)', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {activeLinks.length > 0 && (
+              <div style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--border-subtle)' }}>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem' }}>Active Links</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {activeLinks.map((link) => (
+                    <div key={link._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, fontFamily: 'monospace', color: '#8b5cf6' }}>...{link.token.slice(-10)}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                          Expires: {new Date(link.expiresAt).toLocaleString()}
+                        </div>
+                        {link.lockedDeviceId && (
+                          <div style={{ fontSize: '0.8rem', color: '#10b981', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <CheckCircle size={12} /> Locked to a device
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/#scanner=${link.token}`);
+                            toast.success("Copied to clipboard!");
+                          }}
+                          style={{ background: 'var(--bg-card-hover)', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                        >
+                          Copy
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            try {
+                              await api.delete(`/events/scanner-link/${link._id}`);
+                              toast.success("Link Revoked");
+                              loadLinks();
+                            } catch (e) {
+                              toast.error("Failed to revoke link");
+                            }
+                          }}
+                          style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '24px', border: '1px solid var(--border-subtle)' }}>
+              <TicketScanner />
+            </div>
+          </div>
+        )}
+
         {/* Notifications Tab */}
         {activeTab === 'notifications' && (
           <div className="admin-notif-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(300px, 450px) 1fr', gap: isMobile ? '2rem' : '3rem' }}>
