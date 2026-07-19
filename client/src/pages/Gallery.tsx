@@ -2,14 +2,14 @@ import React from 'react';
 import Footer from '../components/Footer';
 
 const IMAGES = [
-  '/images/gallery/DSC_0751.jpg.jpeg',
-  '/images/gallery/gallary_2_.jpeg',
-  '/images/gallery/gallary_3_.jpeg',
-  '/images/gallery/gallary_4_.jpeg',
-  '/images/gallery/gallary_5_.jpeg',
-  '/images/gallery/gallary_6_.jpeg',
-  '/images/gallery/gallary_7.jpeg',
-  '/images/gallery/gallary_8.jpeg'
+  'https://res.cloudinary.com/ddnr2nfnr/image/upload/v1784481825/eventum_gallery/DSC_0751.jpg.jpg',
+  'https://res.cloudinary.com/ddnr2nfnr/image/upload/v1784481826/eventum_gallery/gallary_2_.jpg',
+  'https://res.cloudinary.com/ddnr2nfnr/image/upload/v1784481827/eventum_gallery/gallary_3_.jpg',
+  'https://res.cloudinary.com/ddnr2nfnr/image/upload/v1784481828/eventum_gallery/gallary_4_.jpg',
+  'https://res.cloudinary.com/ddnr2nfnr/image/upload/v1784481829/eventum_gallery/gallary_5_.jpg',
+  'https://res.cloudinary.com/ddnr2nfnr/image/upload/v1784481831/eventum_gallery/gallary_6_.jpg',
+  'https://res.cloudinary.com/ddnr2nfnr/image/upload/v1784481832/eventum_gallery/gallary_7.jpg',
+  'https://res.cloudinary.com/ddnr2nfnr/image/upload/v1784481833/eventum_gallery/gallary_8.jpg'
 ];
 
 const Gallery: React.FC = () => {
