@@ -559,7 +559,6 @@ router.get('/verify-scanner/:token', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
 // @desc    Public route to scan via Magic Link
 // @route   POST /api/events/scan-public
 router.post('/scan-public', async (req, res) => {
@@ -649,7 +648,6 @@ router.get('/club/:id', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
 router.get('/:id', softAuth, async (req, res) => {
   try {
     let eventModel = 'Event';

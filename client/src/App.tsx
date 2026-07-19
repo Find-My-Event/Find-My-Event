@@ -236,6 +236,11 @@ function AppContent() {
       return <PublicScanner token={token} />;
     }
 
+    if (currentRoute.startsWith('#scanner=')) {
+      const token = currentRoute.split('=')[1];
+      return <PublicScanner token={token} />;
+    }
+
     /* ── Logged-in home → Dashboard ── */
     // if (isLoggedIn && user?.role === 'user') return <Dashboard />;
 
