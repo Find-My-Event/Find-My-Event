@@ -7,10 +7,18 @@ export interface User {
   email: string;
   bio?: string;
   avatar?: string;
-  age?: number;
+  age?: number | string;
   gender?: string;
+  education?: {
+    collegeName?: string;
+    department?: string;
+    course?: string;
+    year?: string;
+  };
   interests?: string[];
   hobbies?: string[];
+  phone?: string;
+  authProvider?: string;
   favEvents?: string[];
   hasCompletedProfile?: boolean;
   role: 'user' | 'admin' | 'organizer';

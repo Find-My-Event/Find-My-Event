@@ -6,28 +6,28 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* ── Card data (Using high-quality Unsplash photos) ── */
 const EVENT_CARDS = [
-  { label: 'Comedy',    bg: 'url(https://images.unsplash.com/photo-1585699324551-f6c309eedeca?q=80&w=400&auto=format&fit=crop)' },
-  { label: 'Sports',    bg: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=400&auto=format&fit=crop)' },
-  { label: 'Festival',  bg: 'url(https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=400&auto=format&fit=crop)' },
+  { label: 'Comedy', bg: 'url(https://images.unsplash.com/photo-1585699324551-f6c309eedeca?q=80&w=400&auto=format&fit=crop)' },
+  { label: 'Sports', bg: 'url(https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=400&auto=format&fit=crop)' },
+  { label: 'Festival', bg: 'url(https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=400&auto=format&fit=crop)' },
   { label: 'Game Room', bg: 'url(https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=400&auto=format&fit=crop)' },
-  { label: 'Concert',   bg: 'url(https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=400&auto=format&fit=crop)' },
+  { label: 'Concert', bg: 'url(https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=400&auto=format&fit=crop)' },
   { label: 'Hackathon', bg: 'url(https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=400&auto=format&fit=crop)' },
 ];
 
 const FLOAT_LABELS = [
-  { label: 'Comedy',    top: '-10%', left: 'calc(50% - 35vw)', bg: '#0066FF', dtLeft: 'calc(50% - 500px)', dtTop: '-35px' },
-  { label: 'Concert',   top: '90%', left: 'calc(50% + 25vw)', bg: '#22C55E', dtLeft: 'calc(50% + 300px)', dtTop: '295px' },
+  { label: 'Comedy', top: '-10%', left: 'calc(50% - 35vw)', bg: '#0066FF', dtLeft: 'calc(50% - 500px)', dtTop: '-35px' },
+  { label: 'Concert', top: '90%', left: 'calc(50% + 25vw)', bg: '#22C55E', dtLeft: 'calc(50% + 300px)', dtTop: '295px' },
   { label: 'Hackathon', top: '-10%', left: 'calc(50% + 35vw)', bg: '#EC4899', dtLeft: 'calc(50% + 500px)', dtTop: '-35px' },
 ];
 
 const Hero = () => {
-  const heroRef    = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const topTextRef = useRef<HTMLDivElement>(null);
   const botTextRef = useRef<HTMLDivElement>(null);
-  const cardsRef   = useRef<HTMLDivElement>(null);
-  const labelsRef  = useRef<HTMLDivElement>(null);
-  const moreRef    = useRef<HTMLDivElement>(null);
-  const cardEls    = useRef<HTMLDivElement[]>([]);
+  const cardsRef = useRef<HTMLDivElement>(null);
+  const labelsRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
+  const cardEls = useRef<HTMLDivElement[]>([]);
 
   const addCard = (el: HTMLDivElement | null, i: number) => { if (el) cardEls.current[i] = el; };
 
@@ -45,9 +45,9 @@ const Hero = () => {
         let { isMobile } = context.conditions as any;
 
         // Fan positions dynamically calculated based on screen size
-        const CARD_X_FINAL   = isMobile ? [-140, -80, -20, 20, 80, 140] : [-500, -300, -100, 100, 300, 500];
+        const CARD_X_FINAL = isMobile ? [-140, -80, -20, 20, 80, 140] : [-500, -300, -100, 100, 300, 500];
         const CARD_ROT_FINAL = isMobile ? [-8, 6, -4, 5, 8, -6] : [-4, 5, -3, 4, 6, -6];
-        const CARD_Y_FINAL   = isMobile ? [-30, 10, -20, 25, -15, 30] : [-15, 25, -20, 20, -10, 25];
+        const CARD_Y_FINAL = isMobile ? [-30, 10, -20, 25, -15, 30] : [-15, 25, -20, 20, -10, 25];
 
         // 1. Initial State: EVERYTHING stacked/hidden in the center
         cards.forEach((card, i) => {
@@ -57,7 +57,7 @@ const Hero = () => {
         gsap.set(topTextRef.current, { y: 180, opacity: 0, scale: 0.8 });
         gsap.set(botTextRef.current, { y: -180, opacity: 0, scale: 0.8 });
         gsap.set(moreRef.current, { y: -150, opacity: 0, scale: 0.8 });
-        
+
         gsap.set(labelEls, { scale: 0, opacity: 0 });
 
         const tl = gsap.timeline({ delay: 3.3, defaults: { ease: 'back.out(1.2)' } });
@@ -99,7 +99,7 @@ const Hero = () => {
             });
           });
         });
-        
+
         // Clean up on matchMedia transition
         return () => {
           tl.kill();
@@ -198,7 +198,7 @@ const Hero = () => {
               }} />
               <style>{`
                  @media (min-width: 769px) {
-                   .lp-float-label:nth-child(${i+1}) {
+                   .lp-float-label:nth-child(${i + 1}) {
                      top: ${lbl.dtTop} !important;
                      left: ${lbl.dtLeft} !important;
                    }

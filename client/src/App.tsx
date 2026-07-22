@@ -31,7 +31,6 @@ import ClubDetail     from './pages/ClubDetail';
 import EventDetail    from './pages/EventDetail';
 
 import CreateEvent    from './pages/CreateEvent';
-import GeneralSettings from './pages/GeneralSettings';
 import EditProfile    from './pages/EditProfile';
 import ManageEvent    from './pages/ManageEvent';
 import YourEvents     from './pages/YourEvents';
@@ -112,6 +111,14 @@ function AppContent() {
         return;
       }
       // Allow organizers to revisit setup page to edit their profile
+    }
+
+    // If user is logged in but hasn't completed onboarding, redirect to #signin profile setup
+    if (isLoggedIn && user && !user.hasCompletedProfile) {
+      if (currentRoute !== '#signin') {
+        window.location.hash = '#signin';
+      }
+      return;
     }
 
     const protected_ = [
@@ -200,12 +207,21 @@ function AppContent() {
       if (!isLoggedIn) return null;
       return <CreateEvent />;
     }
-    if (currentRoute === '#settings') {
-      if (!isLoggedIn) return null;
-      return <GeneralSettings />;
-    }
-    if (currentRoute === '#edit-profile') {
-      if (!isLoggedIn) return null;
+    const cleanRoute = decodeURIComponent(currentRoute || '');
+
+    if (
+      cleanRoute === '#settings' ||
+      cleanRoute === '#edit-profile' ||
+      cleanRoute === '#edit profile' ||
+      cleanRoute.startsWith('#edit-profile') ||
+      cleanRoute.startsWith('#edit profile') ||
+      cleanRoute.startsWith('#settings')
+    ) {
+      if (loading) return null;
+      if (!isLoggedIn) {
+        window.location.hash = '#signin';
+        return <Auth />;
+      }
       return <EditProfile />;
     }
     if (currentRoute.startsWith('#edit-event')) {
@@ -276,10 +292,21 @@ function AppContent() {
     );
   };
 
+  const isProfileSetup = isLoggedIn && user && !user.hasCompletedProfile;
+  const hideNavbar =
+    isProfileSetup ||
+    currentRoute.startsWith('#organizer-dashboard') ||
+    currentRoute.startsWith('#organizer-setup') ||
+    currentRoute.startsWith('#admin-create-event') ||
+    currentRoute.startsWith('#admin-edit-event') ||
+    currentRoute.startsWith('#edit-event') ||
+    currentRoute.startsWith('#scanner=') ||
+    currentRoute === '#admin';
+
   return (
     <div className="App">
-      {/* Navbar (Hidden on specific full-page dashboards) */}
-      {!currentRoute.startsWith('#organizer-dashboard') && !currentRoute.startsWith('#organizer-setup') && !currentRoute.startsWith('#admin-create-event') && !currentRoute.startsWith('#admin-edit-event') && !currentRoute.startsWith('#edit-event') && !currentRoute.startsWith('#scanner=') && currentRoute !== '#admin' && <Navbar />}
+      {/* Navbar (Shown on Sign In/Sign Up; Hidden on Profile Setup & Full Dashboard pages) */}
+      {!hideNavbar && <Navbar />}
 
       {/* Page content */}
       <main>

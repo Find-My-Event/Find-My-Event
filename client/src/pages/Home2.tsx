@@ -42,8 +42,6 @@ const Home2 = () => {
 
   const categories = [
     { name: 'Hackathon', icon: '🎪', color: '#ffb3ba' },
-    { name: 'Concert', icon: '🪩', color: '#ffdfba' },
-    { name: 'Music', icon: '📻', color: '#ffffba' },
     { name: 'Photography', icon: '📷', color: '#baffc9' },
     { name: 'E-Sports', icon: '🎮', color: '#bae1ff' },
     { name: 'Sports', icon: '🏆', color: '#d5baff' },
@@ -186,16 +184,16 @@ const Home2 = () => {
       <section style={{ paddingTop: '8rem', paddingBottom: '4rem', textAlign: 'center', overflow: 'hidden', background: '#FFFFFF' }}>
         <h1 ref={heroRef} className="premium-hero-heading">
           <span className="hero-line">
-            Discover <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic', zIndex: 1, marginLeft: '0.1em' }}>
+            Where JECRC <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic', zIndex: 1, marginLeft: '0.1em' }}>
               <span ref={marker1Ref} className="marker-highlight marker-pink" />
-              events
+              Comes
             </span>
           </span>
           <span className="hero-line" style={{ marginTop: '0.15em' }}>
-            worth <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic', zIndex: 1, margin: '0 0.15em' }}>
+            <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic', zIndex: 1, margin: '0 0.15em' }}>
               <span ref={marker2Ref} className="marker-highlight marker-cyan" />
-              showing
-            </span> up for.
+              Alive
+            </span> Daily
           </span>
         </h1>
 

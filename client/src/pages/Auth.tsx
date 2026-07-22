@@ -1,25 +1,219 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Check, Loader2, Camera } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Plus, GraduationCap, UserIcon, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../api/axios';
 
-type AuthStep = 'email' | 'login' | 'signup' | 'otp' | 'profile' | 'welcome';
+type AuthStep = 'email' | 'login' | 'signup' | 'otp' | 'profile' | 'welcome' | 'forgot_password_otp' | 'forgot_password_reset';
+
+const ACADEMIC_PROGRAMS: Record<string, string[]> = {
+  'School of Engineering and Technology': [
+    'B.Tech - Computer Science and Engineering',
+    'B.Tech - CSE: Artificial Intelligence & Data Science',
+    'B.Tech - Cloud Computing (Microsoft / AWS)',
+    'B.Tech - Artificial Intelligence & Machine Learning (Xebia / IBM / Samatrix)',
+    'B.Tech - Full Stack Web Design & Development (Xebia)',
+    'B.Tech - Cyber Security (EC Council, USA)',
+    'B.Tech - Data Science & Data Analytics (Samatrix)',
+    'B.Tech - Computer Science & Business Systems (TCS - CSBS)',
+    'B.Tech - Generative AI (L&T EduTech)',
+    'B.Tech - Gaming Technology',
+    'B.Tech - AI DevOps & Cloud Automation',
+    'B.Tech - CSE: Software Product Engineering (Kalvium)',
+    'B.Tech - Civil Engineering (with L&T EduTech)',
+    'B.Tech - Electronics & Communication Engineering',
+    'B.Tech - Mechanical Engineering',
+    'B.Tech (Lateral Entry) - Computer Science / Civil / ECE / Mechanical',
+    'M.Tech - Civil (Structural / Transportation / Environmental / Construction)',
+    'M.Tech - CSE (Artificial Intelligence / Data Analytics / Cyber Security / Cloud Computing)',
+    'M.Tech - ECE (VLSI & Embedded Systems / Digital Communication)',
+    'M.Tech - Mechanical (CAD/CAM / Thermal / Production / Design)',
+    'M.Tech - Electrical (Power System & Automation / EV Engineering / Renewable Energy)'
+  ],
+  'School of Computer Applications': [
+    'BCA - Bachelor of Computer Applications',
+    'BCA - Artificial Intelligence and Data Science',
+    'BCA - Health Informatics',
+    'BCA (Industry Spec.) - Cyber Security (EC Council, USA)',
+    'BCA (Industry Spec.) - Data Science & Data Analytics (Samatrix)',
+    'BCA (Industry Spec.) - Cloud Computing & Full Stack Development (IBM)',
+    'BCA (Industry Spec.) - Artificial Intelligence & Machine Learning (IBM)',
+    'BCA (Industry Spec.) - Cloud Computing (Amazon-AWS)',
+    'BCA (Industry Spec.) - Full Stack Web Design & Development (Xebia)',
+    'BCA (Industry Spec.) - AI DevOps & Cloud Automation',
+    'MCA - Master of Computer Applications',
+    'MCA - Artificial Intelligence and Data Science',
+    'MCA (Industry Spec.) - Cyber Security (EC Council, USA)',
+    'MCA (Industry Spec.) - Artificial Intelligence & Machine Learning (Samatrix)',
+    'MCA (Industry Spec.) - Data Science & Data Analytics (Samatrix)',
+    'MCA (Industry Spec.) - Cloud Computing & Full Stack Development (IBM)'
+  ],
+  'School of Business': [
+    'BBA - HR / IT / Finance / Marketing / IB / BA',
+    'BBA - Banking Financial Service & Insurance',
+    'BBA - New Age Digital Marketing',
+    'BBA (Industry Spec.) - Data Analytics & Data Visualization (Samatrix)',
+    'BBA (Industry Spec.) - Fintech (Zell Education & Deloitte)',
+    'B.Com - ABST / EAFM / BADM',
+    'B.Com - Capital Market',
+    'MBA (Dual) - Human Resource / Marketing / Finance / IT / Operations',
+    'MBA - Entrepreneurship & Family Business Management',
+    'MBA (Industry Spec.) - Data Analytics & Data Visualization (Samatrix)',
+    'MBA (Industry Spec.) - Artificial Intelligence (Samatrix)',
+    'MBA (Industry Spec.) - Fintech (Imarticus)',
+    'MBA (Industry Spec.) - Global Finance & AI (Imarticus)',
+    'MBA (Industry Spec.) - Applied Finance (Deloitte & Zell)'
+  ],
+  'School of Design': [
+    'Bachelor of Design (B.Des) - Interior Design / Jewellery Design',
+    'Bachelor of Design (B.Des) - Game Arts & Animation',
+    'Bachelor of Design (B.Des) - Fashion Design',
+    'Bachelor of Visual Arts (BVA) - Graphic Design / Painting Design',
+    'Master of Design (M.Des) - Interior Design',
+    'Master of Design (M.Des) - Fashion Design',
+    'Masters of Visual Arts (MVA) - Graphic Design',
+    'M.Sc. Design - Interior / Jewellery / Graphic / Fashion Design'
+  ],
+  'School of Humanities and Social Sciences': [
+    'BA (Hons.) - English | Psychology | Political Science',
+    'BA (Hons.) - Liberal Studies',
+    'MA - English | International Relations | Psychology',
+    'MA - Political Science | Public Policy & Governance'
+  ],
+  'School of Economics': [
+    'BA (Hons.) - Economics',
+    'MA - Economics'
+  ],
+  'School of Law': [
+    'Integrated Law - BA LLB (Hons.)',
+    'Integrated Law - B.Sc. LLB (Hons.)',
+    'Integrated Law - BBA LLB (Hons.) - Corporate / Criminal Law',
+    'LLM - Intellectual Property Rights / Corporate Law / Personal Law'
+  ],
+  'School of Sciences': [
+    'B.Sc. (Hons.) - Microbiology',
+    'B.Sc. (Hons.) - Biotechnology',
+    'B.Sc. (Hons.) - Forensic Science',
+    'M.Sc. - Microbiology',
+    'M.Sc. - Biotechnology',
+    'M.Sc. - Forensic Science / Digital Forensic',
+    'M.Sc. - Material Chemistry / Physics / Chemistry',
+    'M.Sc. - Mathematics / Botany / Zoology'
+  ],
+  'School of Hospitality': [
+    'B.Sc. in HHM - Hospitality and Hotel Management'
+  ],
+  'School of Mass Communications': [
+    'BA-JMC - Journalism & Mass Communication',
+    'MA-JMC - Journalism & Mass Communication',
+    'MA-JMC - Film Making'
+  ]
+};
 
 const Auth: React.FC = () => {
   const [step, setStep] = useState<AuthStep>('email');
   const [formData, setFormData] = useState({ name: '', email: '', password: '', otp: '' });
   const [profileData, setProfileData] = useState({
-    bio: '', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-    age: '', gender: '', interests: '', hobbies: ''
+    name: formData.name || '',
+    bio: '',
+    avatar: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Alexander',
+    phone: '',
+    age: '',
+    gender: '',
+    interests: '',
+    hobbies: '',
+    education: {
+      collegeName: '',
+      department: '',
+      course: '',
+      year: ''
+    }
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const { register, verifyOtp, resendOtp, handleLogin, setupProfile, uploadAvatar, user, isLoggedIn } = useAuth();
+  const { register, verifyOtp, handleLogin, setupProfile, uploadAvatar, user, isLoggedIn } = useAuth();
+
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+
+  const handleForgotSendOtp = async () => {
+    if (!formData.email) {
+      setError('Email is required');
+      return;
+    }
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await api.post('/auth/forgot-password-send-otp', { email: formData.email });
+      setStep('forgot_password_otp');
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.response?.data?.error || 'Failed to send OTP');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.otp) return;
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await api.post('/auth/forgot-password-verify-otp', { email: formData.email, otp: formData.otp });
+      setStep('forgot_password_reset');
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.response?.data?.error || 'Invalid OTP');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (forgotNewPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await api.post('/auth/reset-password-otp', { email: formData.email, otp: formData.otp, newPassword: forgotNewPassword });
+      setStep('login');
+      setFormData({ ...formData, password: '', otp: '' });
+      setForgotNewPassword('');
+      setForgotConfirmPassword('');
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.response?.data?.error || 'Failed to reset password');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   React.useEffect(() => {
-    if (isLoggedIn && user && !user.hasCompletedProfile) {
-      setStep('profile');
+    if (isLoggedIn && user) {
+      setProfileData(prev => ({
+        ...prev,
+        name: prev.name || user.name || formData.name || '',
+        bio: user.bio || prev.bio,
+        avatar: user.avatar || prev.avatar,
+        phone: user.phone || prev.phone,
+        age: user.age !== undefined && user.age !== null ? user.age.toString() : prev.age,
+        gender: user.gender || prev.gender,
+        education: {
+          collegeName: user.education?.collegeName || prev.education.collegeName,
+          department: user.education?.department || prev.education.department,
+          course: user.education?.course || prev.education.course,
+          year: user.education?.year || prev.education.year,
+        }
+      }));
+      if (!user.hasCompletedProfile) {
+        setStep('profile');
+      }
     }
   }, [isLoggedIn, user]);
 
@@ -30,7 +224,7 @@ const Auth: React.FC = () => {
   const handleEmailContinue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.email) return;
-    setStep('login'); // Default to login after email
+    setStep('login'); 
   };
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -45,6 +239,8 @@ const Auth: React.FC = () => {
           window.location.hash = '#admin';
         } else if (result.user?.role === 'organizer') {
           window.location.hash = '#organizer-dashboard';
+        } else if (!result.user?.hasCompletedProfile) {
+          setStep('profile');
         } else {
           window.location.hash = '#home';
         }
@@ -65,26 +261,11 @@ const Auth: React.FC = () => {
     setError('');
     setIsSubmitting(true);
     try {
-      // Ensure they aren't redirected by App.tsx by removing loggingIn flag temporarily
-      // We will set it when the profile is actually completed
       sessionStorage.removeItem('loggingIn');
       await verifyOtp(formData.email, formData.otp);
       setStep('profile');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid OTP');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    setError('');
-    setIsSubmitting(true);
-    try {
-      await resendOtp(formData.email);
-      setError('A new code has been sent to your email.');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to resend code');
     } finally {
       setIsSubmitting(false);
     }
@@ -110,14 +291,18 @@ const Auth: React.FC = () => {
     setIsSubmitting(true);
     try {
       await setupProfile({
-        bio: profileData.bio, avatar: profileData.avatar,
+        name: profileData.name,
+        bio: profileData.bio,
+        avatar: profileData.avatar,
+        phone: profileData.phone,
         age: profileData.age ? parseInt(profileData.age as string) : undefined,
         gender: profileData.gender,
+        education: profileData.education,
         interests: profileData.interests.split(',').map(i => i.trim()).filter(i => i !== ''),
         hobbies: profileData.hobbies.split(',').map(h => h.trim()).filter(h => h !== '')
       });
       setStep('welcome');
-      sessionStorage.setItem('loggingIn', 'true'); // Now they can be redirected
+      sessionStorage.setItem('loggingIn', 'true');
       setTimeout(() => { window.location.hash = '#home'; }, 3000);
     } catch { setError('Failed to setup profile'); }
     finally { setIsSubmitting(false); }
@@ -130,7 +315,7 @@ const Auth: React.FC = () => {
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '0.875rem 1rem', borderRadius: '10px',
     border: '1px solid #ddd', background: '#fff', fontSize: '0.95rem',
-    outline: 'none', transition: 'border 0.2s', color: '#111',
+    outline: 'none', transition: 'border 0.2s', color: '#111', fontFamily: 'Inter, sans-serif',
   };
 
   const btnPrimary: React.CSSProperties = {
@@ -152,10 +337,10 @@ const Auth: React.FC = () => {
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12 }} style={{ width: '100px', height: '100px', borderRadius: '50%', margin: '0 auto 1.5rem', border: '3px solid #7c3aed', padding: '4px', background: 'white' }}>
             <img src={profileData.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
           </motion.div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 700, color: '#111' }}>Hello, {formData.name.split(' ')[0]}</h1>
-          <p style={{ color: '#888', marginTop: '0.75rem' }}>Your account is ready. Redirecting...</p>
+          <h1 style={{ fontSize: '2rem', fontWeight: 700, color: '#111' }}>Hello, {user?.name ? user.name.split(' ')[0] : 'there'}</h1>
+          <p style={{ color: '#888', marginTop: '0.75rem' }}>Your profile has been created successfully. Redirecting...</p>
           <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: '#7c3aed' }}>
-            <Check size={20} /><span style={{ fontWeight: 600 }}>Profile Created!</span>
+            <Check size={20} /><span style={{ fontWeight: 600 }}>Profile Complete!</span>
           </div>
         </motion.div>
       );
@@ -163,40 +348,41 @@ const Auth: React.FC = () => {
 
     return (
       <motion.div key={step} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
-        {/* Back button */}
-        {step !== 'email' && (
-          <button onClick={() => setStep(step === 'login' || step === 'signup' ? 'email' : step === 'otp' ? 'signup' : 'email')}
+        {step !== 'email' && step !== 'profile' && (
+          <button onClick={() => setStep(step === 'login' || step === 'signup' ? 'email' : step === 'otp' ? 'signup' : step === 'forgot_password_otp' || step === 'forgot_password_reset' ? 'login' : 'email')}
             style={{ background: '#ccc', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: '1.5rem', color: '#555' }}>
             <ArrowLeft size={18} />
           </button>
         )}
 
-        {/* Header */}
         <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#111', marginBottom: '0.3rem', fontFamily: 'Inter, sans-serif' }}>
           {step === 'email' && 'Good to see you'}
           {step === 'login' && 'Sign In'}
           {step === 'signup' && 'Create Account'}
           {step === 'otp' && 'Enter Code'}
           {step === 'profile' && 'Set up Profile'}
+          {step === 'forgot_password_otp' && 'Reset Password'}
+          {step === 'forgot_password_reset' && 'Create New Password'}
         </h2>
-        <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-          {step === 'email' && 'Please Sign In or Sign up below'}
-          {step === 'login' && 'Enter your password to continue'}
-          {step === 'signup' && 'Fill in your details to get started'}
-          {step === 'otp' && `Enter the 6-digit code sent to ${formData.email}`}
-          {step === 'profile' && 'Tell us more about yourself'}
+        <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1.75rem' }}>
+          {step === 'email' && 'Sign in or create an account to get started'}
+          {step === 'login' && 'Enter your password to sign in'}
+          {step === 'signup' && 'Enter your details to create an account'}
+          {step === 'otp' && `We sent a 6-digit code to ${formData.email}`}
+          {step === 'profile' && 'Tell us more about yourself and your academic background'}
+          {step === 'forgot_password_otp' && `We sent a 6-digit reset code to ${formData.email}`}
+          {step === 'forgot_password_reset' && 'Enter your new password below'}
         </p>
 
         {error && (
-          <div style={{ background: '#fef2f2', color: '#ef4444', padding: '0.75rem', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1rem', border: '1px solid #fecaca' }}>{error}</div>
+          <div style={{ background: '#fee2e2', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1.25rem', border: '1px solid #fca5a5' }}>{error}</div>
         )}
 
-        {/* ── EMAIL STEP ── */}
         {step === 'email' && (
           <>
             <form onSubmit={handleEmailContinue} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Email</label>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Email Address</label>
                 <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="your@gmail.com" required style={inputStyle} />
               </div>
               <button type="submit" style={btnPrimary}>Continue with Email</button>
@@ -206,24 +392,12 @@ const Auth: React.FC = () => {
               <span style={{ margin: '0 1rem', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>or continue with</span>
               <div style={{ flex: 1, height: '1px', background: '#eee' }} />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <motion.button 
-                whileHover={{ y: -2, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
-                whileTap={{ scale: 0.98 }}
-                type="button" 
-                onClick={() => {
-                  const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
-                  window.location.href = `${baseUrl}/auth/google`;
-                }} 
-                style={btnDark}
-              >
-                <GoogleIcon /> Sign In with Google
-              </motion.button>
-            </div>
+            <motion.button whileHover={{ y: -2, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }} whileTap={{ scale: 0.98 }} type="button" onClick={() => { const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000'; window.location.href = `${baseUrl}/auth/google`; }} style={btnDark}>
+              <GoogleIcon /> Sign In with Google
+            </motion.button>
           </>
         )}
 
-        {/* ── LOGIN STEP ── */}
         {step === 'login' && (
           <>
             <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -234,6 +408,9 @@ const Auth: React.FC = () => {
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Password</label>
                 <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required style={inputStyle} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.5rem' }}>
+                <button type="button" onClick={handleForgotSendOtp} style={{ background: 'none', border: 'none', color: '#7c3aed', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Forgot Password?</button>
               </div>
               <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
                 {isSubmitting ? <Loader2 className="spin" size={18} /> : 'Sign In'}
@@ -246,13 +423,12 @@ const Auth: React.FC = () => {
           </>
         )}
 
-        {/* ── SIGNUP STEP ── */}
         {step === 'signup' && (
           <>
             <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Full Name</label>
-                <input name="name" value={formData.name} onChange={handleChange} placeholder="John Doe" required style={inputStyle} />
+                <input name="name" value={formData.name} onChange={handleChange} placeholder="Enter your full name" required style={inputStyle} />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Email</label>
@@ -273,84 +449,232 @@ const Auth: React.FC = () => {
           </>
         )}
 
-        {/* ── OTP STEP ── */}
         {step === 'otp' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <form onSubmit={handleOtpVerify} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <input type="text" maxLength={6} value={formData.otp}
-                onChange={(e) => setFormData({ ...formData, otp: e.target.value })} placeholder="000000"
-                style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.6rem', fontSize: '1.4rem' }} />
+              <input type="text" maxLength={6} value={formData.otp} onChange={(e) => setFormData({ ...formData, otp: e.target.value })} placeholder="000000" style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.6rem', fontSize: '1.4rem' }} />
               <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
                 {isSubmitting ? <Loader2 className="spin" size={18} /> : 'Verify Code'}
               </motion.button>
             </form>
-            <p style={{ textAlign: 'center', color: '#888', fontSize: '0.9rem', margin: 0 }}>
-              Didn't receive the code?{' '}
-              <button 
-                type="button"
-                onClick={handleResendOtp}
-                disabled={isSubmitting}
-                style={{ background: 'none', border: 'none', color: '#7c3aed', fontWeight: 600, cursor: isSubmitting ? 'wait' : 'pointer', fontSize: '0.9rem' }}
-              >
-                Send again
-              </button>
-            </p>
           </div>
         )}
 
-        {/* ── PROFILE STEP ── */}
+        {step === 'forgot_password_otp' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleForgotVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <input type="text" maxLength={6} value={formData.otp} onChange={(e) => setFormData({ ...formData, otp: e.target.value })} placeholder="000000" required style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.6rem', fontSize: '1.4rem' }} />
+              <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
+                {isSubmitting ? <Loader2 className="spin" size={18} /> : 'Verify Code'}
+              </motion.button>
+            </form>
+          </div>
+        )}
+
+        {step === 'forgot_password_reset' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleForgotResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>New Password</label>
+                <input type="password" value={forgotNewPassword} onChange={(e) => setForgotNewPassword(e.target.value)} placeholder="••••••••" required style={inputStyle} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Confirm New Password</label>
+                <input type="password" value={forgotConfirmPassword} onChange={(e) => setForgotConfirmPassword(e.target.value)} placeholder="••••••••" required style={inputStyle} />
+              </div>
+              <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
+                {isSubmitting ? <Loader2 className="spin" size={18} /> : 'Save New Password'}
+              </motion.button>
+            </form>
+          </div>
+        )}
+
         {step === 'profile' && (
-          <form onSubmit={handleProfileSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: '0.5rem' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', border: '2px solid #7c3aed', padding: '3px', background: 'white', position: 'relative' }}>
-                <img src={profileData.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                {isUploading && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.7)', borderRadius: '50%' }}>
-                    <Loader2 className="spin" size={20} color="#7c3aed" />
-                  </div>
-                )}
-                <label style={{ position: 'absolute', bottom: -5, right: -5, background: '#7c3aed', padding: '6px', borderRadius: '50%', border: '2px solid #fff', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Camera size={14} />
-                  <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} disabled={isUploading} />
-                </label>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-              {['Felix', 'Anya', 'Jasper', 'Milo'].map(seed => (
-                <div key={seed} onClick={() => setProfileData({ ...profileData, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}` })}
-                  style={{ width: '40px', height: '40px', borderRadius: '50%', border: profileData.avatar.includes(seed) ? '2px solid #7c3aed' : '2px solid transparent', cursor: 'pointer' }}>
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+          <form onSubmit={handleProfileSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: '0.75rem' }}>
+                <div style={{ width: '80px', height: '80px', borderRadius: '50%', border: '2px solid #7c3aed', padding: '3px', background: 'white', position: 'relative' }}>
+                  <img src={profileData.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  {isUploading && (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.7)', borderRadius: '50%' }}>
+                      <Loader2 className="spin" size={20} color="#7c3aed" />
+                    </div>
+                  )}
+                  <label style={{ position: 'absolute', bottom: -5, right: -5, background: '#7c3aed', padding: '6px', borderRadius: '50%', border: '2px solid #fff', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Plus size={14} />
+                    <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} disabled={isUploading} />
+                  </label>
                 </div>
-              ))}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Age</label>
-                <input type="number" value={profileData.age} onChange={(e) => setProfileData({ ...profileData, age: e.target.value })} placeholder="20" style={inputStyle} />
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Gender</label>
-                <select value={profileData.gender} onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
-                  style={{ ...inputStyle, appearance: 'none' as any }}>
-                  <option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
-                </select>
+              <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#64748b', margin: '0 0 0.5rem 0', fontWeight: 600 }}>Choose an AI Avatar or upload your photo</p>
+              <div className="avatar-grid-responsive">
+                {[
+                  'https://api.dicebear.com/7.x/lorelei/svg?seed=Alexander',
+                  'https://api.dicebear.com/7.x/lorelei/svg?seed=Sophia',
+                  'https://api.dicebear.com/7.x/lorelei/svg?seed=Leo',
+                  'https://api.dicebear.com/7.x/lorelei/svg?seed=Mia',
+                  'https://api.dicebear.com/7.x/notionists/svg?seed=Ethan',
+                  'https://api.dicebear.com/7.x/notionists/svg?seed=Zoe',
+                  'https://api.dicebear.com/7.x/micah/svg?seed=Lucas',
+                  'https://api.dicebear.com/7.x/micah/svg?seed=Emma',
+                  'https://api.dicebear.com/7.x/adventurer/svg?seed=Aria',
+                  'https://api.dicebear.com/7.x/adventurer/svg?seed=Jack',
+                  'https://api.dicebear.com/7.x/bottts/svg?seed=CyberTech',
+                  'https://api.dicebear.com/7.x/bottts/svg?seed=Pulse'
+                ].map((avatarUrl, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => setProfileData({ ...profileData, avatar: avatarUrl })}
+                    className={`avatar-item-preset ${profileData.avatar === avatarUrl ? 'active' : ''}`}
+                  >
+                    <img src={avatarUrl} alt="Avatar Preset" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  </div>
+                ))}
               </div>
             </div>
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Bio</label>
-              <textarea value={profileData.bio} onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })} placeholder="I love college festivals!"
-                style={{ ...inputStyle, minHeight: '70px', resize: 'none' as any }} />
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <UserIcon size={16} color="#7c3aed" /> General Profile
+              </h3>
+              
+              <div className="responsive-grid">
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Full Name *</label>
+                  <input
+                    type="text"
+                    value={profileData.name}
+                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                    placeholder="Enter your full name"
+                    required
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Email Address (Locked)</label>
+                  <input
+                    type="email"
+                    value={user?.email || formData.email || ''}
+                    disabled
+                    readOnly
+                    style={{ ...inputStyle, background: '#f1f5f9', color: '#64748b', cursor: 'not-allowed' }}
+                  />
+                </div>
+              </div>
+
+              <div className="responsive-grid">
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Age</label>
+                  <input type="number" value={profileData.age} onChange={(e) => setProfileData({ ...profileData, age: e.target.value })} placeholder="20" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Gender</label>
+                  <select value={profileData.gender} onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })} style={{ ...inputStyle, cursor: 'pointer' }}>
+                    <option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Phone Number</label>
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #ddd', borderRadius: '10px', overflow: 'hidden', background: '#fff' }}>
+                  <span style={{ padding: '0.875rem 1rem', background: '#f8fafc', borderRight: '1px solid #ddd', color: '#334155', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'Inter, sans-serif', userSelect: 'none' }}>
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    maxLength={10}
+                    value={profileData.phone ? profileData.phone.replace(/^\+91\s?/, '') : ''}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '');
+                      setProfileData({ ...profileData, phone: digits ? `+91 ${digits}` : '' });
+                    }}
+                    placeholder="Enter 10-digit phone number"
+                    style={{ ...inputStyle, border: 'none', borderRadius: 0, flex: 1, padding: '0.875rem 1rem' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Bio</label>
+                <textarea
+                  value={profileData.bio}
+                  onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                  placeholder="Tell us about yourself..."
+                  style={{ ...inputStyle, fontFamily: 'Inter, sans-serif', minHeight: '80px', resize: 'vertical' as any }}
+                />
+              </div>
             </div>
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Interests (comma separated)</label>
-              <input type="text" value={profileData.interests} onChange={(e) => setProfileData({ ...profileData, interests: e.target.value })} placeholder="Music, Tech, Art" style={inputStyle} />
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <GraduationCap size={16} color="#7c3aed" /> Educational Details
+              </h3>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>College / University Name</label>
+                  <input value={profileData.education.collegeName} onChange={(e) => setProfileData({ ...profileData, education: { ...profileData.education, collegeName: e.target.value } })} placeholder="e.g. JECRC University, Jaipur" style={inputStyle} />
+                </div>
+
+                <div className="responsive-grid">
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Department / School</label>
+                    <select value={profileData.education.department} onChange={(e) => { const newDept = e.target.value; setProfileData(prev => ({ ...prev, education: { ...prev.education, department: newDept, course: (ACADEMIC_PROGRAMS[newDept] && ACADEMIC_PROGRAMS[newDept].includes(prev.education.course)) ? prev.education.course : '' } })); }} style={{ ...inputStyle, cursor: 'pointer' }}>
+                      <option value="">Select Department / School</option>
+                      {Object.keys(ACADEMIC_PROGRAMS).map(dept => (<option key={dept} value={dept}>{dept}</option>))}
+                      <option value="Other">Other / Custom Department</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Course / Program</label>
+                    <select value={profileData.education.course} onChange={(e) => setProfileData({ ...profileData, education: { ...profileData.education, course: e.target.value } })} style={{ ...inputStyle, cursor: 'pointer' }}>
+                      <option value="">Select Course / Program</option>
+                      {profileData.education.department && ACADEMIC_PROGRAMS[profileData.education.department] ? (
+                        ACADEMIC_PROGRAMS[profileData.education.department].map(c => (<option key={c} value={c}>{c}</option>))
+                      ) : (
+                        Object.entries(ACADEMIC_PROGRAMS).map(([dept, courses]) => (
+                          <optgroup key={dept} label={dept}>
+                            {courses.map(c => (<option key={c} value={c}>{c}</option>))}
+                          </optgroup>
+                        ))
+                      )}
+                      <option value="Other">Other / Custom Course</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Year of Study</label>
+                  <select value={profileData.education.year} onChange={(e) => setProfileData({ ...profileData, education: { ...profileData.education, year: e.target.value } })} style={{ ...inputStyle, cursor: 'pointer' }}>
+                    <option value="">Select Year</option>
+                    <option value="1st Year">1st Year</option><option value="2nd Year">2nd Year</option><option value="3rd Year">3rd Year</option><option value="4th Year">4th Year</option>
+                    <option value="5th Year / Dual Degree">5th Year / Dual Degree</option><option value="Postgraduate">Postgraduate</option>
+                    <option value="Alumni / Graduated">Alumni / Graduated</option><option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
             </div>
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Hobbies (comma separated)</label>
-              <input type="text" value={profileData.hobbies} onChange={(e) => setProfileData({ ...profileData, hobbies: e.target.value })} placeholder="Reading, Gaming" style={inputStyle} />
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <BookOpen size={16} color="#7c3aed" /> Interests & Hobbies
+              </h3>
+              <div className="responsive-grid">
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Interests (comma separated)</label>
+                  <input type="text" value={profileData.interests} onChange={(e) => setProfileData({ ...profileData, interests: e.target.value })} placeholder="Music, Tech, Art" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Hobbies (comma separated)</label>
+                  <input type="text" value={profileData.hobbies} onChange={(e) => setProfileData({ ...profileData, hobbies: e.target.value })} placeholder="Reading, Gaming" style={inputStyle} />
+                </div>
+              </div>
             </div>
-            <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
-              {isSubmitting ? <Loader2 className="spin" size={18} /> : "Let's GO"}
+
+            <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed', padding: '0.95rem', fontSize: '1rem', marginTop: '0.5rem' }}>
+              {isSubmitting ? <Loader2 className="spin" size={18} /> : "Complete Setup & Launch"}
             </motion.button>
           </form>
         )}
@@ -359,17 +683,23 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#ffffff',
-      padding: '2rem', paddingTop: '100px', fontFamily: 'Inter, sans-serif',
-    }}>
-      {/* Card */}
-      <div style={{
-        width: '100%', maxWidth: '400px', background: '#fff',
-        borderRadius: '20px', padding: '2.5rem', minHeight: '500px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.08)', border: '1px dashed #ddd',
-      }}>
+    <div
+      className="auth-wrapper-container"
+      style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: '#ffffff',
+        padding: '2rem', paddingTop: step === 'profile' ? '2rem' : '100px', fontFamily: 'Inter, sans-serif',
+      }}
+    >
+      <div
+        className="auth-card-box"
+        style={{
+          width: '100%', maxWidth: step === 'profile' ? '620px' : '400px', background: '#fff',
+          borderRadius: '20px', padding: '2.5rem', minHeight: '500px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.08)', border: '1px dashed #ddd',
+          transition: 'max-width 0.3s ease'
+        }}
+      >
         <AnimatePresence mode="wait">
           {renderStep()}
         </AnimatePresence>
@@ -378,6 +708,62 @@ const Auth: React.FC = () => {
       <style>{`
         .spin { animation: spin-anim 1s linear infinite; }
         @keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .avatar-grid-responsive {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.6rem;
+          justify-content: center;
+          margin-top: 0.5rem;
+        }
+
+        .avatar-item-preset {
+          width: 46px;
+          height: 46px;
+          border-radius: 50%;
+          border: 2px solid transparent;
+          padding: 2px;
+          background: #fff;
+          cursor: pointer;
+          transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+
+        .avatar-item-preset:hover {
+          transform: scale(1.08);
+        }
+
+        .avatar-item-preset.active {
+          border-color: #7c3aed !important;
+          transform: scale(1.05);
+        }
+
+        .responsive-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.75rem;
+          margin-bottom: 0.75rem;
+        }
+        
+        @media (max-width: 640px) {
+          .auth-wrapper-container {
+            padding: 1rem !important;
+            padding-top: 80px !important;
+          }
+          .auth-card-box {
+            padding: 1.25rem 1rem !important;
+            border-radius: 16px !important;
+          }
+          .avatar-grid-responsive {
+            gap: 0.5rem;
+          }
+          .avatar-item-preset {
+            width: 44px;
+            height: 44px;
+          }
+          .responsive-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
     </div>
   );

@@ -32,6 +32,12 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
   },
+  education: {
+    collegeName: { type: String, default: '' },
+    department: { type: String, default: '' },
+    course: { type: String, default: '' },
+    year: { type: String, default: '' },
+  },
   interests: {
     type: [String],
     default: [],

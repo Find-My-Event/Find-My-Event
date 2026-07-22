@@ -146,26 +146,26 @@ const Navbar: React.FC = () => {
             pointerEvents: 'auto', // Re-enable clicks for the actual navbar
           }}
         >
-        {/* ── Logo ── */}
-        <div
-          style={{
-            fontWeight: 600,
-            fontSize: '20px',
-            fontFamily: 'Inter, sans-serif',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            color: textColor,
-          }}
-          onClick={() => { window.location.hash = ''; setIsMobileMenuOpen(false); }}
-        >
-          <img src={logoSrc} alt="Eventum Logo" style={{ height: '32px', width: 'auto' }} />
-          <span>Eventum<span style={{ color: '#EC4899' }}>.</span></span>
-        </div>
+          {/* ── Logo ── */}
+          <div
+            style={{
+              fontWeight: 600,
+              fontSize: '20px',
+              fontFamily: 'Inter, sans-serif',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              color: textColor,
+            }}
+            onClick={() => { window.location.hash = ''; setIsMobileMenuOpen(false); }}
+          >
+            <img src={logoSrc} alt="Eventum Logo" style={{ height: '32px', width: 'auto' }} />
+            <span>Eventum<span style={{ color: '#EC4899' }}>.</span></span>
+          </div>
 
-        {/* ── Nav links ── */}
-        <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} className="mobile-hidden">
+          {/* ── Nav links ── */}
+          <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} className="mobile-hidden">
           {navLinks.map(link => {
             const IconComponent = link.icon === 'Home' ? Home : link.icon === 'Award' ? Award : link.icon === 'Command' ? Command : link.icon === 'LayoutGrid' ? LayoutGrid : link.icon === 'Globe' ? Globe : null;
             return (
@@ -283,7 +283,7 @@ const Navbar: React.FC = () => {
                         <div style={{ fontSize: '0.72rem', color: '#888' }}>{user?.email}</div>
                       </div>
                       {[
-                        { icon: Settings, label: 'General Settings', href: '#settings' },
+                        { icon: Settings, label: 'General Settings', href: '#edit-profile?tab=settings' },
                         { icon: User,     label: 'Edit Profile',      href: '#edit-profile' },
                         ...(user?.role === 'admin' ? [{ icon: Shield, label: 'Admin Dashboard', href: '#admin' }] : []),
                         ...(user?.role === 'organizer' ? [{ icon: LayoutGrid, label: 'Organizer Dashboard', href: '#organizer-dashboard' }] : []),
@@ -457,7 +457,7 @@ const Navbar: React.FC = () => {
                 <button type="button" onClick={() => { window.location.hash = '#edit-profile'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
                   <span style={{ color: '#8B5CF6', opacity: 0.8 }}><User size={16} /></span> Edit Profile
                 </button>
-                <button type="button" onClick={() => { window.location.hash = '#settings'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
+                <button type="button" onClick={() => { window.location.hash = '#edit-profile?tab=settings'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
                   <span style={{ color: '#8B5CF6', opacity: 0.8 }}><Settings size={16} /></span> Settings
                 </button>
                 {user?.role === 'admin' && (

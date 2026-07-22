@@ -110,10 +110,13 @@ app.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:5173'}/#signin` })(req, res, next);
   },
   (req, res) => {
-    // Successful authentication, generate token and redirect home.
+    // Successful authentication, generate token and redirect.
     const jwt = require('jsonwebtoken');
     const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    if (!req.user.hasCompletedProfile) {
+      return res.redirect(`${clientUrl}/?token=${token}#signin`);
+    }
     res.redirect(`${clientUrl}/?token=${token}#home`);
   });
 
