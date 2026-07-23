@@ -507,7 +507,7 @@ const Navbar: React.FC = () => {
           {mobileTabs.map(tab => {
             const isActive = tab.isProfile
               ? isMobileMenuOpen
-              : (hash === tab.href || (!hash && tab.href === '#home'));
+              : (hash === tab.href);
             const TabIcon = tab.icon;
             return (
               <button
