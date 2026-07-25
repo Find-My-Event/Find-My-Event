@@ -28,6 +28,7 @@ const eventSubmissionSchema = new mongoose.Schema(
     teamMin: { type: Number, default: 1 },
     teamMax: { type: Number, default: 4 },
     eligibility: { type: String, default: '' },
+    targetDepartment: { type: String, default: 'All' },
     timeline: [{
       title: String,
       desc: String,

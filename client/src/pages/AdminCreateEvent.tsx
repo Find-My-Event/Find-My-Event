@@ -11,6 +11,20 @@ const MOCK_LOCATIONS = [
   { id: '5', title: 'Bangalore', subtitle: 'Karnataka, India' },
 ];
 
+const DEPARTMENTS = [
+  'School of Engineering and Technology',
+  'School of Computer Applications',
+  'School of Business',
+  'School of Design',
+  'School of Humanities and Social Sciences',
+  'School of Economics',
+  'School of Law',
+  'School of Sciences',
+  'School of Hospitality',
+  'School of Mass Communications',
+  'Other'
+];
+
 export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
   const isEditing = !!eventId;
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -44,6 +58,7 @@ export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
   const [maxTickets, setMaxTickets] = useState('');
   
   const [capacity, setCapacity] = useState('');
+  const [targetDepartment, setTargetDepartment] = useState('All');
   const [generateQRCode, setGenerateQRCode] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -94,6 +109,7 @@ export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
             setMaxTickets(data.pricing?.maxTicketsPerUser?.toString() || '');
           }
           setCapacity(data.capacity?.toString() || data.seats?.toString() || '');
+          setTargetDepartment(data.targetDepartment || 'All');
           setGenerateQRCode(data.generateQRCode || false);
           
           if(data.image || data.imageUrl) {
@@ -151,6 +167,7 @@ export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
       formData.append('date', mappedDate);
       formData.append('venue', finalLocation);
       formData.append('seats', capacity || 'Limited');
+      formData.append('targetDepartment', targetDepartment);
       formData.append('generateQRCode', String(generateQRCode));
       formData.append('price', ticketType === 'Paid' ? ticketPrice : 'Free');
       
@@ -380,6 +397,17 @@ export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
                  <Users size={20} color="#888" />
                  <div style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: '#555' }}>Capacity</div>
                  <input placeholder="Unlimited" value={capacity} onChange={e => setCapacity(e.target.value)} style={{ background: 'transparent', border: 'none', textAlign: 'right', fontWeight: 700, color: '#555', width: '100px', outline: 'none' }} />
+              </div>
+
+              <div style={{ background: '#eaeaea', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
+                 <Users size={20} color="#888" />
+                 <div style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: '#555' }}>Target Department</div>
+                 <select value={targetDepartment} onChange={e => setTargetDepartment(e.target.value)} style={{ background: 'transparent', border: 'none', textAlign: 'right', fontWeight: 700, color: '#555', outline: 'none', cursor: 'pointer' }}>
+                   <option value="All">All Departments</option>
+                   {DEPARTMENTS.map(d => (
+                     <option key={d} value={d}>{d}</option>
+                   ))}
+                 </select>
               </div>
 
               {/* Generate QR Code Toggle */}

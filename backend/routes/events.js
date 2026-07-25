@@ -158,7 +158,7 @@ router.put('/submission/:id', requireAuth, upload.single('image'), async (req, r
       title, description, startDate, endDate, mode, location, capacity, imageUrl,
       participantType, teamMin, teamMax, eligibility, timeline, rules, contacts, announcements, customQuestions,
       tickets, prizes, visibility, registrationControl, personalInfo, eduInfo, organizingTeam, registrationDeadline,
-      generateQRCode
+      generateQRCode, targetDepartment
     } = req.body;
     
     if (title !== undefined) s.title = title;
@@ -193,6 +193,7 @@ router.put('/submission/:id', requireAuth, upload.single('image'), async (req, r
     if (organizingTeam !== undefined) s.organizingTeam = organizingTeam;
     if (registrationDeadline !== undefined) s.registrationDeadline = registrationDeadline;
     if (generateQRCode !== undefined) s.generateQRCode = generateQRCode === true || generateQRCode === 'true';
+    if (targetDepartment !== undefined) s.targetDepartment = targetDepartment;
 
     await s.save();
     res.json({ submission: s });
@@ -333,7 +334,7 @@ router.get('/submission/:id/registrations', requireAuth, async (req, res) => {
 
 router.post('/', requireAuth, upload.single('image'), async (req, res) => {
   try {
-    const { title, description, startDate, endDate, mode, location, capacity, imageUrl } = req.body;
+    const { title, description, startDate, endDate, mode, location, capacity, imageUrl, targetDepartment } = req.body;
     if (!title || !description || !startDate || !endDate || !mode || !location) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
@@ -351,6 +352,7 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
       location,
       capacity: Number(capacity) || 0,
       imageUrl: finalImageUrl,
+      targetDepartment: targetDepartment || 'All',
       status: 'pending',
     });
 
@@ -837,6 +839,13 @@ router.post('/:id/register', requireAuth, async (req, res) => {
     }
 
     if (!event) return res.status(404).json({ message: 'Event not found' });
+
+    // Target Department check
+    if (event.targetDepartment && event.targetDepartment !== 'All') {
+      if (!req.user.education || req.user.education.department !== event.targetDepartment) {
+        return res.status(403).json({ message: `This event is restricted to ${event.targetDepartment} students only.` });
+      }
+    }
 
     // Check if user is already registered
     if (event.registeredUsers.includes(req.user._id)) {

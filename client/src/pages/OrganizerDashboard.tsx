@@ -16,6 +16,20 @@ const MOCK_LOCATIONS = [
   { id: '5', title: 'Bangalore', subtitle: 'Karnataka, India' },
 ];
 
+const DEPARTMENTS = [
+  'School of Engineering and Technology',
+  'School of Computer Applications',
+  'School of Business',
+  'School of Design',
+  'School of Humanities and Social Sciences',
+  'School of Economics',
+  'School of Law',
+  'School of Sciences',
+  'School of Hospitality',
+  'School of Mass Communications',
+  'Other'
+];
+
 export default function OrganizerDashboard() {
   const [activeTab, setActiveTab] = useState<'events' | 'create'>('events');
   const [eventFilter, setEventFilter] = useState<'upcoming' | 'past'>('upcoming');
@@ -97,6 +111,8 @@ export default function OrganizerDashboard() {
   const [generateQRCode, setGenerateQRCode] = useState(false);
   
   const [capacity, setCapacity] = useState('');
+  const [targetDepartment, setTargetDepartment] = useState('All');
+  const [isDeptDropdownOpen, setIsDeptDropdownOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formError, setFormError] = useState('');
@@ -169,6 +185,7 @@ export default function OrganizerDashboard() {
     formData.append('price', ticketType === 'Paid' ? ticketPrice : 'Free');
     formData.append('seats', maxTickets ? maxTickets : 'Limited');
     formData.append('generateQRCode', String(generateQRCode));
+    formData.append('targetDepartment', targetDepartment);
     formData.append('rules', instructions);
     formData.append('image', imageFile);
 
@@ -198,6 +215,7 @@ export default function OrganizerDashboard() {
       setEndTime('');
       setRegDeadlineDate('');
       setRegDeadlineTime('');
+      setTargetDepartment('All');
       setLocation('');
       setTicketType('Free');
       setTicketPrice('');
@@ -1130,6 +1148,68 @@ export default function OrganizerDashboard() {
                         onChange={e => setCapacity(e.target.value)}
                         style={{ background: 'transparent', border: 'none', textAlign: 'right', fontWeight: 700, color: '#555', width: '100px', outline: 'none' }} 
                       />
+                   </div>
+
+                   {/* Target Department */}
+                   <div style={{ background: '#eaeaea', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative' }}>
+                      <Users size={20} color="#888" />
+                      <div style={{ flex: 1, fontSize: '0.95rem', fontWeight: 700, color: '#555' }}>Target Department</div>
+                      
+                      <div 
+                        onClick={() => setIsDeptDropdownOpen(!isDeptDropdownOpen)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: '#fff', padding: '10px 16px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #dcdcdc' }}
+                      >
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {targetDepartment === 'All' ? 'All Departments' : targetDepartment}
+                        </span>
+                        <ChevronDown size={16} color="#555" style={{ transform: isDeptDropdownOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+                      </div>
+
+                      <AnimatePresence>
+                        {isDeptDropdownOpen && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }} 
+                            animate={{ opacity: 1, y: 0, scale: 1 }} 
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.15 }}
+                            style={{ 
+                              position: 'absolute', top: '100%', right: '20px', marginTop: '8px', background: '#fff', 
+                              padding: '8px', borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.12)', 
+                              zIndex: 9999, width: '280px', maxHeight: '250px', overflowY: 'auto', overflowX: 'hidden', border: '1px solid #eaeaea'
+                            }}
+                          >
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div 
+                                onClick={() => { setTargetDepartment('All'); setIsDeptDropdownOpen(false); }}
+                                style={{ 
+                                  padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, 
+                                  background: targetDepartment === 'All' ? '#fdf2f8' : 'transparent', 
+                                  color: targetDepartment === 'All' ? '#ec4899' : '#555', transition: '0.2s' 
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = targetDepartment === 'All' ? '#fdf2f8' : '#f9fafb'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = targetDepartment === 'All' ? '#fdf2f8' : 'transparent'}
+                              >
+                                All Departments
+                              </div>
+                              {DEPARTMENTS.map(d => (
+                                <div 
+                                  key={d}
+                                  onClick={() => { setTargetDepartment(d); setIsDeptDropdownOpen(false); }}
+                                  style={{ 
+                                    padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, 
+                                    background: targetDepartment === d ? '#eff6ff' : 'transparent', 
+                                    color: targetDepartment === d ? '#3b82f6' : '#555', transition: '0.2s' 
+                                  }}
+                                  onMouseEnter={(e) => e.currentTarget.style.background = targetDepartment === d ? '#eff6ff' : '#f9fafb'}
+                                  onMouseLeave={(e) => e.currentTarget.style.background = targetDepartment === d ? '#eff6ff' : 'transparent'}
+                                >
+                                  {d}
+                                </div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                    </div>
 
                    {/* Generate QR Code Toggle */}

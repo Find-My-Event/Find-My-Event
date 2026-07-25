@@ -326,7 +326,7 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
                <Loader2 className="spin" size={30} color="#0f172a" />
              </div>
           ) : clubEvents.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
               {clubEvents.map((event, idx) => (
                 <div 
                   key={idx} 
