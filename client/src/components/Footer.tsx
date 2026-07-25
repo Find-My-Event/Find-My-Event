@@ -23,7 +23,7 @@ const Footer = () => (
                   <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
                 </svg>
               ), 
-              href: 'https://www.instagram.com/theeventum/' 
+              href: 'https://www.instagram.com/the_eventum_?igsh=dmo4dWQ4dXFvZnFq' 
             },
             { 
               icon: (
@@ -119,28 +119,9 @@ const Footer = () => (
         © 2026 Eventum. All rights reserved.
       </p>
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Made by</span>
-        <a 
-          href="https://www.linkedin.com/in/nilesh-choudhary-5137ab229/" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{ fontSize: '0.8rem', color: '#C084FC', textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }}
-          onMouseOver={(e) => e.currentTarget.style.color = '#d8b4fe'}
-          onMouseOut={(e) => e.currentTarget.style.color = '#C084FC'}
-        >
-          Nilesh Choudhary
-        </a>
-        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>and</span>
-        <a 
-          href="https://www.linkedin.com/in/pratyush-sharma-65816531b" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{ fontSize: '0.8rem', color: '#C084FC', textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }}
-          onMouseOver={(e) => e.currentTarget.style.color = '#d8b4fe'}
-          onMouseOut={(e) => e.currentTarget.style.color = '#C084FC'}
-        >
-          Pratyush Sharma
-        </a>
+        <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>
+          Crafted with <span style={{ color: '#ef4444' }}>♥</span> for campus events
+        </span>
       </div>
     </div>
 
