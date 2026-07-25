@@ -17,6 +17,20 @@ const MOCK_LOCATIONS = [
   { id: '5', title: 'Clarks Amer', subtitle: 'Jawahar Lal Nehru Marg, Lal Bahadur Nagar, Chandrakala Colony, Jaipur, Rajasthan 302018' },
 ];
 
+const DEPARTMENTS = [
+  'School of Engineering and Technology',
+  'School of Computer Applications',
+  'School of Business',
+  'School of Design',
+  'School of Humanities and Social Sciences',
+  'School of Economics',
+  'School of Law',
+  'School of Sciences',
+  'School of Hospitality',
+  'School of Mass Communications',
+  'Other'
+];
+
 function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const [poster, setPoster] = useState<string | null>(event?.image || event?.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80');
   
@@ -45,6 +59,9 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   
   const [isEditingElig, setIsEditingElig] = useState(false);
   const [eligYears, setEligYears] = useState(event?.eligibility || '');
+  
+  const [isEditingDept, setIsEditingDept] = useState(false);
+  const [targetDepartment, setTargetDepartment] = useState(event?.targetDepartment || 'All');
   
   const [timeline, setTimeline] = useState<any[]>(event?.timeline?.length > 0 ? event.timeline : []);
   const [showAddTimeline, setShowAddTimeline] = useState(false);
@@ -378,6 +395,29 @@ function OverviewTab({ event, saveEvent }: { event: any, saveEvent: any }) {
         )}
       </div>
 
+      {/* Target Department Card */}
+      <div className="card-container">
+        <div className="card-header">
+          <h3 className="card-title">Target Department</h3>
+          <button className="add-btn" onClick={async () => {
+            if (isEditingDept) await saveEvent({ targetDepartment });
+            setIsEditingDept(!isEditingDept);
+          }}>
+             {isEditingDept ? <><Check size={14}/> Save</> : <><Edit2 size={14}/> Edit</>}
+          </button>
+        </div>
+        {isEditingDept ? (
+           <select value={targetDepartment} onChange={e=>setTargetDepartment(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '0.9rem', outline: 'none' }}>
+              <option value="All">All Departments</option>
+              {DEPARTMENTS.map(d => (
+                 <option key={d} value={d}>{d}</option>
+              ))}
+           </select>
+        ) : (
+           <div style={{ fontSize: '0.9rem', color: '#555', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{targetDepartment === 'All' ? 'Open to all departments' : targetDepartment}</div>
+        )}
+      </div>
+
       {/* Timeline Card */}
       <div className="card-container">
         <div className="card-header">
@@ -620,7 +660,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
        {/* Top Metrics */}
-       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
           <div className="card-hover" style={{ background: '#fff', border: '1px solid #eaeaea', padding: '1rem', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
              <div style={{ width: '40px', height: '40px', background: '#eff6ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Calendar size={20} color="#3b82f6" /></div>
              <div>
@@ -717,7 +757,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                   <button onClick={() => setIsAddingPersonal(!isAddingPersonal)} className="add-btn"><Plus size={14}/> Add Field</button>
                </div>
                
-               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                    {personalInfo.map(info => (
                      <div key={info.id} style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                        <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>{info.name}</span>
@@ -761,7 +801,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                   <button onClick={() => setIsAddingEdu(!isAddingEdu)} className="add-btn"><Plus size={14}/> Add Field</button>
                </div>
                
-               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                   {eduInfo.map(info => (
                      <div key={info.id} style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                        <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>{info.name}</span>
@@ -1071,7 +1111,7 @@ function ParticipantsTab({ event }: { event: any }) {
                     </div>
                  ))
                ) : (
-                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
                    {participants.map((p, i) => (
                      <div key={p.id || i} style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1095,7 +1135,7 @@ function ParticipantsTab({ event }: { event: any }) {
                        <div style={{ borderTop: '1px dashed #eaeaea', paddingTop: '1rem', marginTop: '0.5rem' }}>
                          <h5 style={{ margin: '0 0 12px 0', fontSize: '0.95rem', color: '#111', fontWeight: 800 }}>Registration Data</h5>
                          {p.answers && p.answers.length > 0 ? (
-                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
                              {p.answers.map((ans: any, idx: number) => {
                                const isLink = ans.answer && typeof ans.answer === 'string' && (ans.answer.startsWith('http') || ans.answer.startsWith('blob:'));
                                return (
@@ -1133,7 +1173,7 @@ function ParticipantsTab({ event }: { event: any }) {
                                         <div style={{ fontSize: '0.85rem', color: '#475569', margin: '4px 0 10px 0', fontWeight: 600 }}>{m.email} {m.phone ? `• ${m.phone}` : ''}</div>
                                         
                                         {m.customAnswers && m.customAnswers.length > 0 && (
-                                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+                                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
                                              {m.customAnswers.map((ans: any, aIdx: number) => {
                                                const isLink = ans.answer && typeof ans.answer === 'string' && (ans.answer.startsWith('http') || ans.answer.startsWith('blob:'));
                                                return (

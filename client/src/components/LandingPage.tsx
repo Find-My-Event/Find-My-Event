@@ -694,7 +694,7 @@ const SolutionSection = () => {
       <div className="lp-blob" style={{ width: '380px', height: '380px', background: 'rgba(139,92,246,0.08)', bottom: '-80px', left: '-80px', animationDelay: '2s' }} />
 
       <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '4rem', alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: '4rem', alignItems: 'center' }}>
 
           {/* Left text */}
           <div>
@@ -1152,7 +1152,7 @@ const TestimonialsSection = () => {
             Loved by students<br />across campus.
           </motion.h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem' }}>
           {TESTIMONIALS.map((t, i) => (
             <motion.div
               key={t.name}

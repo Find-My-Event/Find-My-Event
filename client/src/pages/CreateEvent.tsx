@@ -26,6 +26,20 @@ const inputStyle: CSSProperties = {
   fontFamily: "'Outfit', sans-serif",
 };
 
+const DEPARTMENTS = [
+  'School of Engineering and Technology',
+  'School of Computer Applications',
+  'School of Business',
+  'School of Design',
+  'School of Humanities and Social Sciences',
+  'School of Economics',
+  'School of Law',
+  'School of Sciences',
+  'School of Hospitality',
+  'School of Mass Communications',
+  'Other'
+];
+
 const labelStyle: CSSProperties = {
   display: 'block',
   color: 'var(--text-secondary)',
@@ -56,6 +70,7 @@ export default function CreateEvent() {
   const [mode, setMode] = useState('');
   const [location, setLocation] = useState('');
   const [capacity, setCapacity] = useState('');
+  const [targetDepartment, setTargetDepartment] = useState('All');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('/event1.png');
 
@@ -115,6 +130,7 @@ export default function CreateEvent() {
       formData.append('location', location.trim());
       formData.append('capacity', capacity ? capacity.toString() : '0');
       formData.append('generateQRCode', generateQRCode.toString());
+      formData.append('targetDepartment', targetDepartment);
       
       // Paid Fields
       formData.append('isPaid', isPaid.toString());
@@ -228,6 +244,18 @@ export default function CreateEvent() {
                       <label style={labelStyle}>Capacity</label>
                       <input style={inputStyle} type="number" min={0} value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="3000" />
                     </div>
+                    <div>
+                      <label style={labelStyle}>Target Department</label>
+                      <select style={{ ...inputStyle, cursor: 'pointer' }} value={targetDepartment} onChange={(e) => setTargetDepartment(e.target.value)}>
+                        <option value="All">All Departments</option>
+                        {DEPARTMENTS.map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
                     <div>
                       <label style={labelStyle}>Poster Image</label>
                       <input 

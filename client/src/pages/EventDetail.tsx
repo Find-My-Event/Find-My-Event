@@ -187,10 +187,20 @@ const EventDetail = ({ hash }: { hash?: string }) => {
             </motion.div>
 
             {/* Eligibility Card */}
-            {(rawEvent?.eligibility || (rawEvent?.participantType === 'team' && (rawEvent?.teamMin || rawEvent?.teamMax))) && (
+            {(rawEvent?.eligibility || (rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All') || (rawEvent?.participantType === 'team' && (rawEvent?.teamMin || rawEvent?.teamMax))) && (
               <div className="info-box order-7">
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem', color: '#0f172a' }}>Eligibility</h3>
                 <ul style={{ display: 'flex', flexDirection: 'column', gap: '1rem', listStyle: 'none', padding: 0, margin: 0 }}>
+                  {rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && (
+                     <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                       <div style={{ background: '#fee2e2', color: '#ef4444', padding: '0.4rem', borderRadius: '8px' }}>
+                         <GraduationCap size={18} />
+                       </div>
+                       <div style={{ fontSize: '1rem', color: '#334155', fontWeight: 600, lineHeight: 1.5, alignSelf: 'center' }}>
+                         Restricted to {rawEvent.targetDepartment}
+                       </div>
+                     </li>
+                  )}
                   {rawEvent?.eligibility && rawEvent.eligibility.split('\n').map((line: string, i: number) => (
                      <li key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                        <div style={{ background: '#fdf2f8', color: '#db2777', padding: '0.4rem', borderRadius: '8px' }}>
@@ -400,11 +410,28 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                       window.location.hash = '#signin';
                       return;
                     }
+                    if (rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All') {
+                      if (user?.education?.department !== rawEvent.targetDepartment) {
+                        alert(`You are not eligible for this event.\n\nThis event is restricted to ${rawEvent.targetDepartment} students.\nYour department is ${user?.education?.department || 'not specified'}.`);
+                        return;
+                      }
+                    }
                     if (!currentEvent.isRegistered) setShowRegister(true);
                   }}
-                  style={{ background: currentEvent.isRegistered ? '#10b981' : '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', padding: '1rem 3rem', fontSize: '1.1rem', fontWeight: 700, cursor: currentEvent.isRegistered ? 'default' : 'pointer', transition: 'background 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
+                  style={{ 
+                    background: currentEvent.isRegistered ? '#10b981' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? '#94a3b8' : '#0f172a'), 
+                    color: '#fff', 
+                    border: 'none', 
+                    borderRadius: '8px', 
+                    padding: '1rem 3rem', 
+                    fontSize: '1.1rem', 
+                    fontWeight: 700, 
+                    cursor: currentEvent.isRegistered ? 'default' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'not-allowed' : 'pointer'), 
+                    transition: 'background 0.2s', 
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)' 
+                  }}
                 >
-                  {currentEvent.isRegistered ? 'Registered' : 'Register Now'}
+                  {currentEvent.isRegistered ? 'Registered' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'Not Eligible' : 'Register Now')}
                 </button>
               </div>
               <div style={{ textAlign: 'center', fontSize: '0.9rem', color: '#94a3b8', marginTop: '2rem' }}>
