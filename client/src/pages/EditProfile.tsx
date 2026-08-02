@@ -779,15 +779,25 @@ export default function EditProfile() {
                     <input
                       type="tel"
                       maxLength={10}
-                      value={profileData.phone ? profileData.phone.replace(/^\+91\s?/, '') : ''}
+                      value={(() => {
+                        if (!profileData.phone) return '';
+                        let str = String(profileData.phone).trim();
+                        if (str.startsWith('+91')) {
+                          str = str.replace(/^\+91\s?/, '');
+                        } else if (str.startsWith('91') && str.length > 10) {
+                          str = str.replace(/^91\s?/, '');
+                        }
+                        return str.replace(/\D/g, '').slice(0, 10);
+                      })()}
                       onChange={e => {
-                        const digits = e.target.value.replace(/\D/g, '');
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
                         setProfileData({ ...profileData, phone: digits ? `+91 ${digits}` : '' });
                       }}
-                      placeholder="Enter 10-digit phone number"
+                      placeholder="Enter 10-digit mobile number"
                       style={{ width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', fontSize: '0.95rem', outline: 'none', fontFamily: 'Inter, sans-serif' }}
                     />
                   </div>
+                  <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', display: 'block' }}>10-digit mobile number starting with 6, 7, 8, or 9</span>
                 </div>
                 <div className="edit-profile-subgrid">
                   <div style={{ flex: 1 }}>

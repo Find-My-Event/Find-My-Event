@@ -5,7 +5,7 @@ const Club = require('../models/Club');
 const User = require('../models/User');
 const { upload } = require('../config/cloudinary');
 const bcrypt = require('bcryptjs');
-const { transporter } = require('../utils/email');
+const { resend } = require('../utils/email');
 
 // Middleware to ensure user is an organizer
 const requireOrganizer = (req, res, next) => {
@@ -116,7 +116,7 @@ router.post('/request-password-change', requireAuth, requireOrganizer, async (re
     await user.save();
 
     const mailOptions = {
-      from: `"Eventum Security" <${process.env.GMAIL_USER}>`,
+      from: `Eventum <support@theeventum.com>`,
       to: club.presidentEmail,
       subject: 'Password Change Request - Eventum',
       text: `Your OTP for changing the organizer password is: ${otp}. It expires in 10 minutes.`,
@@ -130,7 +130,11 @@ router.post('/request-password-change', requireAuth, requireOrganizer, async (re
       `
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+      await resend.emails.send(mailOptions);
+    } catch (e) {
+      console.error('Failed to send resend email:', e);
+    }
 
     // Return masked email
     const [name, domain] = club.presidentEmail.split('@');

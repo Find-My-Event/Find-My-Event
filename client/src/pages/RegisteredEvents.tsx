@@ -42,7 +42,15 @@ export default function RegisteredEvents() {
       timePart = parts[1] || timePart;
     }
 
-    const d = new Date(datePart);
+    // Handle date ranges (e.g. "2026-07-25T12:30 - 2026-07-27T12:30")
+    let datePartForParsing = datePart;
+    if (datePart.includes(' - ')) {
+      datePartForParsing = datePart.split(' - ')[0].trim();
+    } else if (datePart.includes(' to ')) {
+      datePartForParsing = datePart.split(' to ')[0].trim();
+    }
+
+    const d = new Date(datePartForParsing);
     if (isNaN(d.getTime())) {
       return {
         day: '📅',
@@ -51,7 +59,7 @@ export default function RegisteredEvents() {
         weekday: '',
         fullDate: dateStr,
         time: timePart || 'TBA',
-        timelineDate: datePart,
+        timelineDate: datePart.includes(' - ') ? datePart.split(' - ')[0].substring(0, 10) : datePart,
         timelineDay: ''
       };
     }

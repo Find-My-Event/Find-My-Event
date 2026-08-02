@@ -41,7 +41,7 @@ const Home2 = () => {
   }, []);
 
   const categories = [
-    { name: 'Hackathon', icon: '🎪', color: '#ffb3ba' },
+    { name: 'Hackathon', icon: '💻', color: '#ffb3ba' },
     { name: 'Photography', icon: '📷', color: '#baffc9' },
     { name: 'E-Sports', icon: '🎮', color: '#bae1ff' },
     { name: 'Sports', icon: '🏆', color: '#d5baff' },
@@ -101,11 +101,11 @@ const Home2 = () => {
   }, []);
 
   const filteredEvents = eventsList.filter(ev => activeCategory === 'All' || ev.category === activeCategory);
-  
+
   const displayedClubs = showAllClubs ? clubs : clubs.filter(c => c.type === 'Initiative');
 
   const top5Events = eventsList.slice(0, 5);
-  const displayEvents = top5Events.length > 0 
+  const displayEvents = top5Events.length > 0
     ? [0, 1, 2, 3, 4].map(i => top5Events[i % top5Events.length])
     : [1, 2, 3, 4, 5].map(item => ({ id: `loading-${item}`, title: `Loading...`, isLoading: true }));
 
@@ -334,11 +334,11 @@ const Home2 = () => {
         </div>
       ) : (
         <>
-          {/* Clubs Section */}
+          {/* Clubs & Initiatives Section */}
           <section style={{ maxWidth: '1440px', margin: '0 auto', padding: '3rem 2.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Explore Clubs in JECRC</h2>
-              <button 
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Explore Initiatives in JECRC</h2>
+              <button
                 onClick={() => {
                   if (!showAllClubs) {
                     setShowAllClubs(true);

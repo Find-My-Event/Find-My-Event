@@ -127,7 +127,7 @@ const Navbar: React.FC = () => {
           top: 0,
           left: 0,
           width: '100%',
-          height: isInnerPage ? '64px' : '140px', // Tall wrapper for the gradient
+          height: isInnerPage ? (isMobile ? '64px' : '90px') : '160px', // Tall wrapper for the gradient
           zIndex: 1000,
           pointerEvents: 'none', // Let clicks pass through the invisible part of the gradient
           background: isInnerPage 
@@ -138,43 +138,57 @@ const Navbar: React.FC = () => {
       >
         <nav
           style={{
-            height: '64px',
+            height: isMobile ? '64px' : '76px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: isMobile ? '0 1.25rem' : '0 3rem',
+            padding: isMobile ? '0 1.25rem' : '1.25rem 4rem 0',
             pointerEvents: 'auto', // Re-enable clicks for the actual navbar
           }}
         >
           {/* ── Logo ── */}
           <div
             style={{
-              fontWeight: 600,
-              fontSize: '20px',
+              fontWeight: 700,
+              fontSize: isMobile ? '20px' : '23px',
               fontFamily: 'Inter, sans-serif',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem',
+              gap: isMobile ? '0.75rem' : '0.85rem',
               color: textColor,
+              padding: isMobile ? '0' : '4px 8px',
             }}
             onClick={() => { window.location.hash = ''; setIsMobileMenuOpen(false); }}
           >
-            <img src={logoSrc} alt="Eventum Logo" style={{ height: '32px', width: 'auto' }} />
+            <img src={logoSrc} alt="Eventum Logo" style={{ height: isMobile ? '32px' : '38px', width: 'auto' }} />
             <span>Eventum<span style={{ color: '#EC4899' }}>.</span></span>
           </div>
 
           {/* ── Nav links ── */}
-          <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} className="mobile-hidden">
+          <div style={{ display: 'flex', gap: isMobile ? '1.5rem' : '2.5rem', alignItems: 'center', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} className="mobile-hidden">
           {navLinks.map(link => {
             const IconComponent = link.icon === 'Home' ? Home : link.icon === 'Award' ? Award : link.icon === 'Command' ? Command : link.icon === 'LayoutGrid' ? LayoutGrid : link.icon === 'Globe' ? Globe : null;
             return (
               <a
                 key={link.name}
                 href={link.href}
-                style={{ textDecoration: 'none', color: textColor, opacity: hash === link.href ? 1 : 0.75, display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '16px', fontWeight: 600, fontFamily: 'Inter, sans-serif' }}
+                style={{ 
+                  textDecoration: 'none', 
+                  color: textColor, 
+                  opacity: hash === link.href ? 1 : 0.8, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.45rem', 
+                  fontSize: isMobile ? '16px' : '18px', 
+                  fontWeight: 600, 
+                  fontFamily: 'Inter, sans-serif',
+                  padding: isMobile ? '4px 8px' : '8px 16px',
+                  borderRadius: '12px',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                {IconComponent && <IconComponent size={18} />}
+                {IconComponent && <IconComponent size={isMobile ? 18 : 20} />}
                 {link.name}
               </a>
             );
@@ -182,7 +196,7 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* ── Right actions ── */}
-        <div className="mobile-hidden" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <div className="mobile-hidden" style={{ display: 'flex', alignItems: 'center', gap: '1.75rem' }}>
 
 
           {isLoggedIn ? (
@@ -193,9 +207,9 @@ const Navbar: React.FC = () => {
                   whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                   onClick={() => window.location.hash = '#admin'}
                   className="nav-button"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', border: '1px solid rgba(139,92,246,0.3)' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem', padding: '8px 16px', border: '1px solid rgba(139,92,246,0.3)' }}
                 >
-                  <TrendingUp size={14} /> Admin
+                  <TrendingUp size={16} /> Admin
                 </motion.button>
               )}
 
@@ -204,15 +218,15 @@ const Navbar: React.FC = () => {
                 <motion.div
                   whileHover={{ scale: 1.1 }}
                   className="nav-icon-button"
-                  style={{ cursor: 'pointer', color: isInnerPage ? 'rgba(255,255,255,0.6)' : '#666' }}
+                  style={{ cursor: 'pointer', color: isInnerPage ? 'rgba(255,255,255,0.6)' : '#666', padding: '6px' }}
                   onClick={() => {
                     if (!showNotifications) fetchNotifications();
                     setShowNotifications(!showNotifications);
                   }}
                 >
-                  <Bell size={18} strokeWidth={2} />
+                  <Bell size={20} strokeWidth={2} />
                   {visibleNotifications.length > 0 && (
-                    <span style={{ position: 'absolute', top: '2px', right: '2px', width: '7px', height: '7px', background: '#8B5CF6', borderRadius: '50%', border: '1.5px solid #fff' }} />
+                    <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', background: '#8B5CF6', borderRadius: '50%', border: '1.5px solid #fff' }} />
                   )}
                 </motion.div>
                 <AnimatePresence>
@@ -258,10 +272,10 @@ const Navbar: React.FC = () => {
                 <motion.div
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   whileHover={{ scale: 1.05 }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', cursor: 'pointer', background: 'rgba(0,0,0,0.04)', padding: '2px 4px 2px 2px', borderRadius: '999px', border: '1px solid rgba(0,0,0,0.06)' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer', background: 'rgba(0,0,0,0.04)', padding: '4px 8px 4px 4px', borderRadius: '999px', border: '1px solid rgba(0,0,0,0.06)' }}
                 >
-                  <img src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'} alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
-                  <ChevronDown size={12} color="#888" />
+                  <img src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'} alt="Avatar" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <ChevronDown size={14} color="#888" />
                 </motion.div>
 
                 <AnimatePresence>
@@ -311,9 +325,9 @@ const Navbar: React.FC = () => {
                 background: '#000',
                 color: '#fff',
                 border: 'none',
-                padding: '10px 24px',
+                padding: '12px 28px',
                 borderRadius: '999px',
-                fontSize: '14px',
+                fontSize: '15.5px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 fontFamily: 'Inter, sans-serif'

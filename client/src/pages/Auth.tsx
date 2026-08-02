@@ -137,6 +137,8 @@ const Auth: React.FC = () => {
   const [forgotNewPassword, setForgotNewPassword] = useState('');
   const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
 
+  const [forgotMessage, setForgotMessage] = useState('');
+
   const handleForgotSendOtp = async () => {
     if (!formData.email) {
       setError('Email is required');
@@ -145,7 +147,12 @@ const Auth: React.FC = () => {
     setError('');
     setIsSubmitting(true);
     try {
-      await api.post('/auth/forgot-password-send-otp', { email: formData.email });
+      const res = await api.post('/auth/forgot-password-send-otp', { email: formData.email });
+      if (res.data.email) {
+        setForgotMessage(`OTP has been sent to recovery/president email: ${res.data.email}`);
+      } else {
+        setForgotMessage(`OTP has been sent to recovery email: ${formData.email}`);
+      }
       setStep('forgot_password_otp');
     } catch (err: any) {
       setError(err.response?.data?.message || err.response?.data?.error || 'Failed to send OTP');
@@ -227,9 +234,66 @@ const Auth: React.FC = () => {
     setStep('login'); 
   };
 
+  const validateSignup = () => {
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) return 'Full Name is required';
+    if (trimmedName.length < 2 || trimmedName.length > 60) return 'Full Name must be between 2 and 60 characters';
+    if (!/^[a-zA-Z\s.'-]+$/.test(trimmedName)) return 'Full Name can only contain letters, spaces, dots, and hyphens (no numbers or special characters)';
+
+    const trimmedEmail = formData.email.trim();
+    if (!trimmedEmail) return 'Email address is required';
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmedEmail)) return 'Please enter a valid email address';
+
+    if (!formData.password) return 'Password is required';
+    if (formData.password.length < 6) return 'Password must be at least 6 characters long';
+
+    return null;
+  };
+
+  const validateProfileSetup = () => {
+    const trimmedName = profileData.name.trim();
+    if (!trimmedName) return 'Full Name is required';
+    if (trimmedName.length < 2 || trimmedName.length > 60) return 'Full Name must be between 2 and 60 characters';
+    if (!/^[a-zA-Z\s.'-]+$/.test(trimmedName)) return 'Full Name can only contain letters, spaces, dots, and hyphens (no numbers or special characters)';
+
+    if (profileData.age !== '' && profileData.age !== null && profileData.age !== undefined) {
+      const ageStr = String(profileData.age).trim();
+      if (!/^\d+$/.test(ageStr)) return 'Age must be a valid number';
+      const ageNum = parseInt(ageStr, 10);
+      if (ageNum < 10 || ageNum > 100) return 'Age must be a valid number between 10 and 100 years';
+    }
+
+    if (profileData.phone) {
+      const digitsOnly = profileData.phone.replace(/\D/g, '');
+      const mobile10 = digitsOnly.slice(-10);
+      if (digitsOnly.length > 0 && (mobile10.length !== 10 || !/^[6-9]\d{9}$/.test(mobile10))) {
+        return 'Phone number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9';
+      }
+    }
+
+    if (profileData.bio && profileData.bio.length > 300) {
+      return 'Bio cannot exceed 300 characters';
+    }
+
+    if (profileData.education?.collegeName && profileData.education.collegeName.length > 120) {
+      return 'College / University name cannot exceed 120 characters';
+    }
+
+    return null;
+  };
+
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (step === 'signup') {
+      const vErr = validateSignup();
+      if (vErr) {
+        setError(vErr);
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
       if (step === 'login') {
@@ -246,7 +310,7 @@ const Auth: React.FC = () => {
         }
         setTimeout(() => sessionStorage.removeItem('loggingIn'), 1000);
       } else if (step === 'signup') {
-        await register(formData.name, formData.email, formData.password);
+        await register(formData.name.trim(), formData.email.trim(), formData.password);
         setStep('otp');
       }
     } catch (err: any) {
@@ -288,14 +352,22 @@ const Auth: React.FC = () => {
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    const vErr = validateProfileSetup();
+    if (vErr) {
+      setError(vErr);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await setupProfile({
-        name: profileData.name,
-        bio: profileData.bio,
+        name: profileData.name.trim(),
+        bio: profileData.bio.trim(),
         avatar: profileData.avatar,
         phone: profileData.phone,
-        age: profileData.age ? parseInt(profileData.age as string) : undefined,
+        age: profileData.age ? parseInt(profileData.age as string, 10) : undefined,
         gender: profileData.gender,
         education: profileData.education,
         interests: profileData.interests.split(',').map(i => i.trim()).filter(i => i !== ''),
@@ -304,8 +376,11 @@ const Auth: React.FC = () => {
       setStep('welcome');
       sessionStorage.setItem('loggingIn', 'true');
       setTimeout(() => { window.location.hash = '#home'; }, 3000);
-    } catch { setError('Failed to setup profile'); }
-    finally { setIsSubmitting(false); }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to setup profile');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const GoogleIcon = () => (
@@ -370,7 +445,7 @@ const Auth: React.FC = () => {
           {step === 'signup' && 'Enter your details to create an account'}
           {step === 'otp' && `We sent a 6-digit code to ${formData.email}`}
           {step === 'profile' && 'Tell us more about yourself and your academic background'}
-          {step === 'forgot_password_otp' && `We sent a 6-digit reset code to ${formData.email}`}
+          {step === 'forgot_password_otp' && (forgotMessage || `We sent a 6-digit reset code to ${formData.email}`)}
           {step === 'forgot_password_reset' && 'Enter your new password below'}
         </p>
 
@@ -427,16 +502,28 @@ const Auth: React.FC = () => {
           <>
             <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Full Name</label>
-                <input name="name" value={formData.name} onChange={handleChange} placeholder="Enter your full name" required style={inputStyle} />
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Full Name *</label>
+                <input 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={(e) => {
+                    const sanitized = e.target.value.replace(/[^a-zA-Z\s.'-]/g, '');
+                    setFormData({ ...formData, name: sanitized });
+                  }} 
+                  placeholder="Enter your full name (letters only)" 
+                  maxLength={60}
+                  required 
+                  style={inputStyle} 
+                />
+                <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', display: 'block' }}>Letters, spaces, dots and hyphens only</span>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Email</label>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Email *</label>
                 <input name="email" type="email" value={formData.email} onChange={handleChange} style={{ ...inputStyle, background: '#f5f5f5' }} readOnly />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Password</label>
-                <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required style={inputStyle} />
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Password *</label>
+                <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="•••••••• (Min 6 characters)" required style={inputStyle} />
               </div>
               <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
                 {isSubmitting ? <Loader2 className="spin" size={18} /> : 'Create Account'}
@@ -452,7 +539,7 @@ const Auth: React.FC = () => {
         {step === 'otp' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <form onSubmit={handleOtpVerify} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <input type="text" maxLength={6} value={formData.otp} onChange={(e) => setFormData({ ...formData, otp: e.target.value })} placeholder="000000" style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.6rem', fontSize: '1.4rem' }} />
+              <input type="text" maxLength={6} value={formData.otp} onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/\D/g, '') })} placeholder="000000" style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.6rem', fontSize: '1.4rem' }} />
               <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
                 {isSubmitting ? <Loader2 className="spin" size={18} /> : 'Verify Code'}
               </motion.button>
@@ -463,7 +550,7 @@ const Auth: React.FC = () => {
         {step === 'forgot_password_otp' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <form onSubmit={handleForgotVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <input type="text" maxLength={6} value={formData.otp} onChange={(e) => setFormData({ ...formData, otp: e.target.value })} placeholder="000000" required style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.6rem', fontSize: '1.4rem' }} />
+              <input type="text" maxLength={6} value={formData.otp} onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/\D/g, '') })} placeholder="000000" required style={{ ...inputStyle, textAlign: 'center', letterSpacing: '0.6rem', fontSize: '1.4rem' }} />
               <motion.button whileTap={{ scale: 0.98 }} disabled={isSubmitting} type="submit" style={{ ...btnDark, background: '#7c3aed' }}>
                 {isSubmitting ? <Loader2 className="spin" size={18} /> : 'Verify Code'}
               </motion.button>
@@ -544,11 +631,16 @@ const Auth: React.FC = () => {
                   <input
                     type="text"
                     value={profileData.name}
-                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                    onChange={(e) => {
+                      const sanitized = e.target.value.replace(/[^a-zA-Z\s.'-]/g, '');
+                      setProfileData({ ...profileData, name: sanitized });
+                    }}
                     placeholder="Enter your full name"
+                    maxLength={60}
                     required
                     style={inputStyle}
                   />
+                  <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px', display: 'block' }}>Letters, spaces, dots and hyphens only (2-60 chars)</span>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Email Address (Locked)</label>
@@ -564,8 +656,21 @@ const Auth: React.FC = () => {
 
               <div className="responsive-grid">
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Age</label>
-                  <input type="number" value={profileData.age} onChange={(e) => setProfileData({ ...profileData, age: e.target.value })} placeholder="20" style={inputStyle} />
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Age (10 - 100)</label>
+                  <input 
+                    type="number" 
+                    min={10}
+                    max={100}
+                    value={profileData.age} 
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (!val || (parseInt(val, 10) <= 100)) {
+                        setProfileData({ ...profileData, age: val });
+                      }
+                    }} 
+                    placeholder="e.g. 20" 
+                    style={inputStyle} 
+                  />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: '#475569' }}>Gender</label>
@@ -584,15 +689,25 @@ const Auth: React.FC = () => {
                   <input
                     type="tel"
                     maxLength={10}
-                    value={profileData.phone ? profileData.phone.replace(/^\+91\s?/, '') : ''}
+                    value={(() => {
+                      if (!profileData.phone) return '';
+                      let str = String(profileData.phone).trim();
+                      if (str.startsWith('+91')) {
+                        str = str.replace(/^\+91\s?/, '');
+                      } else if (str.startsWith('91') && str.length > 10) {
+                        str = str.replace(/^91\s?/, '');
+                      }
+                      return str.replace(/\D/g, '').slice(0, 10);
+                    })()}
                     onChange={(e) => {
-                      const digits = e.target.value.replace(/\D/g, '');
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
                       setProfileData({ ...profileData, phone: digits ? `+91 ${digits}` : '' });
                     }}
-                    placeholder="Enter 10-digit phone number"
+                    placeholder="Enter 10-digit mobile number"
                     style={{ ...inputStyle, border: 'none', borderRadius: 0, flex: 1, padding: '0.875rem 1rem' }}
                   />
                 </div>
+                <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', display: 'block' }}>10-digit mobile number starting with 6, 7, 8, or 9</span>
               </div>
 
               <div>
