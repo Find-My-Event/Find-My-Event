@@ -163,7 +163,7 @@ const Footer = () => (
 
     <style>{`
       @media (max-width: 768px) {
-        .site-footer { padding: 3rem 1.5rem 2rem !important; }
+        .site-footer { padding: 3rem 1.5rem 2rem !important; border-radius: 32px 32px 0 0; }
         .footer-columns { gap: 2rem !important; }
       }
     `}</style>

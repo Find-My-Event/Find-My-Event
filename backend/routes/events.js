@@ -843,6 +843,32 @@ router.post('/:id/register', requireAuth, async (req, res) => {
       return res.status(400).json({ message: 'Already registered for this event' });
     }
 
+    // Server-side validation of team members/participants
+    if (req.body.teamMembers && Array.isArray(req.body.teamMembers)) {
+      for (let i = 0; i < req.body.teamMembers.length; i++) {
+        const m = req.body.teamMembers[i];
+        if (m.name) {
+          const nameTrimmed = String(m.name).trim();
+          if (nameTrimmed.length < 2 || nameTrimmed.length > 60 || !/^[a-zA-Z\s.'-]+$/.test(nameTrimmed)) {
+            return res.status(400).json({ message: `Member ${i + 1} Name can only contain letters, spaces, dots, and hyphens (2-60 chars)` });
+          }
+        }
+        if (m.email) {
+          const emailTrimmed = String(m.email).trim();
+          if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailTrimmed)) {
+            return res.status(400).json({ message: `Member ${i + 1} Email is invalid` });
+          }
+        }
+        if (m.phone) {
+          const phoneDigits = String(m.phone).replace(/\D/g, '');
+          const mobile10 = phoneDigits.slice(-10);
+          if (phoneDigits.length === 0 || mobile10.length !== 10 || !/^[6-9]\d{9}$/.test(mobile10)) {
+            return res.status(400).json({ message: `Member ${i + 1} Phone must be a valid 10-digit mobile number starting with 6, 7, 8, or 9` });
+          }
+        }
+      }
+    }
+
     // Update user's phone number if provided in the registration form
     if (req.body.teamMembers && req.body.teamMembers[0] && req.body.teamMembers[0].phone) {
       await User.findByIdAndUpdate(req.user._id, { phone: req.body.teamMembers[0].phone });

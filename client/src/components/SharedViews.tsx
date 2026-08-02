@@ -453,14 +453,20 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
 
   const validateCurrentStep = (): { valid: boolean; message?: string } => {
     const m = teamMembers[currentStep];
-    if (!m.name) return { valid: false, message: "Name is required" };
-    if (!m.email) return { valid: false, message: "Email is required" };
-    if (!m.phone) return { valid: false, message: "Phone number is required" };
+    const nameTrimmed = (m.name || '').trim();
+    if (!nameTrimmed) return { valid: false, message: "Full Name is required" };
+    if (nameTrimmed.length < 2 || nameTrimmed.length > 60) return { valid: false, message: "Full Name must be between 2 and 60 characters" };
+    if (!/^[a-zA-Z\s.'-]+$/.test(nameTrimmed)) return { valid: false, message: "Full Name can only contain letters, spaces, dots, and hyphens (no numbers or special characters)" };
 
-    const phoneDigits = m.phone.replace(/[^0-9]/g, '');
-    if (phoneDigits.length !== 10) return { valid: false, message: "Please enter a valid 10-digit mobile number" };
+    const emailTrimmed = (m.email || '').trim();
+    if (!emailTrimmed) return { valid: false, message: "Email address is required" };
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailTrimmed)) return { valid: false, message: "Please enter a valid email address" };
 
-    
+    const phoneDigits = (m.phone || '').replace(/\D/g, '');
+    const mobile10 = phoneDigits.slice(-10);
+    if (!phoneDigits) return { valid: false, message: "Phone number is required" };
+    if (mobile10.length !== 10 || !/^[6-9]\d{9}$/.test(mobile10)) return { valid: false, message: "Phone number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9" };
+
     // Check Custom Questions
     if (event.customQuestions?.length > 0) {
       for (let q of event.customQuestions) {
@@ -634,14 +640,47 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                         <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. Full Name *</label>
-                        <input required type="text" value={currentMember.name} onChange={e => updateMember('name', e.target.value)}
-                        style={{ width: '100%', padding: '0.85rem 1rem', background: currentMember.name ? '#ffffff' : '#F3F4F6', border: currentMember.name ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit' }} />
+                        <input 
+                          required 
+                          type="text" 
+                          maxLength={60}
+                          value={currentMember.name} 
+                          onChange={e => updateMember('name', e.target.value.replace(/[^a-zA-Z\s.'-]/g, ''))}
+                          placeholder="Enter full name (letters only)"
+                          style={{ width: '100%', padding: '0.85rem 1rem', background: currentMember.name ? '#ffffff' : '#F3F4F6', border: currentMember.name ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit' }} 
+                        />
+                        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Letters, spaces, dots and hyphens only (2-60 chars)</span>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                         <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#475569' }}>{qNum++}. Mobile Number *</label>
-                        <input required type="text" value={currentMember.phone} onChange={e => updateMember('phone', e.target.value)}
-                        style={{ width: '100%', padding: '0.85rem 1rem', background: currentMember.phone ? '#ffffff' : '#F3F4F6', border: currentMember.phone ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', border: currentMember.phone ? '1px solid #cbd5e1' : '1px solid transparent', borderRadius: '8px', overflow: 'hidden', background: currentMember.phone ? '#ffffff' : '#F3F4F6' }}>
+                          <span style={{ padding: '0.85rem 1rem', background: '#e2e8f0', borderRight: '1px solid #cbd5e1', color: '#334155', fontWeight: 700, fontSize: '0.9rem', userSelect: 'none' }}>
+                            +91
+                          </span>
+                          <input 
+                            required 
+                            type="tel" 
+                            maxLength={10}
+                            value={(() => {
+                              if (!currentMember.phone) return '';
+                              let str = String(currentMember.phone).trim();
+                              if (str.startsWith('+91')) {
+                                str = str.replace(/^\+91\s?/, '');
+                              } else if (str.startsWith('91') && str.length > 10) {
+                                str = str.replace(/^91\s?/, '');
+                              }
+                              return str.replace(/\D/g, '').slice(0, 10);
+                            })()} 
+                            onChange={e => {
+                              const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                              updateMember('phone', digits ? `+91 ${digits}` : '');
+                            }}
+                            placeholder="Enter 10-digit mobile number"
+                            style={{ width: '100%', padding: '0.85rem 1rem', border: 'none', background: 'transparent', color: '#111', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit' }} 
+                          />
+                        </div>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>10-digit mobile number starting with 6, 7, 8, or 9</span>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>

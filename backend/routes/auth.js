@@ -6,6 +6,7 @@ const { resend } = require('../utils/email');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { requireAuth, syncAdminRole } = require('../middleware/auth');
+const Club = require('../models/Club');
 const { upload } = require('../config/cloudinary');
 
 function userResponse(user) {
@@ -32,8 +33,54 @@ function userResponse(user) {
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+// Security and Data Type Validation Helper
+function validateUserData({ name, email, age, phone }) {
+  if (name !== undefined) {
+    const trimmedName = String(name).trim();
+    if (!trimmedName || trimmedName.length < 2 || trimmedName.length > 60) {
+      return 'Name must be between 2 and 60 characters';
+    }
+    if (!/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
+      return 'Name can only contain letters, spaces, dots, and hyphens';
+    }
+  }
+
+  if (email !== undefined) {
+    const trimmedEmail = String(email).trim();
+    if (!trimmedEmail || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmedEmail)) {
+      return 'Please enter a valid email address';
+    }
+  }
+
+  if (age !== undefined && age !== '' && age !== null) {
+    const numAge = Number(age);
+    if (isNaN(numAge) || !Number.isInteger(numAge) || numAge < 10 || numAge > 100) {
+      return 'Age must be a valid integer number between 10 and 100';
+    }
+  }
+
+  if (phone !== undefined && phone !== '' && phone !== null) {
+    const digitsOnly = String(phone).replace(/\D/g, '');
+    const mobile10 = digitsOnly.slice(-10);
+    if (digitsOnly.length > 0 && (mobile10.length !== 10 || !/^[6-9]\d{9}$/.test(mobile10))) {
+      return 'Phone number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9';
+    }
+  }
+
+  return null;
+}
+
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
+
+  const valErr = validateUserData({ name, email });
+  if (valErr) {
+    return res.status(400).json({ message: valErr });
+  }
+
+  if (!password || password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+  }
 
   try {
     let user = await User.findOne({ email });
@@ -138,18 +185,23 @@ router.post('/setup-profile', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (name) user.name = name;
-    if (bio !== undefined) user.bio = bio;
+    const valErr = validateUserData({ name, age, phone });
+    if (valErr) {
+      return res.status(400).json({ message: valErr });
+    }
+
+    if (name) user.name = String(name).trim();
+    if (bio !== undefined) user.bio = String(bio).trim();
     if (avatar) user.avatar = avatar;
-    if (phone !== undefined) user.phone = phone;
+    if (phone !== undefined) user.phone = phone ? String(phone).trim() : '';
     if (age !== undefined) user.age = (age === '' || age === null) ? undefined : Number(age);
     if (gender !== undefined) user.gender = gender;
     if (education !== undefined) {
       user.education = {
-        collegeName: education.collegeName || '',
-        department: education.department || '',
-        course: education.course || '',
-        year: education.year || ''
+        collegeName: education.collegeName ? String(education.collegeName).trim() : '',
+        department: education.department ? String(education.department).trim() : '',
+        course: education.course ? String(education.course).trim() : '',
+        year: education.year ? String(education.year).trim() : ''
       };
     }
     if (interests !== undefined) user.interests = Array.isArray(interests) ? interests : [];
@@ -174,10 +226,15 @@ router.put('/update-profile', async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    if (name) user.name = name;
-    if (bio !== undefined) user.bio = bio;
+    const valErr = validateUserData({ name, age, phone });
+    if (valErr) {
+      return res.status(400).json({ message: valErr });
+    }
+
+    if (name) user.name = String(name).trim();
+    if (bio !== undefined) user.bio = String(bio).trim();
     if (avatar) user.avatar = avatar;
-    if (phone !== undefined) user.phone = phone;
+    if (phone !== undefined) user.phone = phone ? String(phone).trim() : '';
     if (age !== undefined) user.age = (age === '' || age === null) ? undefined : Number(age);
     if (gender !== undefined) user.gender = gender;
     if (education !== undefined) {
@@ -345,6 +402,22 @@ router.post('/forgot-password-send-otp', async (req, res) => {
       return res.status(400).json({ message: 'Google users do not have a password' });
     }
 
+    let targetEmail = dbUser.email;
+    let maskedEmail = '';
+
+    if (dbUser.role === 'organizer') {
+      const club = await Club.findOne({ organizerAccount: dbUser._id });
+      if (!club || !club.presidentEmail) {
+        return res.status(400).json({ message: 'Recovery email not found. Please contact the Admin to reset your password.' });
+      }
+      targetEmail = club.presidentEmail;
+      const [name, domain] = targetEmail.split('@');
+      maskedEmail = `${name.substring(0, 2)}***@${domain}`;
+    } else {
+      const [name, domain] = targetEmail.split('@');
+      maskedEmail = `${name.substring(0, 2)}***@${domain}`;
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -354,7 +427,7 @@ router.post('/forgot-password-send-otp', async (req, res) => {
 
     const mailOptions = {
       from: `Eventum <support@theeventum.com>`,
-      to: dbUser.email,
+      to: targetEmail,
       subject: 'Password Reset Code - Eventum',
       text: `Your OTP to reset your password is: ${otp}. It expires in 10 minutes.`,
       html: `
@@ -380,7 +453,7 @@ router.post('/forgot-password-send-otp', async (req, res) => {
       console.error('Failed to send resend email:', e);
     }
 
-    res.status(200).json({ message: `OTP sent to ${dbUser.email}` });
+    res.status(200).json({ message: `OTP sent successfully`, email: maskedEmail });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
