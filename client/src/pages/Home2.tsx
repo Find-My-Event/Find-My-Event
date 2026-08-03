@@ -12,6 +12,38 @@ const Home2 = () => {
   const marker2Ref = useRef<HTMLSpanElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const exactScroll = useRef(0);
+
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const scroll = () => {
+      const scrollContainer = scrollRef.current;
+      if (scrollContainer) {
+        if (!isHovered) {
+          exactScroll.current += 0.5;
+          scrollContainer.scrollLeft = exactScroll.current;
+          
+          // If we've scrolled past half the content (which is the original list), jump back to start
+          if (scrollContainer.scrollLeft >= scrollContainer.scrollWidth / 2) {
+            scrollContainer.scrollLeft = 0;
+            exactScroll.current = 0;
+          }
+        } else {
+          // If user manually scrolls while paused, sync the exact position
+          exactScroll.current = scrollContainer.scrollLeft;
+        }
+      }
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    animationFrameId = requestAnimationFrame(scroll);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isHovered]);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -291,7 +323,7 @@ const Home2 = () => {
       </section>
 
       {/* Categories Section */}
-      <section className="categories-section" style={{ maxWidth: '1440px', margin: '0 auto', padding: '2rem 2.5rem' }}>
+      <section className="categories-section" style={{ maxWidth: '1440px', margin: '0 auto', padding: isMobile ? '1.5rem 1.5rem 1rem' : '2rem 2.5rem 1rem' }}>
         <h2 className="categories-title" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem' }}>Explore Events Categories</h2>
         <div className="categories-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '1.5rem' }}>
           {categories.map((cat) => (
@@ -335,36 +367,38 @@ const Home2 = () => {
       ) : (
         <>
           {/* Clubs & Initiatives Section */}
-          <section style={{ maxWidth: '1440px', margin: '0 auto', padding: '3rem 2.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Explore Initiatives in JECRC</h2>
+          <section style={{ maxWidth: '1440px', margin: '0 auto', padding: isMobile ? '1rem 1.5rem' : '1.5rem 2.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-end' : 'center', marginBottom: isMobile ? '1.5rem' : '2rem', gap: '1rem' }}>
+              <h2 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, lineHeight: 1.2 }}>Explore Clubs, Initiatives & Centres</h2>
               <button
-                onClick={() => {
-                  if (!showAllClubs) {
-                    setShowAllClubs(true);
-                  } else {
-                    window.location.hash = '#clubs'; // Ensure this matches your clubs route if you have one
-                  }
-                }}
-                style={{ background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer', color: '#8B5CF6' }}
+                onClick={() => window.location.hash = '#clubs'}
+                style={{ background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer', color: '#8B5CF6', fontSize: isMobile ? '0.85rem' : '1rem', whiteSpace: 'nowrap', flexShrink: 0, paddingBottom: isMobile ? '0.2rem' : '0' }}
               >
-                {showAllClubs ? 'Go to Clubs Page →' : 'view more...'}
+                view more...
               </button>
             </div>
-            <div style={{ display: 'flex', gap: '2rem', overflowX: 'auto', paddingBottom: '1rem' }}>
-              {displayedClubs.map(club => (
+            <div 
+              ref={scrollRef}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              onTouchStart={() => setIsHovered(true)}
+              onTouchEnd={() => setIsHovered(false)}
+              style={{ display: 'flex', gap: isMobile ? '1rem' : '2rem', overflowX: 'auto', paddingBottom: '1rem', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              className="hide-scrollbar"
+            >
+              {[...displayedClubs, ...displayedClubs].map((club, idx) => (
                 <div
-                  key={club.id}
+                  key={`${club.id}-${idx}`}
                   onClick={() => window.location.hash = `#club-detail-${club.id}`}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', minWidth: '120px', cursor: 'pointer' }}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isMobile ? '0.5rem' : '1rem', minWidth: isMobile ? '80px' : '120px', cursor: 'pointer' }}
                 >
                   <motion.img
                     whileHover={{ scale: 1.05 }}
                     src={club.logo}
                     alt={club.name}
-                    style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', background: '#e2e8f0', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}
+                    style={{ width: isMobile ? '80px' : '120px', height: isMobile ? '80px' : '120px', borderRadius: '50%', objectFit: 'cover', background: '#e2e8f0', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', flexShrink: 0 }}
                   />
-                  <span style={{ fontWeight: 600 }}>{club.name}</span>
+                  <span style={{ fontWeight: 600, textAlign: 'center', fontSize: isMobile ? '0.75rem' : '1rem' }}>{club.name}</span>
                 </div>
               ))}
             </div>
@@ -372,7 +406,7 @@ const Home2 = () => {
 
           {/* All Events Section */}
           <div style={{ background: '#FFFFFF' }}>
-            <section style={{ maxWidth: '1440px', margin: '0 auto', padding: '4rem 2.5rem 6rem' }}>
+            <section style={{ maxWidth: '1440px', margin: '0 auto', padding: isMobile ? '1.5rem 1.5rem 4rem' : '2rem 2.5rem 5rem' }}>
               <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2.5rem', color: '#111' }}>All events</h2>
 
               {/* Filters */}
