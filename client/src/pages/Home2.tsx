@@ -88,7 +88,6 @@ const Home2 = () => {
   const [loading, setLoading] = useState(true);
   const [eventsList, setEventsList] = useState<any[]>([]);
   const [clubs, setClubs] = useState<any[]>([]);
-  const [showAllClubs, setShowAllClubs] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -134,7 +133,7 @@ const Home2 = () => {
 
   const filteredEvents = eventsList.filter(ev => activeCategory === 'All' || ev.category === activeCategory);
 
-  const displayedClubs = showAllClubs ? clubs : clubs.filter(c => c.type === 'Initiative');
+  const displayedClubs = clubs;
 
   const top5Events = eventsList.slice(0, 5);
   const displayEvents = top5Events.length > 0
