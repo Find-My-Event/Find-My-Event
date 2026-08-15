@@ -971,14 +971,22 @@ function ParticipantsTab({ event }: { event: any }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
        {/* Actions */}
        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-          <button style={{ flex: 1, minWidth: '150px', background: '#fdf2f8', color: '#ec4899', border: '1px solid #fbcfe8', padding: '12px', borderRadius: '12px', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <Mail size={16} /> Invite Participants
-          </button>
           <button style={{ flex: 1, minWidth: '150px', background: '#eff6ff', color: '#3b82f6', border: '1px solid #bfdbfe', padding: '12px', borderRadius: '12px', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
             <Users size={16} /> Check In Participants
           </button>
-          <button style={{ flex: 1, minWidth: '150px', background: '#f3e8ff', color: '#a855f7', border: '1px solid #e9d5ff', padding: '12px', borderRadius: '12px', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <LinkIcon size={16} /> Share Event
+          <button 
+            onClick={() => {
+              if (!event) return;
+              const link = `${window.location.origin}/#event-detail-${event._id || event.id}`;
+              navigator.clipboard.writeText(link).then(() => {
+                alert('Event link copied to clipboard!');
+              }).catch(() => {
+                alert('Failed to copy link.');
+              });
+            }}
+            style={{ flex: 1, minWidth: '150px', background: '#f3e8ff', color: '#a855f7', border: '1px solid #e9d5ff', padding: '12px', borderRadius: '12px', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+          >
+            <LinkIcon size={16} /> Share / Invite Link
           </button>
        </div>
 

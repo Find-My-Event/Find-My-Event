@@ -72,6 +72,37 @@ const EventDetail = ({ hash }: { hash?: string }) => {
     fetchEvent();
   }, [eventId]);
 
+  const isRegistrationClosed = () => {
+    if (!rawEvent) return false;
+    
+    const now = new Date();
+    
+    if (rawEvent.timeline && rawEvent.timeline.length > 0) {
+        const regDeadline = rawEvent.timeline.find((t: any) => t.title?.toLowerCase().includes('registration'));
+        if (regDeadline && regDeadline.endDate) {
+            const deadline = new Date(regDeadline.endDate);
+            deadline.setHours(23, 59, 59, 999);
+            if (now > deadline) return true;
+        }
+    }
+
+    if (rawEvent.endDate) {
+        const end = new Date(rawEvent.endDate);
+        end.setHours(23, 59, 59, 999);
+        if (now > end) return true;
+    }
+    
+    if (rawEvent.startDate) {
+        const start = new Date(rawEvent.startDate);
+        start.setHours(23, 59, 59, 999);
+        if (now > start) return true;
+    }
+
+    return false;
+  };
+
+  const isClosed = isRegistrationClosed();
+
 
   if (loading) {
     return (
@@ -229,7 +260,7 @@ const EventDetail = ({ hash }: { hash?: string }) => {
             <div className="info-box order-8">
               <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>Organized by</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1rem', borderBottom: (rawEvent?.contacts && rawEvent.contacts.length > 0) ? '1px solid #f1f5f9' : 'none' }}>
-                <img src={`https://api.dicebear.com/7.x/shapes/svg?seed=${currentEvent.organizer}`} alt="Organizer" style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#111' }} />
+                <img src={rawEvent?.createdBy?.avatar || rawEvent?.createdBy?.logo || `https://api.dicebear.com/7.x/shapes/svg?seed=${currentEvent.organizer}`} alt="Organizer" style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#111', objectFit: 'cover' }} />
                 <h4 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>{currentEvent.organizer}</h4>
               </div>
               {rawEvent?.contacts && rawEvent.contacts.length > 0 && (
@@ -406,6 +437,7 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                 <button 
                   className="reg-btn"
                   onClick={() => {
+                    if (isClosed) return;
                     if (!isLoggedIn) {
                       window.location.hash = '#signin';
                       return;
@@ -419,23 +451,23 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                     if (!currentEvent.isRegistered) setShowRegister(true);
                   }}
                   style={{ 
-                    background: currentEvent.isRegistered ? '#10b981' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? '#94a3b8' : '#0f172a'), 
+                    background: currentEvent.isRegistered ? '#10b981' : (isClosed ? '#ef4444' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? '#94a3b8' : '#0f172a')), 
                     color: '#fff', 
                     border: 'none', 
                     borderRadius: '8px', 
                     padding: '1rem 3rem', 
                     fontSize: '1.1rem', 
                     fontWeight: 700, 
-                    cursor: currentEvent.isRegistered ? 'default' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'not-allowed' : 'pointer'), 
+                    cursor: currentEvent.isRegistered ? 'default' : (isClosed ? 'not-allowed' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'not-allowed' : 'pointer')), 
                     transition: 'background 0.2s', 
                     boxShadow: '0 4px 10px rgba(0,0,0,0.1)' 
                   }}
                 >
-                  {currentEvent.isRegistered ? 'Registered' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'Not Eligible' : 'Register Now')}
+                  {currentEvent.isRegistered ? 'Registered' : (isClosed ? 'Registration Closed' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'Not Eligible' : 'Register Now'))}
                 </button>
               </div>
               <div style={{ textAlign: 'center', fontSize: '0.9rem', color: '#94a3b8', marginTop: '2rem' }}>
-                Limited slots available, Register now to confirm your spot!
+                {isClosed ? 'This event is no longer accepting new registrations.' : 'Limited slots available, Register now to confirm your spot!'}
               </div>
             </div>
 

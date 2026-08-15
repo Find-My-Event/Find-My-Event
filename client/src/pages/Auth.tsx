@@ -455,21 +455,20 @@ const Auth: React.FC = () => {
 
         {step === 'email' && (
           <>
-            <form onSubmit={handleEmailContinue} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.4rem', color: '#333' }}>Email Address</label>
-                <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="your@gmail.com" required style={inputStyle} />
-              </div>
-              <button type="submit" style={btnPrimary}>Continue with Email</button>
-            </form>
-            <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0' }}>
-              <div style={{ flex: 1, height: '1px', background: '#eee' }} />
-              <span style={{ margin: '0 1rem', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>or continue with</span>
-              <div style={{ flex: 1, height: '1px', background: '#eee' }} />
-            </div>
             <motion.button whileHover={{ y: -2, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }} whileTap={{ scale: 0.98 }} type="button" onClick={() => { const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000'; window.location.href = `${baseUrl}/auth/google`; }} style={btnDark}>
               <GoogleIcon /> Sign In with Google
             </motion.button>
+            <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0' }}>
+              <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+              <span style={{ margin: '0 1rem', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>or continue with email</span>
+              <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+            </div>
+            <form onSubmit={handleEmailContinue} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="your@gmail.com" required style={inputStyle} />
+              </div>
+              <button type="submit" style={{...btnPrimary, background: '#f1f5f9', color: '#475569', boxShadow: 'none'}}>Continue with Email</button>
+            </form>
           </>
         )}
 

@@ -653,15 +653,15 @@ router.get('/club/:id', async (req, res) => {
 router.get('/:id', softAuth, async (req, res) => {
   try {
     let eventModel = 'Event';
-    let event = await Event.findById(req.params.id).lean();
+    let event = await Event.findById(req.params.id).populate('createdBy', 'avatar logo').lean();
     
     if (!event) {
-      event = await EventSubmission.findById(req.params.id).lean();
+      event = await EventSubmission.findById(req.params.id).populate('createdBy', 'avatar logo').lean();
       eventModel = 'EventSubmission';
     }
 
     if (!event) {
-      event = await ClubsEvent.findById(req.params.id).lean();
+      event = await ClubsEvent.findById(req.params.id).populate('createdBy', 'avatar logo').lean();
       eventModel = 'ClubsEvent';
     }
 
@@ -839,6 +839,32 @@ router.post('/:id/register', requireAuth, async (req, res) => {
     }
 
     if (!event) return res.status(404).json({ message: 'Event not found' });
+
+    // Check if event registration is expired
+    const now = new Date();
+    let isExpired = false;
+    
+    if (event.timeline && event.timeline.length > 0) {
+        const regDeadline = event.timeline.find(t => t.title?.toLowerCase().includes('registration'));
+        if (regDeadline && regDeadline.endDate) {
+            const deadline = new Date(regDeadline.endDate);
+            deadline.setHours(23, 59, 59, 999);
+            if (now > deadline) isExpired = true;
+        }
+    }
+    if (!isExpired && event.endDate) {
+        const end = new Date(event.endDate);
+        end.setHours(23, 59, 59, 999);
+        if (now > end) isExpired = true;
+    } else if (!isExpired && event.startDate) {
+        const start = new Date(event.startDate);
+        start.setHours(23, 59, 59, 999);
+        if (now > start) isExpired = true;
+    }
+
+    if (isExpired) {
+        return res.status(403).json({ message: 'Registration for this event is closed.' });
+    }
 
     // Target Department check
     if (event.targetDepartment && event.targetDepartment !== 'All') {

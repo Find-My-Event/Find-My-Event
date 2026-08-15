@@ -75,7 +75,7 @@ const LaunchSteps = () => {
         scrollTrigger: {
           trigger: containerRef.current,
           start: 'top top',
-          end: isMobile ? '+=100%' : '+=250%',
+          end: isMobile ? '+=200%' : '+=250%',
           scrub: 1,
           pin: true,
           anticipatePin: 1
@@ -157,9 +157,6 @@ const LaunchSteps = () => {
       // Text crossfade
       tl.to(desc2Ref.current, { opacity: 0, y: -20, duration: 0.5 }, "step3");
       tl.to(desc3Ref.current, { opacity: 1, y: 0, duration: 0.5 }, "step3+=0.5");
-
-      // Final dwell before unpinning
-      tl.to({}, { duration: 0.5 });
 
     }, containerRef);
 

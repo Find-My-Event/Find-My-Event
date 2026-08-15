@@ -12,37 +12,11 @@ const Home2 = () => {
   const marker2Ref = useRef<HTMLSpanElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-  const exactScroll = useRef(0);
 
-  useEffect(() => {
-    let animationFrameId: number;
 
-    const scroll = () => {
-      const scrollContainer = scrollRef.current;
-      if (scrollContainer) {
-        if (!isHovered) {
-          exactScroll.current += 0.5;
-          scrollContainer.scrollLeft = exactScroll.current;
-          
-          // If we've scrolled past half the content (which is the original list), jump back to start
-          if (scrollContainer.scrollLeft >= scrollContainer.scrollWidth / 2) {
-            scrollContainer.scrollLeft = 0;
-            exactScroll.current = 0;
-          }
-        } else {
-          // If user manually scrolls while paused, sync the exact position
-          exactScroll.current = scrollContainer.scrollLeft;
-        }
-      }
-      animationFrameId = requestAnimationFrame(scroll);
-    };
-
-    animationFrameId = requestAnimationFrame(scroll);
-
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isHovered]);
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -51,9 +25,27 @@ const Home2 = () => {
   }, []);
 
   useEffect(() => {
+    if (isCarouselPaused) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % 5);
     }, 3000);
+    return () => clearInterval(interval);
+  }, [isCarouselPaused]);
+
+  const handleSwipe = () => {
+    if (touchStart === null || touchEnd === null) return;
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+    if (distance > minSwipeDistance) {
+      setActiveIndex((prev) => (prev + 1) % 5); // Swipe left -> Next
+    } else if (distance < -minSwipeDistance) {
+      setActiveIndex((prev) => (prev - 1 + 5) % 5); // Swipe right -> Prev
+    }
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+  useEffect(() => {
 
     // GSAP Animation for Hero
     if (heroRef.current) {
@@ -68,8 +60,6 @@ const Home2 = () => {
         { clipPath: 'inset(0 0% 0 0)', duration: 1, ease: 'power3.out', stagger: 0.2, delay: 0.6 }
       );
     }
-
-    return () => clearInterval(interval);
   }, []);
 
   const categories = [
@@ -228,7 +218,36 @@ const Home2 = () => {
           </span>
         </h1>
 
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '3rem', position: 'relative', height: isMobile ? '400px' : '500px', width: '100%', overflow: 'hidden' }}>
+        <div 
+          onMouseEnter={() => setIsCarouselPaused(true)}
+          onMouseLeave={() => {
+             setIsCarouselPaused(false);
+             if (touchStart !== null) handleSwipe();
+          }}
+          onTouchStart={(e) => {
+            setIsCarouselPaused(true);
+            setTouchEnd(null);
+            setTouchStart(e.targetTouches[0].clientX);
+          }}
+          onTouchMove={(e) => setTouchEnd(e.targetTouches[0].clientX)}
+          onTouchEnd={() => {
+            setIsCarouselPaused(false);
+            handleSwipe();
+          }}
+          onMouseDown={(e) => {
+            setIsCarouselPaused(true);
+            setTouchEnd(null);
+            setTouchStart(e.clientX);
+          }}
+          onMouseMove={(e) => {
+            if (touchStart !== null) setTouchEnd(e.clientX);
+          }}
+          onMouseUp={() => {
+            setIsCarouselPaused(false);
+            handleSwipe();
+          }}
+          style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '3rem', position: 'relative', height: isMobile ? '400px' : '500px', width: '100%', overflow: 'hidden', userSelect: 'none' }}
+        >
           {displayEvents.map((event, index) => {
             const offset = (index - activeIndex + 5) % 5;
 
@@ -377,15 +396,10 @@ const Home2 = () => {
               </button>
             </div>
             <div 
-              ref={scrollRef}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              onTouchStart={() => setIsHovered(true)}
-              onTouchEnd={() => setIsHovered(false)}
               style={{ display: 'flex', gap: isMobile ? '1rem' : '2rem', overflowX: 'auto', paddingBottom: '1rem', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               className="hide-scrollbar"
             >
-              {[...displayedClubs, ...displayedClubs].map((club, idx) => (
+              {displayedClubs.map((club, idx) => (
                 <div
                   key={`${club.id}-${idx}`}
                   onClick={() => window.location.hash = `#club-detail-${club.id}`}
