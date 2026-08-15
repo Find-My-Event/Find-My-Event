@@ -186,7 +186,7 @@ const GalleryCta = () => {
               Start Experiencing!
             </p>
             <button
-              onClick={() => { window.location.hash = '#login'; }}
+              onClick={() => { window.location.hash = '#signin'; }}
               style={{
                 padding: '0.7rem 2rem',
                 borderRadius: '999px',

@@ -42,6 +42,8 @@ import AdminCreateEvent from './pages/AdminCreateEvent';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import OrganizerSetup   from './pages/OrganizerSetup';
 import PublicScanner  from './pages/PublicScanner';
+import Contact        from './pages/Contact';
+import About          from './pages/About';
 
 /* ── Context ── */
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -255,6 +257,26 @@ function AppContent() {
     if (currentRoute.startsWith('#scanner=')) {
       const token = currentRoute.split('=')[1];
       return <PublicScanner token={token} />;
+    }
+
+    if (currentRoute === '#contact') {
+      return (
+        <div className="landing-page">
+          <Navbar />
+          <Contact />
+          <Footer />
+        </div>
+      );
+    }
+
+    if (currentRoute === '#about') {
+      return (
+        <div className="landing-page">
+          <Navbar />
+          <About />
+          <Footer />
+        </div>
+      );
     }
 
     /* ── Logged-in home → Dashboard ── */

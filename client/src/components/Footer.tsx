@@ -72,10 +72,8 @@ const Footer = () => (
           {
             label: 'Company',
             links: [
-              { name: 'About',    href: '#' },
-              { name: 'Contact',  href: '#' },
-              { name: 'Careers',  href: '#' },
-              { name: 'Blog',     href: '#' },
+              { name: 'About',    href: '#about' },
+              { name: 'Contact',  href: '#contact' },
             ],
           },
           {
@@ -94,10 +92,17 @@ const Footer = () => (
                 key={l.name} 
                 href={l.href} 
                 onClick={(e) => {
-                  if (l.name === 'Home') {
+                  const currentHash = window.location.hash || '#home';
+                  const targetHash = l.href === '#' ? '#home' : l.href;
+                  
+                  // If clicking the exact same page they are already on, scroll to top
+                  if (currentHash === targetHash) {
                     e.preventDefault();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                    window.location.hash = '';
+                  } else {
+                    // Let the native hash change navigate to the new page.
+                    // React (App.tsx) will detect the hash change and render the correct page component (Gallery, Clubs, etc.)
+                    // We don't need to prevent default.
                   }
                 }}
                 className="lp-footer-link"

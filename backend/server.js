@@ -87,11 +87,25 @@ const notificationRoutes = require('./routes/notifications');
 const paymentRoutes = require('./routes/payments');
 const clubRoutes = require('./routes/clubs');
 const organizerRoutes = require('./routes/organizer');
+const contactRoutes = require('./routes/contact');
+
+// Rate Limiting setup
+const rateLimit = require('express-rate-limit');
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  message: { message: "Too many requests from this IP, please try again after 15 minutes." },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 // Add a simple health check route for UptimeRobot
 app.get('/api', (req, res) => {
   res.status(200).json({ message: 'Eventum API is running!' });
 });
+
+// Apply rate limiter to all API routes
+app.use('/api', apiLimiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
@@ -100,6 +114,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/clubs', clubRoutes);
 app.use('/api/organizer', organizerRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Google Auth Routes
 app.get('/auth/google',

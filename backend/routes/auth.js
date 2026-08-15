@@ -8,6 +8,19 @@ const User = require('../models/User');
 const { requireAuth, syncAdminRole } = require('../middleware/auth');
 const Club = require('../models/Club');
 const { upload } = require('../config/cloudinary');
+const rateLimit = require('express-rate-limit');
+
+const otpLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // Limit each IP to 5 OTP requests per hour
+  message: { message: "Too many OTP requests from this IP. Please try again after an hour." },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // Limit each IP to 15 login/register attempts per 15 minutes
+  message: { message: "Too many authentication attempts from this IP. Please try again after 15 minutes." },
+});
 
 function userResponse(user) {
   return {
@@ -70,7 +83,7 @@ function validateUserData({ name, email, age, phone }) {
   return null;
 }
 
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   const { name, email, password } = req.body;
 
   const valErr = validateUserData({ name, email });
@@ -258,7 +271,7 @@ router.put('/update-profile', async (req, res) => {
   }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
@@ -390,7 +403,7 @@ router.patch('/change-password', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/forgot-password-send-otp', async (req, res) => {
+router.post('/forgot-password-send-otp', otpLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email is required' });
@@ -512,7 +525,7 @@ router.delete('/account', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/resend-otp', async (req, res) => {
+router.post('/resend-otp', otpLimiter, async (req, res) => {
   const { email } = req.body;
   try {
     const user = await User.findOne({ email });

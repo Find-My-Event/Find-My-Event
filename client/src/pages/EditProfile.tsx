@@ -499,8 +499,8 @@ export default function EditProfile() {
                     onClick={() => setActiveTab(tab.id)}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-                      background: isActive ? '#FEE2E2' : 'transparent',
-                      color: isActive ? '#DC2626' : '#444',
+                      background: isActive ? '#F3E8FF' : 'transparent',
+                      color: isActive ? '#9333EA' : '#444',
                       border: 'none', borderRadius: '12px', cursor: 'pointer',
                       fontSize: '0.95rem', fontWeight: isActive ? 700 : 500,
                       transition: 'all 0.2s', textAlign: 'left'
@@ -521,7 +521,7 @@ export default function EditProfile() {
                 }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-                  background: 'transparent', color: '#DC2626', border: 'none', borderRadius: '12px',
+                  background: 'transparent', color: '#9333EA', border: 'none', borderRadius: '12px',
                   cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left'
                 }}
               >
@@ -533,7 +533,7 @@ export default function EditProfile() {
                 onClick={() => setShowDeleteConfirmModal(true)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-                  background: 'rgba(220,38,38,0.05)', color: '#DC2626', border: '1px solid rgba(220,38,38,0.15)',
+                  background: 'rgba(147,51,234,0.05)', color: '#9333EA', border: '1px solid rgba(147,51,234,0.15)',
                   borderRadius: '12px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left',
                   marginTop: '8px'
                 }}
@@ -550,14 +550,14 @@ export default function EditProfile() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFF', padding: '12px 16px', borderRadius: '12px', border: '1px solid #EAEAEA', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <button
               onClick={() => setIsMobileTabMenuOpen(true)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#FEE2E2', color: '#DC2626', border: 'none', padding: '8px 14px', borderRadius: '10px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#F3E8FF', color: '#9333EA', border: 'none', padding: '8px 14px', borderRadius: '10px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
             >
               <Menu size={20} />
               <span>Menu</span>
             </button>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, color: '#111', fontSize: '0.95rem' }}>
-              {ActiveTabIcon && <ActiveTabIcon size={18} color="#DC2626" />}
+              {ActiveTabIcon && <ActiveTabIcon size={18} color="#9333EA" />}
               <span>{currentTabObj?.label}</span>
             </div>
           </div>
@@ -618,8 +618,8 @@ export default function EditProfile() {
                         }}
                         style={{
                           display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-                          background: isActive ? '#FEE2E2' : 'transparent',
-                          color: isActive ? '#DC2626' : '#444',
+                          background: isActive ? '#F3E8FF' : 'transparent',
+                          color: isActive ? '#9333EA' : '#444',
                           border: 'none', borderRadius: '12px', cursor: 'pointer',
                           fontSize: '0.95rem', fontWeight: isActive ? 700 : 500,
                           textAlign: 'left'
@@ -640,7 +640,7 @@ export default function EditProfile() {
                     }}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-                      background: 'transparent', color: '#DC2626', border: 'none', borderRadius: '12px',
+                      background: 'transparent', color: '#9333EA', border: 'none', borderRadius: '12px',
                       cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left'
                     }}
                   >
@@ -655,7 +655,7 @@ export default function EditProfile() {
                     }}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-                      background: 'rgba(220,38,38,0.05)', color: '#DC2626', border: '1px solid rgba(220,38,38,0.15)',
+                      background: 'rgba(147,51,234,0.05)', color: '#9333EA', border: '1px solid rgba(147,51,234,0.15)',
                       borderRadius: '12px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left',
                       marginTop: '8px'
                     }}
@@ -683,7 +683,7 @@ export default function EditProfile() {
                   initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   style={{
                     padding: '8px 16px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600,
-                    background: msg.type === 'success' ? '#DCFCE7' : '#FEE2E2',
+                    background: msg.type === 'success' ? '#DCFCE7' : '#F3E8FF',
                     color: msg.type === 'success' ? '#166534' : '#991B1B'
                   }}
                 >
@@ -711,7 +711,7 @@ export default function EditProfile() {
                     <h4 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', color: '#111' }}>Profile Picture</h4>
                     <label style={{
                       display: 'inline-flex', alignItems: 'center', gap: '8px',
-                      background: '#FEE2E2', color: '#DC2626', padding: '8px 16px', borderRadius: '8px',
+                      background: '#F3E8FF', color: '#9333EA', padding: '8px 16px', borderRadius: '8px',
                       cursor: uploading ? 'wait' : 'pointer', fontWeight: 600, fontSize: '0.9rem'
                     }}>
                       {uploading ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
@@ -743,7 +743,7 @@ export default function EditProfile() {
                         onClick={() => setProfileData(p => ({ ...p, avatar: avatarUrl }))}
                         style={{
                           width: '44px', height: '44px', borderRadius: '50%',
-                          border: profileData.avatar === avatarUrl ? '3px solid #DC2626' : '1px solid #E5E7EB',
+                          border: profileData.avatar === avatarUrl ? '3px solid #9333EA' : '1px solid #E5E7EB',
                           padding: '2px', background: '#FFF', cursor: 'pointer', transition: 'all 0.15s'
                         }}
                       >
@@ -834,7 +834,7 @@ export default function EditProfile() {
                 <button
                   onClick={handleSaveProfile} disabled={saving}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#DC2626', color: '#FFF',
+                    display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#9333EA', color: '#FFF',
                     padding: '12px 24px', borderRadius: '10px', fontWeight: 700, fontSize: '0.95rem', border: 'none', cursor: saving ? 'wait' : 'pointer'
                   }}
                 >
@@ -949,7 +949,7 @@ export default function EditProfile() {
                 <button
                   onClick={handleSaveEducation} disabled={saving}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#DC2626', color: '#FFF',
+                    display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#9333EA', color: '#FFF',
                     padding: '12px 24px', borderRadius: '10px', fontWeight: 700, fontSize: '0.95rem', border: 'none', cursor: saving ? 'wait' : 'pointer'
                   }}
                 >
@@ -963,7 +963,7 @@ export default function EditProfile() {
           {activeTab === 'registrations' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               {loadingEvents ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}><Loader2 size={32} className="animate-spin" color="#DC2626" /></div>
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}><Loader2 size={32} className="animate-spin" color="#9333EA" /></div>
               ) : registeredEvents.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', background: '#FFF', borderRadius: '12px', border: '1px solid #EAEAEA' }}>
                   <Ticket size={48} color="#D1D5DB" style={{ margin: '0 auto 16px' }} />
@@ -1000,9 +1000,9 @@ export default function EditProfile() {
                         key={opt} onClick={() => toggleInterest(opt)}
                         style={{
                           padding: '8px 16px', borderRadius: '99px', fontSize: '0.9rem', fontWeight: 600,
-                          border: `1px solid ${isSelected ? '#DC2626' : '#D1D5DB'}`,
-                          background: isSelected ? '#FEE2E2' : '#FFF',
-                          color: isSelected ? '#DC2626' : '#4B5563',
+                          border: `1px solid ${isSelected ? '#9333EA' : '#D1D5DB'}`,
+                          background: isSelected ? '#F3E8FF' : '#FFF',
+                          color: isSelected ? '#9333EA' : '#4B5563',
                           cursor: 'pointer', transition: 'all 0.2s'
                         }}
                       >
@@ -1035,7 +1035,7 @@ export default function EditProfile() {
                     onClick={handleAddHobby}
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '6px',
-                      background: '#DC2626', color: '#FFF', padding: '12px 20px',
+                      background: '#9333EA', color: '#FFF', padding: '12px 20px',
                       borderRadius: '10px', border: 'none', fontWeight: 700, fontSize: '0.9rem',
                       cursor: 'pointer', flexShrink: 0
                     }}
@@ -1051,7 +1051,7 @@ export default function EditProfile() {
                         key={idx}
                         style={{
                           display: 'inline-flex', alignItems: 'center', gap: '8px',
-                          background: '#FEE2E2', color: '#DC2626', padding: '6px 14px',
+                          background: '#F3E8FF', color: '#9333EA', padding: '6px 14px',
                           borderRadius: '99px', fontWeight: 600, fontSize: '0.9rem', border: '1px solid #FECACA'
                         }}
                       >
@@ -1067,7 +1067,7 @@ export default function EditProfile() {
                 <button
                   onClick={handleSaveInterests} disabled={saving}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#DC2626', color: '#FFF',
+                    display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#9333EA', color: '#FFF',
                     padding: '12px 24px', borderRadius: '10px', fontWeight: 700, fontSize: '0.95rem', border: 'none', cursor: saving ? 'wait' : 'pointer'
                   }}
                 >
@@ -1091,7 +1091,7 @@ export default function EditProfile() {
                   </div>
                   <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
                     <input type="checkbox" checked={settings.publicProfile} onChange={e => setSettings({...settings, publicProfile: e.target.checked})} style={{ opacity: 0, width: 0, height: 0 }} />
-                    <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.publicProfile ? '#DC2626' : '#D1D5DB', transition: '.4s', borderRadius: '34px' }}>
+                    <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.publicProfile ? '#9333EA' : '#D1D5DB', transition: '.4s', borderRadius: '34px' }}>
                       <span style={{ position: 'absolute', content: '""', height: '18px', width: '18px', left: settings.publicProfile ? '22px' : '3px', bottom: '3px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }}></span>
                     </span>
                   </label>
@@ -1104,7 +1104,7 @@ export default function EditProfile() {
                   </div>
                   <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
                     <input type="checkbox" checked={settings.notifyEmail} onChange={e => setSettings({...settings, notifyEmail: e.target.checked})} style={{ opacity: 0, width: 0, height: 0 }} />
-                    <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.notifyEmail ? '#DC2626' : '#D1D5DB', transition: '.4s', borderRadius: '34px' }}>
+                    <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.notifyEmail ? '#9333EA' : '#D1D5DB', transition: '.4s', borderRadius: '34px' }}>
                       <span style={{ position: 'absolute', content: '""', height: '18px', width: '18px', left: settings.notifyEmail ? '22px' : '3px', bottom: '3px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }}></span>
                     </span>
                   </label>
@@ -1115,7 +1115,7 @@ export default function EditProfile() {
                 <div style={{ background: '#FFF', padding: '24px', borderRadius: '12px', border: '1px solid #EAEAEA', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div>
                     <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: '#111', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Lock size={18} color="#DC2626" /> Change Password
+                      <Lock size={18} color="#9333EA" /> Change Password
                     </h3>
                     <p style={{ margin: 0, color: '#6B7280', fontSize: '0.85rem' }}>
                       Enter your current password to verify your identity, then set your new password.
@@ -1138,7 +1138,7 @@ export default function EditProfile() {
                             width: '100%', padding: '12px 42px 12px 16px', borderRadius: '10px',
                             border: `1px solid ${
                               oldPasswordStatus === 'valid' ? '#16A34A' :
-                              oldPasswordStatus === 'invalid' ? '#DC2626' : '#D1D5DB'
+                              oldPasswordStatus === 'invalid' ? '#9333EA' : '#D1D5DB'
                             }`,
                             background: '#FFF', fontSize: '0.95rem', outline: 'none'
                           }}
@@ -1155,7 +1155,7 @@ export default function EditProfile() {
                         )}
                         {oldPasswordStatus === 'invalid' && (
                           <div style={{ position: 'absolute', right: '14px', top: '12px' }}>
-                            <X size={18} color="#DC2626" />
+                            <X size={18} color="#9333EA" />
                           </div>
                         )}
                       </div>
@@ -1178,7 +1178,7 @@ export default function EditProfile() {
                           type="button"
                           onClick={handleSendForgotOtp}
                           disabled={sendingOtp}
-                          style={{ background: 'none', border: 'none', color: '#DC2626', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                          style={{ background: 'none', border: 'none', color: '#9333EA', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
                         >
                           {sendingOtp ? 'Sending OTP...' : 'Forgot Password?'}
                         </button>
@@ -1189,7 +1189,7 @@ export default function EditProfile() {
                     {forgotPasswordStep === 'otp' && (
                       <div style={{ background: '#FFF5F5', padding: '16px', borderRadius: '10px', border: '1px solid #FECACA', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Mail size={18} color="#DC2626" />
+                          <Mail size={18} color="#9333EA" />
                           <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#991B1B' }}>
                             We sent a 6-digit OTP to {user?.email}
                           </span>
@@ -1207,7 +1207,7 @@ export default function EditProfile() {
                             type="button"
                             onClick={handleVerifyForgotOtp}
                             disabled={verifyingForgotOtp}
-                            style={{ background: '#DC2626', color: '#FFF', padding: '10px 18px', borderRadius: '8px', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            style={{ background: '#9333EA', color: '#FFF', padding: '10px 18px', borderRadius: '8px', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                           >
                             {verifyingForgotOtp ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                             Verify OTP
@@ -1313,7 +1313,7 @@ export default function EditProfile() {
                           width: '100%', padding: '12px 16px', borderRadius: '10px',
                           border: `1px solid ${
                             passwords.confirmPassword.length > 0
-                              ? (passwords.newPassword === passwords.confirmPassword ? '#16A34A' : '#DC2626')
+                              ? (passwords.newPassword === passwords.confirmPassword ? '#16A34A' : '#9333EA')
                               : '#D1D5DB'
                           }`,
                           background: oldPasswordStatus === 'valid' ? '#FFF' : '#F9FAFB',
@@ -1345,7 +1345,7 @@ export default function EditProfile() {
                         disabled={changingPassword}
                         style={{
                           display: 'inline-flex', alignItems: 'center', gap: '8px',
-                          background: '#DC2626', color: '#FFF', padding: '10px 22px',
+                          background: '#9333EA', color: '#FFF', padding: '10px 22px',
                           borderRadius: '10px', fontWeight: 700, fontSize: '0.9rem',
                           border: 'none', cursor: changingPassword ? 'wait' : 'pointer'
                         }}
@@ -1362,7 +1362,7 @@ export default function EditProfile() {
                 <button
                   onClick={handleSaveSettings} disabled={saving}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#DC2626', color: '#FFF',
+                    display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#9333EA', color: '#FFF',
                     padding: '12px 24px', borderRadius: '10px', fontWeight: 700, fontSize: '0.95rem', border: 'none', cursor: saving ? 'wait' : 'pointer'
                   }}
                 >
@@ -1375,17 +1375,19 @@ export default function EditProfile() {
 
           {activeTab === 'support' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', padding: '60px 20px', background: '#FFF', borderRadius: '12px', border: '1px solid #EAEAEA' }}>
-              <HelpCircle size={48} color="#DC2626" style={{ margin: '0 auto 20px' }} />
+              <HelpCircle size={48} color="#9333EA" style={{ margin: '0 auto 20px' }} />
               <h2 style={{ margin: '0 0 12px 0', fontSize: '1.5rem', color: '#111' }}>Need Help?</h2>
               <p style={{ margin: '0 auto 24px', color: '#6B7280', fontSize: '1rem', maxWidth: '500px', lineHeight: 1.5 }}>
                 If you encounter any issues, experience a bug, or require any assistance while using the website, please feel free to reach out to our support team at:
                 <br /><br />
-                <strong>findmyevent11@gmail.com</strong>
+                <strong>theeventum01@gmail.com</strong>
+                <br />
+                <strong>+91 9501306800</strong>
               </p>
               <a 
-                href="mailto:findmyevent11@gmail.com"
+                href="mailto:theeventum01@gmail.com"
                 style={{
-                  display: 'inline-block', background: '#FEE2E2', color: '#DC2626',
+                  display: 'inline-block', background: '#F3E8FF', color: '#9333EA',
                   padding: '12px 32px', borderRadius: '99px', fontWeight: 700, textDecoration: 'none', fontSize: '1rem'
                 }}
               >
@@ -1415,8 +1417,8 @@ export default function EditProfile() {
               style={{ width: '100%', maxWidth: '440px', background: '#FFF', borderRadius: '20px', padding: '28px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid #EAEAEA' }}
             >
               <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#FEE2E2', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                  <AlertTriangle size={30} color="#DC2626" />
+                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#F3E8FF', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                  <AlertTriangle size={30} color="#9333EA" />
                 </div>
                 <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem', fontWeight: 800, color: '#111' }}>Delete Account?</h3>
                 <p style={{ margin: 0, color: '#6B7280', fontSize: '0.9rem', lineHeight: 1.5 }}>
@@ -1437,7 +1439,7 @@ export default function EditProfile() {
                   type="button"
                   onClick={handleDeleteAccountConfirm}
                   disabled={deletingAccount}
-                  style={{ padding: '10px 20px', borderRadius: '10px', background: '#DC2626', color: '#FFF', border: 'none', fontWeight: 700, fontSize: '0.9rem', cursor: deletingAccount ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  style={{ padding: '10px 20px', borderRadius: '10px', background: '#9333EA', color: '#FFF', border: 'none', fontWeight: 700, fontSize: '0.9rem', cursor: deletingAccount ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
                   {deletingAccount ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                   Yes, Delete My Account
