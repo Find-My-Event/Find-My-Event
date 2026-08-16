@@ -2,7 +2,7 @@ export interface Club {
   id: string;
   _id?: string;
   name: string;
-  type: 'Initiative' | 'Organization' | 'Club';
+  type: 'Initiative' | 'Organization' | 'Club' | 'Centre' | 'Center';
   logo: string;
   description: string;
   aboutUs: string;

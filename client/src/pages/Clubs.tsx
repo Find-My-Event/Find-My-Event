@@ -82,7 +82,8 @@ export default function Clubs() {
   }, []);
 
   const initiativesList = clubs.filter(c => c.type === 'Initiative');
-  const clubsList = clubs.filter(c => c.type === 'Club');
+  const centresList = clubs.filter(c => c.type === 'Centre' || c.type === 'Center');
+  const clubsList = clubs.filter(c => c.type !== 'Initiative' && c.type !== 'Centre' && c.type !== 'Center');
 
 
 
@@ -199,7 +200,7 @@ export default function Clubs() {
       <main style={{ position: 'relative', zIndex: 1 }}>
         
         {/* Heading Section */}
-        <section style={{ padding: '9rem 1.5rem 1rem', textAlign: 'center' }}>
+        <section style={{ padding: '5.5rem 1.5rem 1rem', textAlign: 'center' }}>
           <h1 ref={heroRef} className="premium-hero-heading">
             <span className="hero-line">
               JECRC <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic', zIndex: 1, marginLeft: '0.1em' }}>
@@ -261,7 +262,7 @@ export default function Clubs() {
 
             {/* All Clubs Section */}
             {clubsList.length > 0 && (
-              <section className="clubs-section-container" style={{ maxWidth: '1440px', margin: '2rem auto 6rem', padding: '0 2.5rem' }}>
+              <section className="clubs-section-container" style={{ maxWidth: '1440px', margin: '2rem auto 4rem', padding: '0 2.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
                   <h2 className="clubs-section-title" style={{ fontSize: '3rem', fontWeight: 700, fontFamily: "'Inter', sans-serif", color: '#111', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
                     All Clubs
@@ -270,6 +271,23 @@ export default function Clubs() {
                 
                 <div className="clubs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
                   {clubsList.map((club) => (
+                    <ClubCard key={club.id} club={club} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* All Centres Section */}
+            {centresList.length > 0 && (
+              <section className="clubs-section-container" style={{ maxWidth: '1440px', margin: '2rem auto 6rem', padding: '0 2.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+                  <h2 className="clubs-section-title" style={{ fontSize: '3rem', fontWeight: 700, fontFamily: "'Inter', sans-serif", color: '#111', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
+                    All Centres
+                  </h2>
+                </div>
+                
+                <div className="clubs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
+                  {centresList.map((club) => (
                     <ClubCard key={club.id} club={club} />
                   ))}
                 </div>
