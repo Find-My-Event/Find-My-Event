@@ -74,11 +74,17 @@ export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
           setEventName(data.title || '');
           setOrganizer(data.organizer?.name || data.organizer || '');
           
-          if (data.category && !['tech', 'music', 'art', 'sports', 'workshop'].includes(data.category.toLowerCase())) {
-            setCategory('custom');
-            setCustomCategory(data.category);
+          const validCatList = ['Tech', 'Gaming', 'Music', 'Culture', 'Arts', 'Sports', 'Workshops', 'Media', 'Literature'];
+          if (data.category) {
+            const foundCat = validCatList.find(c => c.toLowerCase() === data.category.toLowerCase());
+            if (foundCat) {
+              setCategory(foundCat);
+            } else {
+              setCategory('custom');
+              setCustomCategory(data.category);
+            }
           } else {
-            setCategory(data.category ? data.category.toLowerCase() : '');
+            setCategory('');
           }
           
           setDescription(data.description || '');
@@ -265,11 +271,15 @@ export default function AdminCreateEvent({ eventId }: { eventId?: string }) {
                 <div style={{ position: 'relative' }}>
                   <select value={category} onChange={e => setCategory(e.target.value)} style={{ width: '100%', background: '#eaeaea', border: 'none', padding: '16px 20px', borderRadius: '12px', fontSize: '0.95rem', fontWeight: 600, color: '#555', appearance: 'none', outline: 'none', cursor: 'pointer' }}>
                     <option value="" disabled>Event Category</option>
-                    <option value="tech">Technology</option>
-                    <option value="music">Music</option>
-                    <option value="art">Art & Design</option>
-                    <option value="sports">Sports</option>
-                    <option value="workshop">Workshop</option>
+                    <option value="Tech">Tech</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Music">Music</option>
+                    <option value="Culture">Culture</option>
+                    <option value="Arts">Arts</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Workshops">Workshops</option>
+                    <option value="Media">Media</option>
+                    <option value="Literature">Literature</option>
                     <option value="custom">Add your category...</option>
                   </select>
                   <ChevronDown size={20} color="#111" style={{ position: 'absolute', right: '16px', top: '16px', pointerEvents: 'none' }} />

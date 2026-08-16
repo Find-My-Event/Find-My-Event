@@ -364,7 +364,7 @@ export default function OrganizerDashboard() {
         </div>
 
         {/* Center: Navigation Links (Desktop) */}
-        <div className="mobile-nav-hide" style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
+        <div className="mobile-nav-hide" style={{ display: 'flex', alignItems: 'center', gap: '2.5rem', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
           <button 
             onClick={() => navigateTo('events')}
             style={{ 
@@ -393,7 +393,39 @@ export default function OrganizerDashboard() {
         </div>
 
         {/* Right: Icons (Desktop) */}
-        <div className="mobile-nav-hide" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <div className="mobile-nav-hide" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {/* Direct User Dashboard Navigation Button */}
+          <button
+            onClick={() => window.location.hash = '#home'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: '#111827',
+              color: '#ffffff',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '24px',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
+              transition: 'transform 0.2s, background 0.2s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.03)';
+              e.currentTarget.style.background = '#1f2937';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.background = '#111827';
+            }}
+          >
+            <UserCircle size={16} />
+            <span>User Dashboard</span>
+          </button>
+
           <button 
             onClick={() => {
               setShowSearchBar(!showSearchBar);
@@ -489,9 +521,6 @@ export default function OrganizerDashboard() {
                   </button>
                   <button type="button" className="dropdown-item" onClick={() => { setIsProfileOpen(false); setIsPasswordModalOpen(true); }}>
                     <Lock size={15} /> <span>Change Password</span>
-                  </button>
-                  <button type="button" className="dropdown-item" onClick={() => { setIsProfileOpen(false); window.location.hash = '#home'; }}>
-                    <UserCircle size={15} /> <span>User Dashboard</span>
                   </button>
                   <button type="button" className="dropdown-item" onClick={() => { setIsProfileOpen(false); setIsSendNotificationModalOpen(true); }}>
                     <Send size={15} /> <span>Send Notification</span>
@@ -908,11 +937,15 @@ export default function OrganizerDashboard() {
                          }}
                        >
                          <option value="" disabled>Event Category</option>
-                         <option value="tech">Technology</option>
-                         <option value="music">Music</option>
-                         <option value="art">Art & Design</option>
-                         <option value="sports">Sports</option>
-                         <option value="workshop">Workshop</option>
+                         <option value="Tech">Tech</option>
+                         <option value="Gaming">Gaming</option>
+                         <option value="Music">Music</option>
+                         <option value="Culture">Culture</option>
+                         <option value="Arts">Arts</option>
+                         <option value="Sports">Sports</option>
+                         <option value="Workshops">Workshops</option>
+                         <option value="Media">Media</option>
+                         <option value="Literature">Literature</option>
                          <option value="custom">Add your category...</option>
                        </select>
                        <ChevronDown size={20} color="#111" style={{ position: 'absolute', right: '16px', top: '16px', pointerEvents: 'none' }} />

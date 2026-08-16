@@ -34,7 +34,18 @@ const TagBadge = ({ tag }: { tag: string }) => {
 
 const allEvents: any[] = [];
 
-const categories = ['All', 'Music', 'Gaming', 'Tech', 'Dance', 'Drama', 'Academics', 'Workshops', 'Culture'];
+const categories = [
+  'All',
+  'Tech',
+  'Gaming',
+  'Music',
+  'Culture',
+  'Arts',
+  'Sports',
+  'Workshops',
+  'Media',
+  'Literature'
+];
 
 type ApiApproved = {
   _id: string;
@@ -292,7 +303,32 @@ export default function Discover({ isLoggedIn: propIsLoggedIn }: { isLoggedIn?: 
   }, [approvedFromApi, isLoggedIn]);
 
   const filteredEventsAll = mergedEvents.filter((e) => {
-    const matchCat = selectedCategory === 'All' || e.category === selectedCategory;
+    let matchCat = selectedCategory === 'All';
+    if (!matchCat && e.category) {
+      const c1 = String(e.category).toLowerCase().trim();
+      const c2 = selectedCategory.toLowerCase().trim();
+      if (c1 === c2) {
+        matchCat = true;
+      } else {
+        const categoryMap: Record<string, string[]> = {
+          'tech': ['tech', 'technology', 'hackathon', 'coding', 'tech & hackathons'],
+          'gaming': ['gaming', 'esports', 'e-sports', 'gaming & e-sports'],
+          'music': ['music', 'dance', 'singing', 'music & dance'],
+          'culture': ['culture', 'cultural', 'drama', 'comedy', 'theatre', 'cultural & drama'],
+          'arts': ['art', 'arts', 'art & design', 'photography', 'photo', 'art & photography'],
+          'sports': ['sports', 'sport', 'fitness'],
+          'workshops': ['workshop', 'workshops', 'academic', 'academics', 'workshops & academics'],
+          'media': ['media', 'socialz', 'social', 'empower', 'media & social'],
+          'literature': ['literature', 'literary', 'books']
+        };
+        const targetList = categoryMap[c2];
+        if (targetList) {
+          matchCat = targetList.some(alias => c1.includes(alias) || alias.includes(c1));
+        } else {
+          matchCat = c1.includes(c2) || c2.includes(c1);
+        }
+      }
+    }
     const matchSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.organizer.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCat && matchSearch;
