@@ -49,7 +49,7 @@ const AdminDashboard: React.FC = () => {
     localStorage.setItem('adminActiveEventTab', activeEventTab);
   }, [activeEventTab]);
 
-  const [activeUserTab, setActiveUserTab] = useState<'users' | 'clubs' | 'initiatives'>('users');
+  const [activeUserTab, setActiveUserTab] = useState<'users' | 'clubs' | 'initiatives' | 'centres'>('users');
   
   // Data States
   const [users, setUsers] = useState<any[]>([]);
@@ -555,17 +555,17 @@ const AdminDashboard: React.FC = () => {
               <Plus size={20} /> Create Event
             </button>
           )}
-          {(activeTab === 'users' && (activeUserTab === 'clubs' || activeUserTab === 'initiatives')) && (
+          {(activeTab === 'users' && (activeUserTab === 'clubs' || activeUserTab === 'initiatives' || activeUserTab === 'centres')) && (
             <button
               onClick={() => { 
                 setEditingClub(null); 
-                setClubFormData({ name: '', type: activeUserTab === 'initiatives' ? 'Initiative' : 'Club', description: '', aboutUs: '', tags: '', foundedOn: '', venue: '', eventsConducted: '', detailedDescription: '', organizerEmail: '', organizerPassword: '' }); 
+                setClubFormData({ name: '', type: activeUserTab === 'initiatives' ? 'Initiative' : activeUserTab === 'centres' ? 'Centre' : 'Club', description: '', aboutUs: '', tags: '', foundedOn: '', venue: '', eventsConducted: '', detailedDescription: '', organizerEmail: '', organizerPassword: '' }); 
                 setClubLeadership([]);
                 setIsClubModalOpen(true); 
               }}
               style={{ background: '#8B5CF6', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)' }}
             >
-              <Plus size={20} /> Create {activeUserTab === 'initiatives' ? 'Initiative' : 'Club'}
+              <Plus size={20} /> Create {activeUserTab === 'initiatives' ? 'Initiative' : activeUserTab === 'centres' ? 'Centre' : 'Club'}
             </button>
           )}
         </header>
@@ -772,6 +772,12 @@ const AdminDashboard: React.FC = () => {
                >
                  Initiatives
                </button>
+               <button 
+                 onClick={() => setActiveUserTab('centres')}
+                 style={{ background: activeUserTab === 'centres' ? '#111' : 'transparent', color: activeUserTab === 'centres' ? '#fff' : '#666', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s' }}
+               >
+                 Centres
+               </button>
             </div>
 
             {activeUserTab === 'users' ? (
@@ -811,10 +817,20 @@ const AdminDashboard: React.FC = () => {
                   </tbody>
                 </table>
               </div>
-            ) : (activeUserTab === 'clubs' || activeUserTab === 'initiatives') && (
+            ) : (activeUserTab === 'clubs' || activeUserTab === 'initiatives' || activeUserTab === 'centres') && (
               <div style={{ display: 'grid', gap: '1rem' }}>
-                {(activeUserTab === 'clubs' ? clubs.filter(c => c.type !== 'Initiative') : clubs.filter(c => c.type === 'Initiative')).length === 0 && <p style={{ color: '#888', padding: '3rem', textAlign: 'center', border: '1px dashed var(--border-subtle)', borderRadius: 16 }}>No {activeUserTab === 'clubs' ? 'clubs' : 'initiatives'} found.</p>}
-                {(activeUserTab === 'clubs' ? clubs.filter(c => c.type !== 'Initiative') : clubs.filter(c => c.type === 'Initiative')).map((club) => (
+                {(activeUserTab === 'clubs' 
+                  ? clubs.filter(c => c.type !== 'Initiative' && c.type !== 'Centre' && c.type !== 'Center') 
+                  : activeUserTab === 'initiatives' 
+                    ? clubs.filter(c => c.type === 'Initiative') 
+                    : clubs.filter(c => c.type === 'Centre' || c.type === 'Center')
+                 ).length === 0 && <p style={{ color: '#888', padding: '3rem', textAlign: 'center', border: '1px dashed var(--border-subtle)', borderRadius: 16 }}>No {activeUserTab} found.</p>}
+                {(activeUserTab === 'clubs' 
+                  ? clubs.filter(c => c.type !== 'Initiative' && c.type !== 'Centre' && c.type !== 'Center') 
+                  : activeUserTab === 'initiatives' 
+                    ? clubs.filter(c => c.type === 'Initiative') 
+                    : clubs.filter(c => c.type === 'Centre' || c.type === 'Center')
+                 ).map((club) => (
                   <motion.div
                     key={club._id}
                     className="admin-item-row"
@@ -1136,7 +1152,7 @@ const AdminDashboard: React.FC = () => {
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Type</label>
                   <select value={clubFormData.type} onChange={e => setClubFormData({...clubFormData, type: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }}>
-                    {['Club', 'Organization', 'Initiative'].map(c => <option key={c} value={c}>{c}</option>)}
+                    {['Club', 'Organization', 'Initiative', 'Centre'].map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                   <>

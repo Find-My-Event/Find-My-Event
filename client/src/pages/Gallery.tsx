@@ -17,7 +17,7 @@ const Gallery: React.FC = () => {
     <div style={{ background: '#fafafa', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
       {/* Main Content */}
-      <div style={{ flex: 1, padding: '8rem 2rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ flex: 1, padding: '5.5rem 2rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
