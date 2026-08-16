@@ -14,10 +14,6 @@ const Home2 = () => {
 
 
 
-  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -25,25 +21,11 @@ const Home2 = () => {
   }, []);
 
   useEffect(() => {
-    if (isCarouselPaused) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % 5);
     }, 3000);
     return () => clearInterval(interval);
-  }, [isCarouselPaused]);
-
-  const handleSwipe = () => {
-    if (touchStart === null || touchEnd === null) return;
-    const distance = touchStart - touchEnd;
-    const minSwipeDistance = 50;
-    if (distance > minSwipeDistance) {
-      setActiveIndex((prev) => (prev + 1) % 5); // Swipe left -> Next
-    } else if (distance < -minSwipeDistance) {
-      setActiveIndex((prev) => (prev - 1 + 5) % 5); // Swipe right -> Prev
-    }
-    setTouchStart(null);
-    setTouchEnd(null);
-  };
+  }, []);
 
   useEffect(() => {
 
