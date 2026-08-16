@@ -11,6 +11,14 @@ const Home2 = () => {
   const marker1Ref = useRef<HTMLSpanElement>(null);
   const marker2Ref = useRef<HTMLSpanElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const eventsSectionRef = useRef<HTMLDivElement>(null);
+
+  const handleCategoryClick = (categoryName: string) => {
+    setActiveCategory(categoryName);
+    if (eventsSectionRef.current) {
+      eventsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
 
 
@@ -347,7 +355,7 @@ const Home2 = () => {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem' }}>Explore Events Categories</h2>
         <div className="categories-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '1.5rem' }}>
           {categories.map((cat) => (
-            <motion.div key={cat.name} className="category-card" onClick={() => setActiveCategory(cat.name)} whileHover={{ y: -8, boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }} style={{ background: `linear-gradient(to bottom, #ffffff 10%, ${cat.color}25 55%, ${cat.color}88 100%)`, borderRadius: '16px', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', aspectRatio: '3/4' }}>
+            <motion.div key={cat.name} className="category-card" onClick={() => handleCategoryClick(cat.name)} whileHover={{ y: -8, boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }} style={{ background: `linear-gradient(to bottom, #ffffff 10%, ${cat.color}25 55%, ${cat.color}88 100%)`, borderRadius: '16px', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', aspectRatio: '3/4' }}>
               <span className="category-text" style={{ fontSize: '0.95rem', fontWeight: 700, color: '#334155', zIndex: 1, textAlign: 'center', marginTop: '1.25rem', padding: '0 0.5rem' }}>{cat.name}</span>
               <span className="category-icon" style={{ fontSize: '4.5rem', zIndex: 1, marginTop: 'auto', marginBottom: '0.75rem' }}>{cat.icon}</span>
             </motion.div>
@@ -374,7 +382,7 @@ const Home2 = () => {
             </div>
           </section>
 
-          <div style={{ background: '#FFFFFF' }}>
+          <div style={{ background: '#FFFFFF' }} ref={eventsSectionRef}>
             <section style={{ maxWidth: '1440px', margin: '0 auto', padding: isMobile ? '2.5rem 1.25rem 4rem' : '4rem 2.5rem 6rem' }}>
               <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.5rem', fontWeight: 800, marginBottom: isMobile ? '1.5rem' : '2.5rem', color: '#111' }}>All events</h2>
               <div className="no-scrollbar" style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem', marginBottom: '2.5rem', borderBottom: '1px solid #e2e8f0', width: '100%' }}>
