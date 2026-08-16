@@ -91,9 +91,6 @@ const Navbar: React.FC = () => {
   // User requested landing page navbar styling globally across the entire website
   const isInnerPage = false;
 
-  const textColor   = isInnerPage ? '#ffffff' : '#222';
-  const logoSrc     = isInnerPage ? (darkLogo) : darkLogo;
-
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
