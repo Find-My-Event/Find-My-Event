@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Home, Globe, LayoutGrid, Command, Award } from 'lucide-react';
+import { Bell, Menu, X, Settings, User, LogOut, ChevronDown, Shield, TrendingUp, Calendar, Home, Globe, LayoutGrid, Command, Award, Plus } from 'lucide-react';
 import gsap from 'gsap';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
@@ -75,10 +75,7 @@ const Navbar: React.FC = () => {
     fetchNotifications();
   }, [isLoggedIn]);
 
-  // Determine which links to show based on login status
-  const isLoggedInState = isLoggedIn;
-
-  const navLinks: Array<{ name: string; href: string; icon?: string }> = !isLoggedInState
+  const navLinks: Array<{ name: string; href: string; icon?: string }> = !isLoggedIn
     ? [
         { name: 'Home',    href: '#home',   icon: 'Home' },
         { name: 'Clubs',   href: '#clubs',   icon: 'Award' },
@@ -127,7 +124,7 @@ const Navbar: React.FC = () => {
           top: 0,
           left: 0,
           width: '100%',
-          height: isInnerPage ? (isMobile ? '64px' : '90px') : '160px', // Tall wrapper for the gradient
+          height: isInnerPage ? (isMobile ? '56px' : '72px') : '140px', // Matches OrganizerDashboard gradient height
           zIndex: 1000,
           pointerEvents: 'none', // Let clicks pass through the invisible part of the gradient
           background: isInnerPage 
@@ -138,57 +135,42 @@ const Navbar: React.FC = () => {
       >
         <nav
           style={{
-            height: isMobile ? '64px' : '76px',
+            height: isMobile ? '56px' : '64px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: isMobile ? '0 1.25rem' : '1.25rem 4rem 0',
+            padding: isMobile ? '0 1rem' : '0 2rem',
             pointerEvents: 'auto', // Re-enable clicks for the actual navbar
           }}
         >
           {/* ── Logo ── */}
-          <div
-            style={{
-              fontWeight: 700,
-              fontSize: isMobile ? '20px' : '23px',
-              fontFamily: 'Inter, sans-serif',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: isMobile ? '0.75rem' : '0.85rem',
-              color: textColor,
-              padding: isMobile ? '0' : '4px 8px',
-            }}
-            onClick={() => { window.location.hash = ''; setIsMobileMenuOpen(false); }}
-          >
-            <img src={logoSrc} alt="Eventum Logo" style={{ height: isMobile ? '32px' : '38px', width: 'auto' }} />
-            <span>Eventum<span style={{ color: '#EC4899' }}>.</span></span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => { window.location.hash = '#home'; setIsMobileMenuOpen(false); }}>
+            <img src={darkLogo} alt="Eventum" style={{ height: '28px' }} />
+            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#111' }}>Eventum<span style={{ color: '#ec4899' }}>.</span></span>
           </div>
 
           {/* ── Nav links ── */}
           <div style={{ display: 'flex', gap: isMobile ? '1.5rem' : '2.5rem', alignItems: 'center', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} className="mobile-hidden">
           {navLinks.map(link => {
-            const IconComponent = link.icon === 'Home' ? Home : link.icon === 'Award' ? Award : link.icon === 'Command' ? Command : link.icon === 'LayoutGrid' ? LayoutGrid : link.icon === 'Globe' ? Globe : null;
+            const IconComponent = link.icon === 'Home' ? Home : link.icon === 'Award' ? Award : link.icon === 'Command' ? Command : link.icon === 'LayoutGrid' ? LayoutGrid : link.icon === 'Plus' ? Plus : link.icon === 'Globe' ? Globe : null;
             return (
               <a
                 key={link.name}
                 href={link.href}
                 style={{ 
                   textDecoration: 'none', 
-                  color: textColor, 
-                  opacity: hash === link.href ? 1 : 0.8, 
+                  color: hash === link.href ? '#111' : 'rgba(0,0,0,0.5)', 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: '0.45rem', 
-                  fontSize: isMobile ? '16px' : '18px', 
-                  fontWeight: 600, 
+                  gap: '8px', 
+                  fontSize: '0.95rem', 
+                  fontWeight: 700, 
                   fontFamily: 'Inter, sans-serif',
-                  padding: isMobile ? '4px 8px' : '8px 16px',
-                  borderRadius: '12px',
-                  transition: 'all 0.2s ease',
+                  padding: '4px 8px',
+                  transition: 'color 0.2s ease',
                 }}
               >
-                {IconComponent && <IconComponent size={isMobile ? 18 : 20} />}
+                {IconComponent && <IconComponent size={18} />}
                 {link.name}
               </a>
             );
@@ -196,7 +178,7 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* ── Right actions ── */}
-        <div className="mobile-hidden" style={{ display: 'flex', alignItems: 'center', gap: '1.75rem' }}>
+        <div className="mobile-hidden" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
 
 
           {isLoggedIn ? (
@@ -211,6 +193,41 @@ const Navbar: React.FC = () => {
                 >
                   <TrendingUp size={16} /> Admin
                 </motion.button>
+              )}
+
+              {/* Organizer Dashboard Direct Button (If Organizer or Admin) */}
+              {(user?.role === 'organizer' || user?.role === 'admin') && (
+                <button
+                  type="button"
+                  onClick={() => window.location.hash = '#organizer-dashboard'}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: '#111827',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '24px',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
+                    transition: 'transform 0.2s, background 0.2s',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.03)';
+                    e.currentTarget.style.background = '#1f2937';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.background = '#111827';
+                  }}
+                >
+                  <LayoutGrid size={16} />
+                  <span>Organizer Dashboard</span>
+                </button>
               )}
 
               {/* Notifications */}
@@ -300,7 +317,6 @@ const Navbar: React.FC = () => {
                         { icon: Settings, label: 'General Settings', href: '#edit-profile?tab=settings' },
                         { icon: User,     label: 'Edit Profile',      href: '#edit-profile' },
                         ...(user?.role === 'admin' ? [{ icon: Shield, label: 'Admin Dashboard', href: '#admin' }] : []),
-                        ...(user?.role === 'organizer' ? [{ icon: LayoutGrid, label: 'Organizer Dashboard', href: '#organizer-dashboard' }] : []),
                         { icon: Calendar, label: 'Registered Events', href: '#registered-events' },
                       ].map(item => (
                         <button key={item.label} type="button" className={`dropdown-item${isInnerPage ? ' dropdown-item-dark' : ''}`}
