@@ -137,7 +137,7 @@ export default function RegisteredEvents() {
 
       <style>{`
         @media (max-width: 768px) {
-          .events-container { padding: 6rem 1rem 3rem 1rem !important; }
+          .events-container { padding: 6rem 1rem 8rem 1rem !important; }
           .header-flex { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; margin-bottom: 2.5rem !important; }
           .header-title { font-size: 2.2rem !important; }
           .timeline-wrap { gap: 1.5rem !important; }
@@ -450,13 +450,13 @@ export default function RegisteredEvents() {
               )}
 
               <div style={{ marginTop: '2rem', textAlign: 'left', borderTop: '1px dashed #e5e7eb', paddingTop: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                  <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>Attendee</span>
-                  <span style={{ fontWeight: 600, color: '#111' }}>{user?.name || 'You'}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.75rem' }}>
+                  <span style={{ color: '#6b7280', fontSize: '0.9rem', flexShrink: 0 }}>Attendee</span>
+                  <span style={{ fontWeight: 600, color: '#111', textAlign: 'right', wordBreak: 'break-word' }}>{user?.name || 'You'}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>{selectedTicket.rollNo ? 'Roll No' : 'Registration ID'}</span>
-                  <span style={{ fontWeight: 800, color: '#8B5CF6' }}>{selectedTicket.rollNo || selectedTicket._id?.substring(0, 8).toUpperCase()}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                  <span style={{ color: '#6b7280', fontSize: '0.9rem', flexShrink: 0 }}>{selectedTicket.rollNo ? 'Roll No' : 'Registration ID'}</span>
+                  <span style={{ fontWeight: 800, color: '#8B5CF6', textAlign: 'right', wordBreak: 'break-all' }}>{selectedTicket.rollNo || selectedTicket._id?.substring(0, 8).toUpperCase()}</span>
                 </div>
               </div>
             </motion.div>
