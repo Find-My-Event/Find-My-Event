@@ -141,7 +141,11 @@ router.post('/register', async (req, res) => {
       `
     };
 
-    await resend.emails.send(mailOptions);
+    try {
+      await resend.emails.send(mailOptions);
+    } catch (mailErr) {
+      console.error('Resend email dispatch warning:', mailErr?.message || mailErr);
+    }
     res.status(200).json({ message: 'OTP sent to email' });
   } catch (err) {
     res.status(500).json({ message: err.message });
