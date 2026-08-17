@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, X } from 'lucide-react';
 
 import api from '../api/axios';
 
@@ -23,6 +24,7 @@ const Contact = () => {
   };
 
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,7 @@ const Contact = () => {
       const response = await api.post('/contact', formData);
 
       if (response.status === 200) {
-        alert('Thank you for getting in touch! We will get back to you soon.');
+        setShowSuccess(true);
         setFormData({ firstName: '', lastName: '', contactDetail: '', message: '' });
       } else {
         alert(response.data?.error || 'Something went wrong. Please try again later.');
@@ -209,6 +211,88 @@ const Contact = () => {
           </form>
         </div>
       </motion.div>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.4)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+            onClick={() => setShowSuccess(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: '#ffffff',
+                borderRadius: '24px',
+                padding: '2.5rem 2rem',
+                width: '100%',
+                maxWidth: '400px',
+                textAlign: 'center',
+                position: 'relative',
+                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+              }}
+            >
+              <button 
+                onClick={() => setShowSuccess(false)}
+                style={{ position: 'absolute', top: '1rem', right: '1rem', background: '#f8f9fc', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'}
+                onMouseLeave={e => e.currentTarget.style.background = '#f8f9fc'}
+              >
+                <X size={18} color="#64748b" />
+              </button>
+
+              <div style={{ width: '80px', height: '80px', background: '#ecfdf5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                <CheckCircle size={40} color="#10b981" />
+              </div>
+              
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.75rem 0' }}>Message Sent!</h2>
+              <p style={{ color: '#64748b', fontSize: '1rem', margin: '0 0 2rem 0', lineHeight: 1.5 }}>
+                Thank you for getting in touch. Our team will get back to you shortly!
+              </p>
+
+              <button
+                onClick={() => setShowSuccess(false)}
+                style={{
+                  background: '#0f172a',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(15, 23, 42, 0.3)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 23, 42, 0.2)'; }}
+              >
+                Done
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

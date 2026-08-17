@@ -521,7 +521,7 @@ export const RegisterView = ({ event, onBack }: { event: any, onBack: () => void
      setLoading(true);
      try {
        const actualEventId = event._id || (String(event.id).startsWith('api-') ? event.id.replace('api-', '') : event.id);
-       const actualModel = (event._id || String(event.id).startsWith('api-')) ? 'EventSubmission' : 'Event';
+       const actualModel = event.status ? 'EventSubmission' : 'Event';
 
        const ticketPriceStr = event.tickets?.find((t: any) => t.category === selectedTicket)?.price;
        const numericPrice = ticketPriceStr === 'Free' || ticketPriceStr === '0' ? 0 : Number(ticketPriceStr || event.pricing?.ticketPrice || 0);

@@ -39,8 +39,13 @@ export default function OrganizerSetup() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const glimpseInputRef = useRef<HTMLInputElement>(null);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
     fetchProfile();
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const fetchProfile = async () => {
@@ -186,30 +191,30 @@ export default function OrganizerSetup() {
       }}>
         <nav style={{ 
           height: '64px',
-          padding: '0 2.5rem', 
+          padding: isMobile ? '0 1rem' : '0 2.5rem', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between', 
           pointerEvents: 'auto'
         }}>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.5px', color: '#111' }}>
+          <div style={{ fontSize: isMobile ? '1.4rem' : '1.75rem', fontWeight: 800, letterSpacing: '-0.5px', color: '#111' }}>
             Eventum<span style={{ color: '#8B5CF6' }}>.</span>
           </div>
           <button 
             onClick={handleSave}
             disabled={saving}
-            style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '99px', fontWeight: 600, fontSize: '0.95rem', cursor: saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(139, 92, 246, 0.25)' }}
+            style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)', color: '#fff', border: 'none', padding: isMobile ? '8px 16px' : '10px 24px', borderRadius: '99px', fontWeight: 600, fontSize: isMobile ? '0.85rem' : '0.95rem', cursor: saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(139, 92, 246, 0.25)' }}
           >
-            {saving ? 'Saving...' : 'Save & Enter Dashboard'} <ArrowRight size={18} />
+            {saving ? (isMobile ? 'Saving' : 'Saving...') : (isMobile ? 'Save' : 'Save & Enter Dashboard')} <ArrowRight size={18} />
           </button>
         </nav>
       </div>
 
-      <main style={{ flex: 1, maxWidth: '900px', width: '100%', margin: '0 auto', padding: '100px 2rem 4rem 2rem', position: 'relative', zIndex: 1 }}>
+      <main style={{ flex: 1, maxWidth: '900px', width: '100%', margin: '0 auto', padding: isMobile ? '80px 1rem 3rem 1rem' : '100px 2rem 4rem 2rem', position: 'relative', zIndex: 1 }}>
         
         <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '2.8rem', fontWeight: 800, letterSpacing: '-1px', margin: '0 0 0.5rem 0' }}>Welcome, {clubName}</h2>
-          <p style={{ color: '#666', fontSize: '1.15rem', margin: 0 }}>Review and complete your {clubType.toLowerCase()} profile to get started.</p>
+          <h2 style={{ fontSize: isMobile ? '2rem' : '2.8rem', fontWeight: 800, letterSpacing: '-1px', margin: '0 0 0.5rem 0' }}>Welcome, {clubName}</h2>
+          <p style={{ color: '#666', fontSize: isMobile ? '1rem' : '1.15rem', margin: 0 }}>Review and complete your {clubType.toLowerCase()} profile to get started.</p>
         </div>
 
         {error && (
@@ -222,9 +227,9 @@ export default function OrganizerSetup() {
         <form onSubmit={handleSave} style={{ display: 'grid', gap: '2rem' }}>
           
           {/* Logo Section */}
-          <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+          <div style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2.5rem', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 1.5rem 0' }}>Club Logo</h3>
-            <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '2rem', alignItems: 'center' }}>
               <div style={{ width: '120px', height: '120px', borderRadius: '24px', background: '#f4f4f5', border: '2px dashed #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
                 {logo ? (
                   <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -244,7 +249,7 @@ export default function OrganizerSetup() {
           </div>
 
           {/* Details Section */}
-          <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)', display: 'grid', gap: '1.5rem' }}>
+          <div style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2.5rem', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)', display: 'grid', gap: '1.5rem' }}>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0' }}>General Details</h3>
             
             <div>
@@ -257,7 +262,7 @@ export default function OrganizerSetup() {
               <textarea value={detailedDescription} onChange={(e) => setDetailedDescription(e.target.value)} placeholder="Tell us everything about what your club does, your achievements, etc..." style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', fontFamily: "'Inter', sans-serif", background: '#fafafa', outline: 'none', minHeight: '150px', resize: 'vertical' }} required />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.5rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Venue / Location</label>
                 <input type="text" value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="e.g. Block C, Room 102" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
@@ -268,7 +273,7 @@ export default function OrganizerSetup() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.5rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Founded On</label>
                 <input type="date" value={foundedOn} onChange={(e) => setFoundedOn(e.target.value)} style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
@@ -289,7 +294,7 @@ export default function OrganizerSetup() {
           </div>
 
           {/* Glimpses / Gallery Section */}
-          <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+          <div style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2.5rem', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><ImageIcon size={20} /> Event Highlights / Gallery</h3>
               <input type="file" accept="image/*" ref={glimpseInputRef} onChange={handleGlimpseUpload} style={{ display: 'none' }} />
@@ -322,7 +327,7 @@ export default function OrganizerSetup() {
           </div>
 
           {/* Leadership Section */}
-          <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+          <div style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2.5rem', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={20} /> Leadership & Core Team</h3>
               <button type="button" onClick={addLeader} style={{ background: '#f4f4f5', border: '1px solid #ddd', padding: '8px 16px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem' }}>
@@ -338,7 +343,7 @@ export default function OrganizerSetup() {
 
             <div style={{ display: 'grid', gap: '1.5rem' }}>
               {leadership.map((leader, index) => (
-                <div key={index} style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', background: '#fafafa', padding: '1.5rem', borderRadius: '16px', border: '1px solid #eee' }}>
+                <div key={index} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1.5rem', alignItems: isMobile ? 'flex-start' : 'center', background: '#fafafa', padding: '1.5rem', borderRadius: '16px', border: '1px solid #eee', position: 'relative' }}>
                   
                   <div style={{ position: 'relative' }}>
                     <div style={{ width: '80px', height: '80px', borderRadius: '16px', background: '#eaeaea', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -355,12 +360,12 @@ export default function OrganizerSetup() {
                     </label>
                   </div>
 
-                  <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div style={{ flex: 1, width: '100%', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
                     <input type="text" value={leader.name} onChange={(e) => { const l = [...leadership]; l[index].name = e.target.value; setLeadership(l); }} placeholder="Full Name" style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '0.95rem' }} required />
                     <input type="text" value={leader.position} onChange={(e) => { const l = [...leadership]; l[index].position = e.target.value; setLeadership(l); }} placeholder="Position (e.g. President)" style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '0.95rem' }} required />
                   </div>
                   
-                  <button type="button" onClick={() => removeLeader(index)} style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#B91C1C', padding: '10px', borderRadius: '10px', cursor: 'pointer' }}>
+                  <button type="button" onClick={() => removeLeader(index)} style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#B91C1C', padding: '10px', borderRadius: '10px', cursor: 'pointer', position: isMobile ? 'absolute' : 'static', top: isMobile ? '1rem' : 'auto', right: isMobile ? '1rem' : 'auto' }}>
                     <Trash2 size={18} />
                   </button>
                 </div>
