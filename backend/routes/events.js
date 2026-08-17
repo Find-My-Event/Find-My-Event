@@ -26,8 +26,16 @@ router.post('/upload', upload.single('file'), (req, res) => {
   res.json({ url: req.file.path });
 });
 
+let approvedCache = { data: null, timestamp: 0 };
+const APPROVED_CACHE_TTL = 10000; // 10 seconds RAM cache
+
 router.get('/approved', softAuth, async (req, res) => {
   try {
+    const now = Date.now();
+    if (!req.user && approvedCache.data && (now - approvedCache.timestamp < APPROVED_CACHE_TTL)) {
+      return res.json(approvedCache.data);
+    }
+
     const list = await EventSubmission.find({ 
       status: 'approved', 
       withdrawalStatus: { $ne: 'approved' },
@@ -51,6 +59,10 @@ router.get('/approved', softAuth, async (req, res) => {
       const isRegistered = req.user ? event.registeredUsers?.some(id => id.toString() === req.user._id.toString()) : false;
       return { ...event, pricing: pricingMap[event._id.toString()], isRegistered };
     });
+
+    if (!req.user) {
+      approvedCache = { data: listWithPricing, timestamp: now };
+    }
 
     res.json(listWithPricing);
   } catch (err) {
@@ -378,10 +390,18 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
 
 // === Regular Event Routes (Remote) ===
 
+let publicEventsCache = { data: null, timestamp: 0 };
+const PUBLIC_EVENTS_CACHE_TTL = 10000; // 10 seconds RAM cache
+
 // @desc    Get all events
 // @route   GET /api/events
 router.get('/', softAuth, async (req, res) => {
   try {
+    const now = Date.now();
+    if (!req.user && publicEventsCache.data && (now - publicEventsCache.timestamp < PUBLIC_EVENTS_CACHE_TTL)) {
+      return res.json(publicEventsCache.data);
+    }
+
     const events = await Event.find({ visibility: { $nin: ['Private', 'Unlisted'] } }).sort({ date: 1 }).lean();
     const clubsEvents = await ClubsEvent.find({ visibility: { $nin: ['Private', 'Unlisted'] } }).sort({ createdAt: -1 }).lean();
 
@@ -405,6 +425,11 @@ router.get('/', softAuth, async (req, res) => {
     });
 
     const allEvents = [...eventsWithPricing, ...clubsEventsWithPricing];
+
+    if (!req.user) {
+      publicEventsCache = { data: allEvents, timestamp: now };
+    }
+
     res.json(allEvents);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -909,8 +934,13 @@ router.post('/:id/register', requireAuth, async (req, res) => {
       await User.findByIdAndUpdate(req.user._id, { phone: req.body.teamMembers[0].phone });
     }
 
-    event.registeredUsers.push(req.user._id);
-    await event.save();
+    if (modelName === 'Event') {
+      await Event.findByIdAndUpdate(event._id, { $addToSet: { registeredUsers: req.user._id } });
+    } else if (modelName === 'EventSubmission') {
+      await EventSubmission.findByIdAndUpdate(event._id, { $addToSet: { registeredUsers: req.user._id } });
+    } else if (modelName === 'ClubsEvent') {
+      await ClubsEvent.findByIdAndUpdate(event._id, { $addToSet: { registeredUsers: req.user._id } });
+    }
 
     // Save custom answers and team members for free registration
     await Registration.create({

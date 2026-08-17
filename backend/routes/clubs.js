@@ -2,11 +2,19 @@ const express = require('express');
 const router = express.Router();
 const Club = require('../models/Club');
 
+let clubsCache = { data: null, timestamp: 0 };
+const CLUBS_CACHE_TTL = 15000; // 15 seconds RAM cache
+
 // @desc    Get all clubs, initiatives, and organizations
 // @route   GET /api/clubs
 router.get('/', async (req, res) => {
   try {
-    const clubs = await Club.find({}).sort({ name: 1 });
+    const now = Date.now();
+    if (clubsCache.data && (now - clubsCache.timestamp < CLUBS_CACHE_TTL)) {
+      return res.json(clubsCache.data);
+    }
+    const clubs = await Club.find({}).sort({ name: 1 }).lean();
+    clubsCache = { data: clubs, timestamp: now };
     res.json(clubs);
   } catch (error) {
     res.status(500).json({ message: error.message });
