@@ -41,8 +41,8 @@ const clubSchema = new mongoose.Schema({
     type: String
   },
   eventsConducted: {
-    type: Number,
-    default: 0
+    type: String,
+    default: '0'
   },
   detailedDescription: {
     type: String

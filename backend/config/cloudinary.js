@@ -10,13 +10,18 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'find-my-event',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-    transformation: [{ width: 1000, height: 600, crop: 'limit' }]
+  params: async (req, file) => {
+    return {
+      folder: 'find-my-event',
+      resource_type: 'auto',
+      transformation: [{ width: 1200, height: 1200, crop: 'limit' }]
+    };
   }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 50 * 1024 * 1024 } // Increased file size limit to 50MB
+});
 
 module.exports = { cloudinary, upload };

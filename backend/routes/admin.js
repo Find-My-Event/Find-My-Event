@@ -353,7 +353,7 @@ router.post('/clubs', protect, admin, upload.any(), async (req, res) => {
       aboutUs,
       foundedOn,
       venue,
-      eventsConducted: eventsConducted ? parseInt(eventsConducted, 10) : 0,
+      eventsConducted: eventsConducted || '0',
       detailedDescription,
       leadership,
       logo: logoFile.path,
@@ -415,7 +415,7 @@ router.put('/clubs/:id', protect, admin, upload.any(), async (req, res) => {
     club.aboutUs = aboutUs || club.aboutUs;
     if (foundedOn !== undefined) club.foundedOn = foundedOn;
     if (venue !== undefined) club.venue = venue;
-    if (eventsConducted !== undefined) club.eventsConducted = parseInt(eventsConducted, 10);
+    if (eventsConducted !== undefined) club.eventsConducted = eventsConducted;
     if (detailedDescription !== undefined) club.detailedDescription = detailedDescription;
     
     if (tags) {

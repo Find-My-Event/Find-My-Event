@@ -1183,7 +1183,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Events Conducted</label>
-                  <input type="number" placeholder="E.g. 15" value={clubFormData.eventsConducted} onChange={e => setClubFormData({...clubFormData, eventsConducted: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
+                  <input type="text" placeholder="E.g. 15 or 100+" value={clubFormData.eventsConducted} onChange={e => setClubFormData({...clubFormData, eventsConducted: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Short Description</label>

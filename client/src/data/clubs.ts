@@ -10,7 +10,7 @@ export interface Club {
   tags: string[];
   foundedOn?: string;
   venue?: string;
-  eventsConducted?: number;
+  eventsConducted?: number | string;
   detailedDescription?: string;
   leadership?: any[];
   linkedinUrl?: string;

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Camera, ArrowRight, X, Plus, Trash2, Upload, Users, Image as ImageIcon } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../contexts/AuthContext';
+import { compressImage } from '../utils/imageCompressor';
 
 export default function OrganizerSetup() {
   const { refreshUser } = useAuth();
@@ -17,7 +18,7 @@ export default function OrganizerSetup() {
   const [venue, setVenue] = useState('');
   const [tags, setTags] = useState('');
   const [foundedOn, setFoundedOn] = useState('');
-  const [eventsConducted, setEventsConducted] = useState<number | ''>('');
+  const [eventsConducted, setEventsConducted] = useState<string>('');
   const [presidentEmail, setPresidentEmail] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [instagramUrl, setInstagramUrl] = useState('');
@@ -60,7 +61,7 @@ export default function OrganizerSetup() {
       setDetailedDescription(data.detailedDescription || '');
       setVenue(data.venue || '');
       setTags(data.tags ? data.tags.join(', ') : '');
-      setEventsConducted(data.eventsConducted || '');
+      setEventsConducted(data.eventsConducted !== undefined && data.eventsConducted !== null ? String(data.eventsConducted) : '');
       setPresidentEmail(data.presidentEmail || '');
       setLinkedinUrl(data.linkedinUrl || '');
       setInstagramUrl(data.instagramUrl || '');
@@ -90,8 +91,9 @@ export default function OrganizerSetup() {
   };
 
   const uploadFile = async (file: File) => {
+    const compressedFile = await compressImage(file);
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', compressedFile);
     const res = await api.post('/organizer/upload', formData, { 
       headers: { 'Content-Type': 'multipart/form-data' } 
     });
@@ -115,12 +117,14 @@ export default function OrganizerSetup() {
     if (!e.target.files || e.target.files.length === 0) return;
     try {
       setUploadingGlimpse(true);
-      const url = await uploadFile(e.target.files[0]);
-      setGlimpses([...glimpses, url]);
+      const filesArray = Array.from(e.target.files);
+      const uploadedUrls = await Promise.all(filesArray.map(file => uploadFile(file)));
+      setGlimpses(prev => [...prev, ...uploadedUrls]);
     } catch (err: any) {
-      setError('Failed to upload image.');
+      setError('Failed to upload image(s).');
     } finally {
       setUploadingGlimpse(false);
+      if (glimpseInputRef.current) glimpseInputRef.current.value = '';
     }
   };
 
@@ -162,7 +166,7 @@ export default function OrganizerSetup() {
         venue,
         tags: tags.split(',').map(t => t.trim()).filter(Boolean),
         foundedOn,
-        eventsConducted: eventsConducted === '' ? 0 : Number(eventsConducted),
+        eventsConducted: eventsConducted,
         presidentEmail,
         glimpses,
         leadership,
@@ -278,7 +282,7 @@ export default function OrganizerSetup() {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Events Conducted</label>
-                <input type="number" value={eventsConducted} onChange={(e) => setEventsConducted(e.target.value ? Number(e.target.value) : '')} placeholder="0" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
+                <input type="text" value={eventsConducted} onChange={(e) => setEventsConducted(e.target.value)} placeholder="e.g. 15 or 100+ or More than 100" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
               </div>
             </div>
 
@@ -306,7 +310,7 @@ export default function OrganizerSetup() {
           <div style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2.5rem', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><ImageIcon size={20} /> Event Highlights / Gallery</h3>
-              <input type="file" accept="image/*" ref={glimpseInputRef} onChange={handleGlimpseUpload} style={{ display: 'none' }} />
+              <input type="file" accept="image/*" multiple ref={glimpseInputRef} onChange={handleGlimpseUpload} style={{ display: 'none' }} />
               <button type="button" onClick={() => glimpseInputRef.current?.click()} style={{ background: '#f4f4f5', border: '1px solid #ddd', padding: '8px 16px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem' }}>
                 <Plus size={16} /> Add Photo
               </button>
