@@ -4,6 +4,7 @@ const { requireAuth } = require('../middleware/auth');
 const Club = require('../models/Club');
 const User = require('../models/User');
 const { upload } = require('../config/cloudinary');
+const { clearClubsCache } = require('./clubs');
 const bcrypt = require('bcryptjs');
 const { resend } = require('../utils/email');
 
@@ -69,13 +70,14 @@ router.put('/club-profile', requireAuth, requireOrganizer, async (req, res) => {
     if (foundedOn !== undefined) club.foundedOn = foundedOn;
     if (glimpses) club.glimpses = glimpses;
     if (leadership) club.leadership = leadership;
-    if (eventsConducted !== undefined) club.eventsConducted = Number(eventsConducted);
+    if (eventsConducted !== undefined) club.eventsConducted = String(eventsConducted);
     if (presidentEmail !== undefined) club.presidentEmail = presidentEmail;
     if (linkedinUrl !== undefined) club.linkedinUrl = linkedinUrl;
     if (instagramUrl !== undefined) club.instagramUrl = instagramUrl;
     if (gmailUrl !== undefined) club.gmailUrl = gmailUrl;
 
     await club.save();
+    clearClubsCache();
 
     // Mark the user's profile as complete and sync avatar
     const user = await User.findById(req.user.id);
@@ -94,11 +96,17 @@ router.put('/club-profile', requireAuth, requireOrganizer, async (req, res) => {
 
 // POST /api/organizer/upload
 // Uploads a single file and returns the secure URL
-router.post('/upload', requireAuth, requireOrganizer, upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'No file uploaded' });
-  }
-  res.status(200).json({ url: req.file.path });
+router.post('/upload', requireAuth, requireOrganizer, (req, res) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      console.error('Cloudinary upload error:', err);
+      return res.status(500).json({ message: err.message || 'Image upload failed' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    res.status(200).json({ url: req.file.path });
+  });
 });
 
 // POST /api/organizer/request-password-change
@@ -229,8 +237,12 @@ router.post('/events', requireAuth, requireOrganizer, upload.single('image'), as
 
     const savedEvent = await event.save();
     
-    // Optionally increment eventsConducted
-    club.eventsConducted += 1;
+    // Optionally increment eventsConducted if numeric
+    if (typeof club.eventsConducted === 'number') {
+      club.eventsConducted += 1;
+    } else if (typeof club.eventsConducted === 'string' && !isNaN(Number(club.eventsConducted))) {
+      club.eventsConducted = String(Number(club.eventsConducted) + 1);
+    }
     await club.save();
 
     res.status(201).json(savedEvent);
