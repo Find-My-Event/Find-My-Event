@@ -69,8 +69,17 @@ export default function OrganizerSetup() {
       setLeadership(data.leadership || []);
       
       if (data.foundedOn) {
-        const dateObj = new Date(data.foundedOn);
-        setFoundedOn(dateObj.toISOString().split('T')[0]);
+        const val = String(data.foundedOn);
+        if (val.includes('T')) {
+          const dateObj = new Date(val);
+          if (!isNaN(dateObj.getTime())) {
+            setFoundedOn(dateObj.toISOString().split('T')[0]);
+          } else {
+            setFoundedOn(val);
+          }
+        } else {
+          setFoundedOn(val);
+        }
       }
       
     } catch (err: any) {
@@ -275,8 +284,8 @@ export default function OrganizerSetup() {
 
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.5rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Founded On</label>
-                <input type="date" value={foundedOn} onChange={(e) => setFoundedOn(e.target.value)} style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Founded On (Year or Date)</label>
+                <input type="text" value={foundedOn} onChange={(e) => setFoundedOn(e.target.value)} placeholder="e.g. 2018 or 15 Aug 2018" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Tags (Comma separated)</label>
@@ -285,7 +294,7 @@ export default function OrganizerSetup() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>President / Official Contact Email</label>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>President / Official Contact Email (Recovery Email)</label>
               <input type="email" value={presidentEmail} onChange={(e) => setPresidentEmail(e.target.value)} placeholder="president@club.com" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
               <p style={{ fontSize: '0.85rem', color: '#888', margin: '0.5rem 0 0 0' }}>Used for security purposes (like OTP for password changes). Must be an active email address.</p>
             </div>

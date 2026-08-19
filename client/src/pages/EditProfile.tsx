@@ -147,6 +147,12 @@ export default function EditProfile() {
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
+
+  useEffect(() => {
+    if (user?.role === 'organizer' && (!window.location.hash.includes('tab=settings') && !window.location.hash.includes('tab=account'))) {
+      window.location.hash = '#organizer-setup';
+    }
+  }, [user]);
   
   // Profile State
   const [profileData, setProfileData] = useState({
@@ -179,6 +185,7 @@ export default function EditProfile() {
   const [forgotOtp, setForgotOtp] = useState('');
   const [forgotNewPassword, setForgotNewPassword] = useState('');
   const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+  const [otpTargetEmail, setOtpTargetEmail] = useState('');
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingForgotOtp, setVerifyingForgotOtp] = useState(false);
   const [resettingPassword, setResettingPassword] = useState(false);
@@ -287,11 +294,14 @@ export default function EditProfile() {
   const handleSendForgotOtp = async () => {
     setSendingOtp(true);
     try {
-      await api.post('/auth/forgot-password-send-otp', { email: user?.email });
-      showMessage('success', `Verification code sent to ${user?.email}`);
+      const res = await api.post('/auth/forgot-password-send-otp', { email: user?.email });
+      const targetAddr = res.data.email || res.data.maskedEmail || user?.email;
+      setOtpTargetEmail(targetAddr);
+      showMessage('success', `Verification code sent to recovery email: ${targetAddr}`);
       setForgotPasswordStep('otp');
     } catch (err: any) {
-      showMessage('error', err.response?.data?.message || 'Failed to send OTP');
+      const errMsg = err.response?.data?.message || 'Unable to send OTP: Recovery email not found. Please add a Recovery Email in your Initiative Profile first.';
+      showMessage('error', errMsg);
     } finally {
       setSendingOtp(false);
     }
@@ -491,7 +501,7 @@ export default function EditProfile() {
 
             {/* Navigation Tabs */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {TABS.map(tab => {
+              {(user?.role === 'organizer' ? TABS.filter(t => t.id === 'settings' || t.id === 'support') : TABS).map(tab => {
                 const isActive = activeTab === tab.id;
                 return (
                   <button
@@ -529,18 +539,20 @@ export default function EditProfile() {
                 Log Out
               </button>
               
-              <button
-                onClick={() => setShowDeleteConfirmModal(true)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-                  background: 'rgba(147,51,234,0.05)', color: '#9333EA', border: '1px solid rgba(147,51,234,0.15)',
-                  borderRadius: '12px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left',
-                  marginTop: '8px'
-                }}
-              >
-                <Trash2 size={20} />
-                Delete Account
-              </button>
+              {user?.role !== 'organizer' && (
+                <button
+                  onClick={() => setShowDeleteConfirmModal(true)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+                    background: 'rgba(147,51,234,0.05)', color: '#9333EA', border: '1px solid rgba(147,51,234,0.15)',
+                    borderRadius: '12px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left',
+                    marginTop: '8px'
+                  }}
+                >
+                  <Trash2 size={20} />
+                  Delete Account
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -607,7 +619,7 @@ export default function EditProfile() {
 
                 {/* Mobile Drawer Tabs */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, overflowY: 'auto' }}>
-                  {TABS.map(tab => {
+                  {(user?.role === 'organizer' ? TABS.filter(t => t.id === 'settings' || t.id === 'support') : TABS).map(tab => {
                     const isActive = activeTab === tab.id;
                     return (
                       <button
@@ -1081,35 +1093,37 @@ export default function EditProfile() {
           {activeTab === 'settings' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               
-              <div style={{ background: '#FFF', padding: '24px', borderRadius: '12px', border: '1px solid #EAEAEA', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#111' }}>Privacy & Notifications</h3>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid #F3F4F6' }}>
-                  <div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#111' }}>Public Profile</h4>
-                    <p style={{ margin: 0, color: '#6B7280', fontSize: '0.85rem' }}>Allow others to see your basic profile details.</p>
+              {user?.role !== 'organizer' && (
+                <div style={{ background: '#FFF', padding: '24px', borderRadius: '12px', border: '1px solid #EAEAEA', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#111' }}>Privacy & Notifications</h3>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid #F3F4F6' }}>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#111' }}>Public Profile</h4>
+                      <p style={{ margin: 0, color: '#6B7280', fontSize: '0.85rem' }}>Allow others to see your basic profile details.</p>
+                    </div>
+                    <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
+                      <input type="checkbox" checked={settings.publicProfile} onChange={e => setSettings({...settings, publicProfile: e.target.checked})} style={{ opacity: 0, width: 0, height: 0 }} />
+                      <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.publicProfile ? '#9333EA' : '#D1D5DB', transition: '.4s', borderRadius: '34px' }}>
+                        <span style={{ position: 'absolute', content: '""', height: '18px', width: '18px', left: settings.publicProfile ? '22px' : '3px', bottom: '3px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }}></span>
+                      </span>
+                    </label>
                   </div>
-                  <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
-                    <input type="checkbox" checked={settings.publicProfile} onChange={e => setSettings({...settings, publicProfile: e.target.checked})} style={{ opacity: 0, width: 0, height: 0 }} />
-                    <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.publicProfile ? '#9333EA' : '#D1D5DB', transition: '.4s', borderRadius: '34px' }}>
-                      <span style={{ position: 'absolute', content: '""', height: '18px', width: '18px', left: settings.publicProfile ? '22px' : '3px', bottom: '3px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }}></span>
-                    </span>
-                  </label>
-                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0' }}>
-                  <div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#111' }}>Email Notifications</h4>
-                    <p style={{ margin: 0, color: '#6B7280', fontSize: '0.85rem' }}>Receive updates about your registered events.</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0' }}>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#111' }}>Email Notifications</h4>
+                      <p style={{ margin: 0, color: '#6B7280', fontSize: '0.85rem' }}>Receive updates about your registered events.</p>
+                    </div>
+                    <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
+                      <input type="checkbox" checked={settings.notifyEmail} onChange={e => setSettings({...settings, notifyEmail: e.target.checked})} style={{ opacity: 0, width: 0, height: 0 }} />
+                      <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.notifyEmail ? '#9333EA' : '#D1D5DB', transition: '.4s', borderRadius: '34px' }}>
+                        <span style={{ position: 'absolute', content: '""', height: '18px', width: '18px', left: settings.notifyEmail ? '22px' : '3px', bottom: '3px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }}></span>
+                      </span>
+                    </label>
                   </div>
-                  <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px' }}>
-                    <input type="checkbox" checked={settings.notifyEmail} onChange={e => setSettings({...settings, notifyEmail: e.target.checked})} style={{ opacity: 0, width: 0, height: 0 }} />
-                    <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.notifyEmail ? '#9333EA' : '#D1D5DB', transition: '.4s', borderRadius: '34px' }}>
-                      <span style={{ position: 'absolute', content: '""', height: '18px', width: '18px', left: settings.notifyEmail ? '22px' : '3px', bottom: '3px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }}></span>
-                    </span>
-                  </label>
                 </div>
-              </div>
+              )}
 
               {user?.authProvider !== 'google' && (
                 <div style={{ background: '#FFF', padding: '24px', borderRadius: '12px', border: '1px solid #EAEAEA', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1191,7 +1205,7 @@ export default function EditProfile() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <Mail size={18} color="#9333EA" />
                           <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#991B1B' }}>
-                            We sent a 6-digit OTP to {user?.email}
+                            We sent a 6-digit OTP to recovery email: {otpTargetEmail || user?.email}
                           </span>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
@@ -1358,18 +1372,20 @@ export default function EditProfile() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  onClick={handleSaveSettings} disabled={saving}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#9333EA', color: '#FFF',
-                    padding: '12px 24px', borderRadius: '10px', fontWeight: 700, fontSize: '0.95rem', border: 'none', cursor: saving ? 'wait' : 'pointer'
-                  }}
-                >
-                  {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                  Save Settings
-                </button>
-              </div>
+              {user?.role !== 'organizer' && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={handleSaveSettings} disabled={saving}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#9333EA', color: '#FFF',
+                      padding: '12px 24px', borderRadius: '10px', fontWeight: 700, fontSize: '0.95rem', border: 'none', cursor: saving ? 'wait' : 'pointer'
+                    }}
+                  >
+                    {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                    Save Settings
+                  </button>
+                </div>
+              )}
             </motion.div>
           )}
 

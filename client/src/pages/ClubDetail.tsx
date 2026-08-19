@@ -230,11 +230,33 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <div style={{ background: '#fff', border: '1px solid #ec4899', borderRadius: '8px', width: '42px', height: '42px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   <div style={{ background: '#ec4899', width: '100%', textAlign: 'center', color: '#fff', fontSize: '0.5rem', fontWeight: 800, padding: '0.1rem 0' }}>Est.</div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#111', lineHeight: 1.2, marginTop: '2px' }}>Yr</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#111', lineHeight: 1.2, marginTop: '1px' }}>
+                    {(() => {
+                      if (!club.foundedOn) return 'Yr';
+                      const str = String(club.foundedOn).trim();
+                      const match = str.match(/\b(19|20)\d{2}\b/);
+                      if (match) return match[0].slice(-2);
+                      const d = new Date(str);
+                      if (!isNaN(d.getTime())) return String(d.getFullYear()).slice(-2);
+                      return 'Yr';
+                    })()}
+                  </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
-                    {club.foundedOn ? new Date(club.foundedOn).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Not Listed'}
+                    {(() => {
+                      if (!club.foundedOn) return 'Not Listed';
+                      const str = String(club.foundedOn).trim();
+                      if (!str) return 'Not Listed';
+                      if (/^\d{4}$/.test(str)) return str;
+                      if (str.includes('T')) {
+                        const d = new Date(str);
+                        if (!isNaN(d.getTime())) return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                      }
+                      const d = new Date(str);
+                      if (!isNaN(d.getTime())) return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                      return str;
+                    })()}
                   </div>
                   <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Founded On</div>
                 </div>

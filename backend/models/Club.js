@@ -35,7 +35,7 @@ const clubSchema = new mongoose.Schema({
     type: String
   }],
   foundedOn: {
-    type: Date
+    type: mongoose.Schema.Types.Mixed
   },
   venue: {
     type: String
