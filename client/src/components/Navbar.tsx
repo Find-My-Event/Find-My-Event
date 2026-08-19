@@ -81,12 +81,18 @@ const Navbar: React.FC = () => {
         { name: 'Clubs',   href: '#clubs',   icon: 'Award' },
         { name: 'Gallery', href: '#gallery', icon: 'LayoutGrid' },
       ]
-    : [
-        { name: 'Home',      href: '#home',        icon: 'Home' },
-        { name: 'Clubs',     href: '#clubs',       icon: 'Award' },
-        { name: 'My Events', href: '#registered-events', icon: 'Command' },
-        { name: 'Gallery',   href: '#gallery',     icon: 'LayoutGrid' },
-      ];
+    : user?.role === 'organizer'
+      ? [
+          { name: 'Home',    href: '#home',    icon: 'Home' },
+          { name: 'Clubs',   href: '#clubs',   icon: 'Award' },
+          { name: 'Gallery', href: '#gallery', icon: 'LayoutGrid' },
+        ]
+      : [
+          { name: 'Home',      href: '#home',        icon: 'Home' },
+          { name: 'Clubs',     href: '#clubs',       icon: 'Award' },
+          { name: 'My Events', href: '#registered-events', icon: 'Command' },
+          { name: 'Gallery',   href: '#gallery',     icon: 'LayoutGrid' },
+        ];
 
   // User requested landing page navbar styling globally across the entire website
   const isInnerPage = false;
@@ -99,18 +105,27 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const mobileTabs: Array<{ name: string; href: string; icon: any; isProfile?: boolean }> = isLoggedIn ? [
-    { name: 'Home', href: '#home', icon: Home },
-    { name: 'Clubs', href: '#clubs', icon: Award },
-    { name: 'Events', href: '#registered-events', icon: Calendar },
-    { name: 'Gallery', href: '#gallery', icon: LayoutGrid },
-    { name: 'Profile', href: '', icon: User, isProfile: true },
-  ] : [
-    { name: 'Home', href: '#home', icon: Home },
-    { name: 'Clubs', href: '#clubs', icon: Award },
-    { name: 'Gallery', href: '#gallery', icon: LayoutGrid },
-    { name: 'Sign In', href: '#signin', icon: User },
-  ];
+  const mobileTabs: Array<{ name: string; href: string; icon: any; isProfile?: boolean }> = isLoggedIn
+    ? user?.role === 'organizer'
+      ? [
+          { name: 'Home', href: '#home', icon: Home },
+          { name: 'Clubs', href: '#clubs', icon: Award },
+          { name: 'Gallery', href: '#gallery', icon: LayoutGrid },
+          { name: 'Profile', href: '', icon: User, isProfile: true },
+        ]
+      : [
+          { name: 'Home', href: '#home', icon: Home },
+          { name: 'Clubs', href: '#clubs', icon: Award },
+          { name: 'Events', href: '#registered-events', icon: Calendar },
+          { name: 'Gallery', href: '#gallery', icon: LayoutGrid },
+          { name: 'Profile', href: '', icon: User, isProfile: true },
+        ]
+    : [
+        { name: 'Home', href: '#home', icon: Home },
+        { name: 'Clubs', href: '#clubs', icon: Award },
+        { name: 'Gallery', href: '#gallery', icon: LayoutGrid },
+        { name: 'Sign In', href: '#signin', icon: User },
+      ];
 
   return (
     <>
@@ -312,9 +327,9 @@ const Navbar: React.FC = () => {
                       </div>
                       {[
                         { icon: Settings, label: 'General Settings', href: '#edit-profile?tab=settings' },
-                        { icon: User,     label: 'Edit Profile',      href: '#edit-profile' },
+                        { icon: User,     label: 'Edit Profile',      href: user?.role === 'organizer' ? '#organizer-setup' : '#edit-profile' },
                         ...(user?.role === 'admin' ? [{ icon: Shield, label: 'Admin Dashboard', href: '#admin' }] : []),
-                        { icon: Calendar, label: 'Registered Events', href: '#registered-events' },
+                        ...(user?.role !== 'organizer' ? [{ icon: Calendar, label: 'Registered Events', href: '#registered-events' }] : []),
                       ].map(item => (
                         <button key={item.label} type="button" className={`dropdown-item${isInnerPage ? ' dropdown-item-dark' : ''}`}
                           onClick={() => { setIsProfileOpen(false); window.location.hash = item.href; }}>
@@ -481,7 +496,7 @@ const Navbar: React.FC = () => {
             {isLoggedIn && (
               <>
 
-                <button type="button" onClick={() => { window.location.hash = '#edit-profile'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
+                <button type="button" onClick={() => { window.location.hash = user?.role === 'organizer' ? '#organizer-setup' : '#edit-profile'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>
                   <span style={{ color: '#8B5CF6', opacity: 0.8 }}><User size={16} /></span> Edit Profile
                 </button>
                 <button type="button" onClick={() => { window.location.hash = '#edit-profile?tab=settings'; setIsMobileMenuOpen(false); }} style={{ textAlign: 'left', background: 'none', border: 'none', color: isInnerPage ? '#fff' : '#111', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', padding: '0.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '8px' }}>

@@ -846,7 +846,7 @@ const AdminDashboard: React.FC = () => {
                         setEditingClub(club); 
                         setClubFormData({ 
                           name: club.name, type: club.type, description: club.description, aboutUs: club.aboutUs, tags: (club.tags || []).join(', '),
-                          foundedOn: club.foundedOn ? new Date(club.foundedOn).toISOString().substring(0, 7) : '',
+                          foundedOn: club.foundedOn ? String(club.foundedOn) : '',
                           venue: club.venue || '',
                           eventsConducted: club.eventsConducted !== undefined ? club.eventsConducted.toString() : '',
                           detailedDescription: club.detailedDescription || '',
@@ -1174,8 +1174,8 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Founded On</label>
-                  <input type="month" value={clubFormData.foundedOn} onChange={e => setClubFormData({...clubFormData, foundedOn: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
+                  <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Founded On (Year or Date)</label>
+                  <input type="text" placeholder="E.g. 2018 or May 2018" value={clubFormData.foundedOn} onChange={e => setClubFormData({...clubFormData, foundedOn: e.target.value})} style={{ width: '100%', background: 'var(--border-subtle)', border: '1px solid rgba(0,0,0,0.1)', padding: '14px', borderRadius: '12px', color: 'var(--text-primary)' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', opacity: 0.5 }}>Venue</label>

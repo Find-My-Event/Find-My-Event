@@ -411,10 +411,10 @@ router.post('/forgot-password-send-otp', async (req, res) => {
 
     if (dbUser.role === 'organizer') {
       const club = await Club.findOne({ organizerAccount: dbUser._id });
-      if (!club || !club.presidentEmail) {
-        return res.status(400).json({ message: 'Recovery email not found. Please contact the Admin to reset your password.' });
+      if (!club || !club.presidentEmail || !club.presidentEmail.trim()) {
+        return res.status(400).json({ message: 'Unable to send OTP: Recovery email not found. Please add a Recovery Email in your Initiative Profile first.' });
       }
-      targetEmail = club.presidentEmail;
+      targetEmail = club.presidentEmail.trim();
       const [name, domain] = targetEmail.split('@');
       maskedEmail = `${name.substring(0, 2)}***@${domain}`;
     } else {

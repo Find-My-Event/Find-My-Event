@@ -64,13 +64,13 @@ router.put('/club-profile', requireAuth, requireOrganizer, async (req, res) => {
     if (detailedDescription !== undefined) club.detailedDescription = detailedDescription;
     if (aboutUs !== undefined) club.aboutUs = aboutUs;
     if (logo) club.logo = logo;
-    if (tags) club.tags = Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim());
+    if (tags !== undefined) club.tags = Array.isArray(tags) ? tags : (typeof tags === 'string' && tags.trim() ? tags.split(',').map(t => t.trim()) : []);
     if (venue !== undefined) club.venue = venue;
-    if (foundedOn) club.foundedOn = new Date(foundedOn);
+    if (foundedOn !== undefined) club.foundedOn = foundedOn;
     if (glimpses) club.glimpses = glimpses;
     if (leadership) club.leadership = leadership;
     if (eventsConducted !== undefined) club.eventsConducted = Number(eventsConducted);
-    if (presidentEmail) club.presidentEmail = presidentEmail;
+    if (presidentEmail !== undefined) club.presidentEmail = presidentEmail;
     if (linkedinUrl !== undefined) club.linkedinUrl = linkedinUrl;
     if (instagramUrl !== undefined) club.instagramUrl = instagramUrl;
     if (gmailUrl !== undefined) club.gmailUrl = gmailUrl;
