@@ -178,7 +178,8 @@ const EventDetail = ({ hash }: { hash?: string }) => {
 
             @media (max-width: 768px) {
               .event-detail-main { padding: 5rem 1.25rem 3rem !important; }
-              .event-poster { height: 320px !important; }
+              .event-poster { height: auto !important; aspect-ratio: auto !important; }
+              .event-poster img { height: auto !important; object-fit: cover !important; }
               .event-title { font-size: 2rem !important; margin-bottom: 1rem !important; }
               
               /* Timeline Mobile Fix */
@@ -212,9 +213,9 @@ const EventDetail = ({ hash }: { hash?: string }) => {
               className="event-poster order-1"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ background: '#111', borderRadius: '16px', overflow: 'hidden', height: '420px', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', marginBottom: '1.5rem' }}
+              style={{ background: 'transparent', borderRadius: '16px', overflow: 'hidden', height: 'auto', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', marginBottom: '1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
             >
-              <img src={currentEvent.img} alt={currentEvent.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={currentEvent.img} alt={currentEvent.title} style={{ width: '100%', height: 'auto', objectFit: 'cover', position: 'relative', zIndex: 1, display: 'block' }} />
             </motion.div>
 
             {/* Eligibility Card */}
@@ -437,6 +438,11 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                 <button 
                   className="reg-btn"
                   onClick={() => {
+                    if (currentEvent.title && currentEvent.title.toLowerCase().includes('caravan')) {
+                      window.location.href = 'https://pages.razorpay.com/clubcaravan2026';
+                      return;
+                    }
+
                     if (isClosed) return;
                     if (!isLoggedIn) {
                       window.location.hash = '#signin';
@@ -451,19 +457,19 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                     if (!currentEvent.isRegistered) setShowRegister(true);
                   }}
                   style={{ 
-                    background: currentEvent.isRegistered ? '#10b981' : (isClosed ? '#ef4444' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? '#94a3b8' : '#0f172a')), 
+                    background: (currentEvent.title && currentEvent.title.toLowerCase().includes('caravan')) ? '#0f172a' : (currentEvent.isRegistered ? '#10b981' : (isClosed ? '#ef4444' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? '#94a3b8' : '#0f172a'))), 
                     color: '#fff', 
                     border: 'none', 
                     borderRadius: '8px', 
                     padding: '1rem 3rem', 
                     fontSize: '1.1rem', 
                     fontWeight: 700, 
-                    cursor: currentEvent.isRegistered ? 'default' : (isClosed ? 'not-allowed' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'not-allowed' : 'pointer')), 
+                    cursor: (currentEvent.title && currentEvent.title.toLowerCase().includes('caravan')) ? 'pointer' : (currentEvent.isRegistered ? 'default' : (isClosed ? 'not-allowed' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'not-allowed' : 'pointer'))), 
                     transition: 'background 0.2s', 
                     boxShadow: '0 4px 10px rgba(0,0,0,0.1)' 
                   }}
                 >
-                  {currentEvent.isRegistered ? 'Registered' : (isClosed ? 'Registration Closed' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'Not Eligible' : 'Register Now'))}
+                  {(currentEvent.title && currentEvent.title.toLowerCase().includes('caravan')) ? 'Register Now' : (currentEvent.isRegistered ? 'Registered' : (isClosed ? 'Registration Closed' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'Not Eligible' : 'Register Now')))}
                 </button>
               </div>
               <div style={{ textAlign: 'center', fontSize: '0.9rem', color: '#94a3b8', marginTop: '2rem' }}>
