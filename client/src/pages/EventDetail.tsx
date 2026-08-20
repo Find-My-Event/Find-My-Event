@@ -438,16 +438,17 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                 <button 
                   className="reg-btn"
                   onClick={() => {
+                    if (!isLoggedIn) {
+                      window.location.hash = '#signin';
+                      return;
+                    }
+                    
                     if (currentEvent.title && currentEvent.title.toLowerCase().includes('caravan')) {
                       window.location.href = 'https://pages.razorpay.com/clubcaravan2026';
                       return;
                     }
 
                     if (isClosed) return;
-                    if (!isLoggedIn) {
-                      window.location.hash = '#signin';
-                      return;
-                    }
                     if (rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All') {
                       if (user?.education?.department !== rawEvent.targetDepartment) {
                         alert(`You are not eligible for this event.\n\nThis event is restricted to ${rawEvent.targetDepartment} students.\nYour department is ${user?.education?.department || 'not specified'}.`);
