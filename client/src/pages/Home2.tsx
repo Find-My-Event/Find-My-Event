@@ -167,8 +167,8 @@ const Home2 = () => {
 
   const top5Events = eventsList.slice(0, 5);
   const displayEvents = top5Events.length > 0
-    ? [0, 1, 2, 3, 4].map(i => top5Events[i % top5Events.length])
-    : [1, 2, 3, 4, 5].map(item => ({ id: `loading-${item}`, title: `Loading...`, isLoading: true }));
+    ? top5Events
+    : [{ id: `loading-1`, title: `Loading...`, isLoading: true }];
 
   return (
     <div className="home2-page" style={{ background: '#FFFFFF', minHeight: '100vh', color: '#111', fontFamily: "'Plus Jakarta Sans', sans-serif", overflowX: 'hidden' }}>
@@ -260,13 +260,33 @@ const Home2 = () => {
 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '3rem', position: 'relative', height: isMobile ? '400px' : '500px', width: '100%', overflow: 'hidden' }}>
           {displayEvents.map((event, index) => {
-            const offset = (index - activeIndex + 5) % 5;
+            const length = displayEvents.length;
+            const normalizedActive = ((activeIndex % length) + length) % length;
+            const offset = (index - normalizedActive + length) % length;
 
-            const isCenter = offset === 0;
-            const isAdjRight = offset === 1;
-            const isFarRight = offset === 2;
-            const isFarLeft = offset === 3;
-            const isAdjLeft = offset === 4;
+            let isCenter = false, isAdjRight = false, isFarRight = false, isFarLeft = false, isAdjLeft = false;
+
+            if (length === 1) {
+              isCenter = true;
+            } else if (length === 2) {
+              isCenter = offset === 0;
+              isAdjRight = offset === 1;
+            } else if (length === 3) {
+              isCenter = offset === 0;
+              isAdjRight = offset === 1;
+              isAdjLeft = offset === 2;
+            } else if (length === 4) {
+              isCenter = offset === 0;
+              isAdjRight = offset === 1;
+              isFarRight = offset === 2;
+              isAdjLeft = offset === 3;
+            } else {
+              isCenter = offset === 0;
+              isAdjRight = offset === 1;
+              isFarRight = offset === 2;
+              isFarLeft = offset === 3;
+              isAdjLeft = offset === 4;
+            }
 
             let zIndex = 1;
             let left = '50%';
@@ -338,11 +358,16 @@ const Home2 = () => {
                       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                     </motion.svg>
                   </div>
+                ) : event.isDummy ? (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#94a3b8' }}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '8px', color: '#f1f5f9', textAlign: 'center', padding: '0 1rem' }}>More Events</div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Coming Soon...</div>
+                  </div>
                 ) : (
                   <img
                     src={event.img}
                     alt={event.title || 'Event'}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
                   />
                 )}
               </motion.div>

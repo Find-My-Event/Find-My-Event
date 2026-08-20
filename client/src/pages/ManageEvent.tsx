@@ -759,10 +759,10 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                    {personalInfo.map(info => (
-                     <div key={info.id} style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <div key={info.name || info.id || Math.random()} style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                        <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>{info.name}</span>
                        <select value={info.required} onChange={async (e) => {
-                          const updated = personalInfo.map(i => i.id === info.id ? {...i, required: e.target.value} : i);
+                          const updated = personalInfo.map(i => i.name === info.name ? {...i, required: e.target.value} : i);
                           setPersonalInfo(updated);
                           await saveEvent({ personalInfo: updated });
                        }} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#888', cursor: 'pointer' }}>
@@ -803,10 +803,10 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                   {eduInfo.map(info => (
-                     <div key={info.id} style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <div key={info.name || info.id || Math.random()} style={{ border: '1px solid #eaeaea', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                        <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111' }}>{info.name}</span>
                        <select value={info.required} onChange={async (e) => {
-                          const updated = eduInfo.map(i => i.id === info.id ? {...i, required: e.target.value} : i);
+                          const updated = eduInfo.map(i => i.name === info.name ? {...i, required: e.target.value} : i);
                           setEduInfo(updated);
                           await saveEvent({ eduInfo: updated });
                        }} style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#888', cursor: 'pointer' }}>
@@ -841,7 +841,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                </div>
                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {customQuestions.map(q => (
-                     <div key={q.id} style={{ border: '1px solid #eaeaea', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <div key={q.question || q.id || Math.random()} style={{ border: '1px solid #eaeaea', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                            <LayoutGrid size={16} color="#888" />
                            <div>
@@ -850,7 +850,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
                            </div>
                         </div>
                         <Trash2 onClick={async () => {
-                           const updated = customQuestions.filter(c => c.id !== q.id);
+                           const updated = customQuestions.filter(c => c.question !== q.question);
                            setCustomQuestions(updated);
                            await saveEvent({ customQuestions: updated });
                         }} size={16} color="#ef4444" style={{ cursor: 'pointer' }} />
