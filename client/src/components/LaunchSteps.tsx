@@ -188,7 +188,7 @@ const LaunchSteps = () => {
   return (
     <section ref={containerRef} style={{
       position: 'relative',
-      height: '100vh',
+      minHeight: '100vh',
       width: '100%',
       background: '#fafafa',
       overflow: 'hidden',
@@ -208,12 +208,12 @@ const LaunchSteps = () => {
         .ls-step-circle { width: 40px; height: 40px; font-size: 1rem; }
 
         @media (max-width: 768px) {
-          .ls-grid { grid-template-columns: 1fr; gap: 1.5rem !important; align-content: center; margin-top: 10vh; }
-          .ls-left-col { gap: 1rem !important; flex-direction: row !important; justify-content: space-between; }
+          .ls-grid { grid-template-columns: 1fr; gap: 1.5rem !important; align-content: center; margin-top: 5vh; width: 100%; padding: 0 1rem; }
+          .ls-left-col { gap: 0.75rem !important; flex-direction: row !important; justify-content: center; flex-wrap: wrap; width: 100%; }
           .ls-left-col > div.ls-divider { display: none !important; }
-          .ls-center-col { height: 420px !important; width: 100% !important; max-width: 340px !important; justify-self: center !important; }
-          .ls-center-col > div { height: 420px !important; }
-          .ls-right-col { height: 120px !important; justify-content: center; }
+          .ls-center-col { height: 340px !important; width: 100% !important; max-width: 300px !important; justify-self: center !important; }
+          .ls-center-col > div { height: 340px !important; }
+          .ls-right-col { height: 100px !important; justify-content: center; margin-bottom: 80px; }
           .ls-right-col p { font-size: 1.05rem !important; text-align: center !important; }
           .ls-step-font { font-size: 1rem !important; }
           .ls-step-circle { width: 30px !important; height: 30px !important; font-size: 0.8rem !important; }
@@ -229,14 +229,18 @@ const LaunchSteps = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        zIndex: 10
+        zIndex: 10,
+        width: '100%'
       }}>
         <h2 style={{
-          fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+          fontSize: 'clamp(1.8rem, 8vw, 4.5rem)',
           fontFamily: 'Inter, sans-serif',
           margin: 0,
           letterSpacing: '-0.03em',
-          display: 'flex'
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%',
+          flexWrap: 'wrap'
         }}>
           {renderHeadline()}
         </h2>

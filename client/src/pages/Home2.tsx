@@ -171,7 +171,7 @@ const Home2 = () => {
     : [1, 2, 3, 4, 5].map(item => ({ id: `loading-${item}`, title: `Loading...`, isLoading: true }));
 
   return (
-    <div className="home2-page" style={{ background: '#FFFFFF', minHeight: '100vh', color: '#111', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="home2-page" style={{ background: '#FFFFFF', minHeight: '100vh', color: '#111', fontFamily: "'Plus Jakarta Sans', sans-serif", overflowX: 'hidden' }}>
       <style>{`
         .premium-hero-heading {
           font-family: 'Inter', 'SF Pro Display', 'Neue Haas Grotesk', sans-serif;
@@ -367,12 +367,12 @@ const Home2 = () => {
         <div style={{ padding: '6rem 2rem', textAlign: 'center' }}><h2>Loading...</h2></div>
       ) : (
         <>
-          <section className="initiatives-section" style={{ maxWidth: '1440px', margin: '0 auto', padding: isMobile ? '2rem 1.25rem' : '3rem 2.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <section className="initiatives-section" style={{ maxWidth: '1440px', margin: '0 auto', padding: isMobile ? '2rem 0' : '3rem 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem', padding: isMobile ? '0 1.25rem' : '0 2.5rem' }}>
               <h2 style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', fontWeight: 700 }}>Explore Initiatives, Clubs & Centers in JECRC</h2>
-              <button onClick={() => window.location.hash = '#clubs'} style={{ background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer', color: '#8B5CF6', fontSize: isMobile ? '0.85rem' : '0.95rem' }}>view more...</button>
+              <button onClick={() => window.location.hash = '#clubs'} style={{ background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer', color: '#8B5CF6', fontSize: isMobile ? '0.85rem' : '0.95rem', marginLeft: 'auto' }}>view more...</button>
             </div>
-            <div className="no-scrollbar" style={{ display: 'flex', gap: isMobile ? '1.25rem' : '2rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+            <div className="no-scrollbar" style={{ display: 'flex', gap: isMobile ? '1.25rem' : '2rem', overflowX: 'auto', padding: isMobile ? '0.5rem 1.25rem 1.5rem' : '0.5rem 2.5rem 1.5rem' }}>
               {displayedClubs.map((club, idx) => (
                 <div key={`${club.id}-${idx}`} onClick={() => window.location.hash = `#club-detail-${club.id}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', minWidth: isMobile ? '95px' : '120px', cursor: 'pointer' }}>
                   <motion.img whileHover={{ scale: 1.05 }} src={club.logo} alt={club.name} style={{ width: isMobile ? '90px' : '120px', height: isMobile ? '90px' : '120px', borderRadius: '50%', objectFit: 'cover', background: '#e2e8f0', boxShadow: '0 8px 16px rgba(0,0,0,0.08)', flexShrink: 0 }} />
