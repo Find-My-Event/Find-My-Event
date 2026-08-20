@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, MapPin, Loader2, Mail, User, Image as ImageIcon, Trophy } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, MapPin, Loader2, Mail, User, Image as ImageIcon, Trophy, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '../lib/api';
 import { fallbackClubs } from '../data/clubs';
 import type { Club } from '../data/clubs';
@@ -15,6 +15,7 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
   const [clubLoading, setClubLoading] = useState(true);
   const [events, setEvents] = useState<any[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   // Extract ID from hash
   const clubId = useMemo(() => {
@@ -109,7 +110,7 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
   }
 
   return (
-    <div style={{ backgroundColor: '#FAFAFA', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#111', position: 'relative' }}>
+    <div style={{ backgroundColor: '#FAFAFA', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#111', position: 'relative', overflowX: 'hidden' }}>
       
       {/* Background Gradient */}
       <div style={{ 
@@ -214,7 +215,7 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
           </div>
 
           {/* RIGHT COLUMN */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
             <span style={{ display: 'inline-block', background: '#f3e8ff', color: '#9333ea', padding: '0.25rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem', width: 'fit-content' }}>
               {club.tags?.[0] || club.type || 'Entrepreneurship'}
             </span>
@@ -330,7 +331,15 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
           {club.glimpses && club.glimpses.length > 0 ? (
             <div className="gallery-masonry">
               {club.glimpses.map((img, idx) => (
-                <img key={idx} src={img} alt={`Highlight ${idx}`} />
+                <img 
+                  key={idx} 
+                  src={img} 
+                  alt={`Highlight ${idx}`} 
+                  onClick={() => setSelectedImageIndex(idx)}
+                  style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(0.98)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                />
               ))}
             </div>
           ) : (
@@ -390,6 +399,119 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
       </main>
       
       <Footer />
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {selectedImageIndex !== null && club.glimpses && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImageIndex(null)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedImageIndex(null)}
+              style={{
+                position: 'absolute',
+                top: '1.5rem',
+                right: '1.5rem',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#fff',
+                zIndex: 10000
+              }}
+            >
+              <X size={24} />
+            </button>
+
+            {/* Prev Button */}
+            {selectedImageIndex > 0 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setSelectedImageIndex(selectedImageIndex - 1); }}
+                style={{
+                  position: 'absolute',
+                  left: '1rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '48px',
+                  height: '48px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#fff',
+                  zIndex: 10000
+                }}
+              >
+                <ChevronLeft size={32} />
+              </button>
+            )}
+
+            {/* Image */}
+            <motion.img
+              key={selectedImageIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              onClick={(e) => e.stopPropagation()}
+              src={club.glimpses[selectedImageIndex]}
+              style={{
+                maxHeight: '90vh',
+                maxWidth: '90vw',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+              }}
+            />
+
+            {/* Next Button */}
+            {selectedImageIndex < club.glimpses.length - 1 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setSelectedImageIndex(selectedImageIndex + 1); }}
+                style={{
+                  position: 'absolute',
+                  right: '1rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '48px',
+                  height: '48px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#fff',
+                  zIndex: 10000
+                }}
+              >
+                <ChevronRight size={32} />
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

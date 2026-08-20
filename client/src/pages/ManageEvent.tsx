@@ -946,6 +946,7 @@ function ParticipantsTab({ event }: { event: any }) {
   const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'detailed'>('list');
+  const [showCheckedInModal, setShowCheckedInModal] = useState(false);
 
 
   useEffect(() => {
@@ -967,13 +968,76 @@ function ParticipantsTab({ event }: { event: any }) {
     return () => clearInterval(interval);
   }, [event]);
 
+  const handleDownloadData = () => {
+    if (!participants || participants.length === 0) {
+      alert("No data to download!");
+      return;
+    }
+    
+    // Collect all unique questions from participants (in case event schema changed)
+    const questionSet = new Set<string>();
+    participants.forEach(p => {
+      (p.answers || []).forEach((a: any) => {
+        if (a.question) questionSet.add(a.question);
+      });
+    });
+    const allQuestions = Array.from(questionSet);
+    
+    let headers = ['Name', 'Email', 'Phone', 'Ticket Type', 'Status'];
+    if (event?.generateQRCode) headers.push('Checked In');
+    
+    // Add dynamic questions as headers
+    allQuestions.forEach(q => headers.push(`"${q.replace(/"/g, '""')}"`));
+    
+    let csvContent = headers.join(",") + "\n";
+    
+    participants.forEach(p => {
+      const name = p.name ? `"${p.name.replace(/"/g, '""')}"` : '""';
+      const email = p.email ? `"${p.email}"` : '""';
+      // Use standard CSV text formatting for long numbers
+      const phone = p.phone ? `="${p.phone}"` : '""';
+      const ticketType = p.type ? `"${p.type}"` : '""';
+      const status = p.status ? `"${p.status}"` : '""';
+      
+      let row = [name, email, phone, ticketType, status];
+      
+      if (event?.generateQRCode) {
+        row.push(p.checkedIn ? '"Yes"' : '"No"');
+      }
+      
+      // Append answers based on collected questions
+      allQuestions.forEach(q => {
+        const ansObj = (p.answers || []).find((a: any) => a.question === q);
+        let ansStr = ansObj?.answer || '';
+        if (Array.isArray(ansStr)) ansStr = ansStr.join(', ');
+        row.push(`"${ansStr.toString().replace(/"/g, '""')}"`);
+      });
+      
+      csvContent += row.join(",") + "\n";
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `participants_${event?.title?.replace(/\\s+/g, '_') || 'event'}.csv`);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
        {/* Actions */}
        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-          <button style={{ flex: 1, minWidth: '150px', background: '#eff6ff', color: '#3b82f6', border: '1px solid #bfdbfe', padding: '12px', borderRadius: '12px', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <Users size={16} /> Check In Participants
-          </button>
+          {event?.generateQRCode && (
+            <button onClick={() => setShowCheckedInModal(true)} style={{ flex: 1, minWidth: '150px', background: '#eff6ff', color: '#3b82f6', border: '1px solid #bfdbfe', padding: '12px', borderRadius: '12px', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <Users size={16} /> Check In Participants
+            </button>
+          )}
           <button 
             onClick={() => {
               if (!event) return;
@@ -1009,10 +1073,12 @@ function ParticipantsTab({ event }: { event: any }) {
                       <div style={{ fontWeight: 800, color: '#ec4899', fontSize: '1rem' }}>{participants.length}</div>
                       <div style={{ width: '100%', maxWidth: '40px', height: `${(participants.length / total) * 100}%`, background: '#ec4899', borderRadius: '4px 4px 0 0', minHeight: '4px' }} title="Total Registrations" />
                    </div>
-                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end', width: '20%' }}>
-                      <div style={{ fontWeight: 800, color: '#22c55e', fontSize: '1rem' }}>{checkedIn}</div>
-                      <div style={{ width: '100%', maxWidth: '40px', height: `${(checkedIn / total) * 100}%`, background: '#22c55e', borderRadius: '4px 4px 0 0', minHeight: '4px' }} title="Checked In" />
-                   </div>
+                   {event?.generateQRCode && (
+                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end', width: '20%' }}>
+                        <div style={{ fontWeight: 800, color: '#22c55e', fontSize: '1rem' }}>{checkedIn}</div>
+                        <div style={{ width: '100%', maxWidth: '40px', height: `${(checkedIn / total) * 100}%`, background: '#22c55e', borderRadius: '4px 4px 0 0', minHeight: '4px' }} title="Checked In" />
+                     </div>
+                   )}
                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end', width: '20%' }}>
                       <div style={{ fontWeight: 800, color: '#3b82f6', fontSize: '1rem' }}>{paid}</div>
                       <div style={{ width: '100%', maxWidth: '40px', height: `${(paid / total) * 100}%`, background: '#3b82f6', borderRadius: '4px 4px 0 0', minHeight: '4px' }} title="Paid Tickets" />
@@ -1024,7 +1090,9 @@ function ParticipantsTab({ event }: { event: any }) {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '1rem', color: '#888', fontSize: '0.8rem', fontWeight: 600 }}>
                    <span style={{ width: '20%', textAlign: 'center' }}>Total</span>
-                   <span style={{ width: '20%', textAlign: 'center' }}>Checked In</span>
+                   {event?.generateQRCode && (
+                     <span style={{ width: '20%', textAlign: 'center' }}>Checked In</span>
+                   )}
                    <span style={{ width: '20%', textAlign: 'center' }}>Paid</span>
                    <span style={{ width: '20%', textAlign: 'center' }}>Free</span>
                 </div>
@@ -1044,11 +1112,15 @@ function ParticipantsTab({ event }: { event: any }) {
            
            return (
              <>
-               <div style={{ display: 'flex', height: '12px', borderRadius: '6px', overflow: 'hidden', marginBottom: '1rem', background: '#fbcfe8' }}>
-                  <div style={{ width: `${checkedInPct}%`, background: '#22c55e' }} title={`Checked In: ${checkedInPct}%`} />
-               </div>
+               {event?.generateQRCode && (
+                 <div style={{ display: 'flex', height: '12px', borderRadius: '6px', overflow: 'hidden', marginBottom: '1rem', background: '#fbcfe8' }}>
+                    <div style={{ width: `${checkedInPct}%`, background: '#22c55e' }} title={`Checked In: ${checkedInPct}%`} />
+                 </div>
+               )}
                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', fontWeight: 700, flexWrap: 'wrap' }}>
-                  <span style={{ color: '#22c55e' }}>• {checkedIn} Checked In</span>
+                  {event?.generateQRCode && (
+                    <span style={{ color: '#22c55e' }}>• {checkedIn} Checked In</span>
+                  )}
                   <span style={{ color: '#ec4899' }}>• {total} Total Registrations</span>
                </div>
              </>
@@ -1076,7 +1148,7 @@ function ParticipantsTab({ event }: { event: any }) {
                  <button onClick={() => setViewMode('detailed')} style={{ background: viewMode === 'detailed' ? '#111' : '#fff', color: viewMode === 'detailed' ? '#fff' : '#111', border: '1px solid #eaeaea', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                    <LayoutGrid size={14} /> View Data
                  </button>
-                 <button style={{ background: '#fff', border: '1px solid #eaeaea', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <button onClick={handleDownloadData} style={{ background: '#fff', border: '1px solid #eaeaea', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                    <Download size={14} /> Download Data
                  </button>
                </div>
@@ -1099,7 +1171,7 @@ function ParticipantsTab({ event }: { event: any }) {
                        
                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
                           <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#22c55e' }}>{p.status}</span>
-                          {p.checkedIn && (
+                          {event?.generateQRCode && p.checkedIn && (
                             <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', background: '#dcfce7', color: '#166534', fontWeight: 600 }}>
                               Checked In
                             </span>
@@ -1222,6 +1294,39 @@ function ParticipantsTab({ event }: { event: any }) {
             </div>
          </div>
        </div>
+       
+       {showCheckedInModal && (
+         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+           <div style={{ background: '#fff', padding: '2rem', borderRadius: '16px', width: '100%', maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eaeaea', paddingBottom: '1rem' }}>
+               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>Checked In Participants</h3>
+               <button onClick={() => setShowCheckedInModal(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                 <X size={20} color="#666" />
+               </button>
+             </div>
+             
+             {participants.filter(p => p.checkedIn).length === 0 ? (
+               <div style={{ padding: '2rem', textAlign: 'center', color: '#666', fontWeight: 500 }}>No one has checked in yet.</div>
+             ) : (
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                 {participants.filter(p => p.checkedIn).map((p, i) => (
+                   <div key={p.id || i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '12px 1rem', borderRadius: '8px', border: '1px solid #eaeaea' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                       <img src={p.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.name}`} alt="" style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #ccc' }} />
+                       <div>
+                         <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.name}</div>
+                         <div style={{ fontSize: '0.8rem', color: '#666' }}>{p.email}</div>
+                       </div>
+                     </div>
+                     <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', background: '#dcfce7', color: '#166534', fontWeight: 600 }}>Checked In</span>
+                   </div>
+                 ))}
+               </div>
+             )}
+           </div>
+         </div>
+       )}
+       
     </div>
   );
 }

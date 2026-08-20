@@ -156,7 +156,7 @@ const Navbar: React.FC = () => {
           }}
         >
           {/* ── Logo ── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => { window.location.hash = '#home'; setIsMobileMenuOpen(false); }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => { window.location.hash = ''; setIsMobileMenuOpen(false); }}>
             <img src={darkLogo} alt="Eventum" style={{ height: '28px' }} />
             <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#111' }}>Eventum<span style={{ color: '#ec4899' }}>.</span></span>
           </div>

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 
 const Footer = () => (
-  <footer className="lp-footer site-footer" style={{ fontFamily: "'Plus Jakarta Sans', 'Poppins', sans-serif" }}>
+  <footer className="lp-footer site-footer" style={{ fontFamily: "'Plus Jakarta Sans', 'Poppins', sans-serif", paddingBottom: '7rem' }}>
     {/* Top */}
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '3rem', marginBottom: '4rem' }}>
       {/* Brand */}
@@ -137,11 +137,12 @@ const Footer = () => (
       viewport={{ once: true }}
       style={{
         textAlign: 'center', marginTop: '3rem',
-        fontSize: 'clamp(5rem,15vw,14rem)', fontWeight: 900,
-        letterSpacing: '-0.03em', lineHeight: 0.9,
+        fontSize: 'clamp(4rem,14vw,14rem)', fontWeight: 900,
+        letterSpacing: '0.05em', lineHeight: 1.2,
         userSelect: 'none', pointerEvents: 'none',
         color: '#fff',
         width: '100%',
+        paddingBottom: '2rem'
       }}
     >
       EVENTUM
@@ -149,7 +150,7 @@ const Footer = () => (
 
     <style>{`
       @media (max-width: 768px) {
-        .site-footer { padding: 3rem 1.5rem 2rem !important; border-radius: 32px 32px 0 0; }
+        .site-footer { border-radius: 32px 32px 0 0; padding-left: 1.5rem !important; padding-right: 1.5rem !important; padding-top: 3rem !important; }
         .footer-columns { gap: 2rem !important; }
       }
     `}</style>
