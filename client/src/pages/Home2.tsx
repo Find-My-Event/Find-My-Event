@@ -477,10 +477,19 @@ const Home2 = () => {
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6B7280', fontSize: '0.9rem', fontWeight: 500, marginTop: 'auto' }}>
                           <span>{event.capacity || event.seats || 'Limited'} Seats left</span>
-                          <span style={{ color: '#D1D5DB' }}>|</span>
-                          <span style={{ color: '#E11D48', fontWeight: 700 }}>
-                            {event.tickets && event.tickets.length > 0 ? `₹${event.tickets[0].price}` : (event.price || 'Free')}
-                          </span>
+                          {(() => {
+                            const priceText = event.tickets && event.tickets.length > 0 ? event.tickets[0].price : (event.price || 'Free');
+                            const isFree = String(priceText).toLowerCase() === 'free' || String(priceText) === '0';
+                            if (isFree) return null;
+                            return (
+                              <>
+                                <span style={{ color: '#D1D5DB' }}>|</span>
+                                <span style={{ color: '#E11D48', fontWeight: 700 }}>
+                                  {String(priceText).includes('₹') ? priceText : `₹${priceText}`}
+                                </span>
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
                     </motion.div>
