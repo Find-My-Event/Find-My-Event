@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/axios';
 import { RegisterView } from '../components/SharedViews';
+import darkLogo from '../logo/dark logo.png';
 
 const EventDetail = ({ hash }: { hash?: string }) => {
   const { user, isLoggedIn } = useAuth();
@@ -261,7 +262,21 @@ const EventDetail = ({ hash }: { hash?: string }) => {
             <div className="info-box order-8">
               <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>Organized by</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '1rem', borderBottom: (rawEvent?.contacts && rawEvent.contacts.length > 0) ? '1px solid #f1f5f9' : 'none' }}>
-                <img src={rawEvent?.createdBy?.avatar || rawEvent?.createdBy?.logo || `https://api.dicebear.com/7.x/shapes/svg?seed=${currentEvent.organizer}`} alt="Organizer" style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#111', objectFit: 'cover' }} />
+                {(() => {
+                  const orgName = (currentEvent?.organizer || rawEvent?.organizer?.name || rawEvent?.createdBy?.name || '').toString().toLowerCase();
+                  const isUniversityOrAdmin = !orgName || orgName.includes('jecrc') || orgName.includes('admin') || orgName.includes('eventum') || orgName.includes('host');
+                  const orgImage = (!isUniversityOrAdmin && (rawEvent?.createdBy?.avatar || rawEvent?.createdBy?.logo || rawEvent?.organizer?.logo))
+                    ? (rawEvent?.createdBy?.avatar || rawEvent?.createdBy?.logo || rawEvent?.organizer?.logo)
+                    : darkLogo;
+
+                  return (
+                    <img 
+                      src={orgImage} 
+                      alt="Organizer" 
+                      style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', objectFit: 'contain', border: '1px solid #e2e8f0', padding: '2px' }} 
+                    />
+                  );
+                })()}
                 <h4 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>{currentEvent.organizer}</h4>
               </div>
               {rawEvent?.contacts && rawEvent.contacts.length > 0 && (

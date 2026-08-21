@@ -3,6 +3,7 @@ import { Calendar, MapPin, ArrowLeft, Heart, Share2, Ticket, Sparkles, Users, Ch
 import { useState } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../contexts/AuthContext';
+import darkLogo from '../logo/dark logo.png';
 
 // ─── Shared Event Detail View ───────────────────────────────────────────────────────────
 import { useLikedEvents } from '../hooks/useLikedEvents';
@@ -128,7 +129,21 @@ export const EventDetail = ({ event, onBack, onRegister }: { event: any, onBack:
           </h1>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
-            <img src={`https://ui-avatars.com/api/?name=${event?.organizer || 'A'}&background=random&color=fff`} alt="Organizer" style={{ width: '40px', height: '40px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.2)' }} />
+            {(() => {
+              const orgName = (event?.organizer || event?.createdBy?.name || '').toString().toLowerCase();
+              const isUniversityOrAdmin = !orgName || orgName.includes('jecrc') || orgName.includes('admin') || orgName.includes('eventum') || orgName.includes('host') || orgName.includes('unknown');
+              const orgImage = (!isUniversityOrAdmin && (event?.createdBy?.avatar || event?.createdBy?.logo || event?.organizerLogo))
+                ? (event?.createdBy?.avatar || event?.createdBy?.logo || event?.organizerLogo)
+                : darkLogo;
+
+              return (
+                <img 
+                  src={orgImage} 
+                  alt="Organizer" 
+                  style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', objectFit: 'contain', border: '2px solid rgba(255,255,255,0.2)', padding: '2px' }} 
+                />
+              );
+            })()}
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', fontWeight: 500 }}>By <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{event?.organizer || 'Unknown Organizer'}</span></p>
           </div>
         </div>
