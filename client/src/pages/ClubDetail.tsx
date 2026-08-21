@@ -279,7 +279,9 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
                 </div>
                 <div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
-                    {String(club.eventsConducted || '0').toLowerCase().includes('event') ? (club.eventsConducted || '0') : `${club.eventsConducted || '0'} Events Conducted`}
+                    {(!club.eventsConducted || club.eventsConducted === '0' || club.eventsConducted === 0) 
+                      ? 'Events not listed' 
+                      : (String(club.eventsConducted).toLowerCase().includes('event') ? club.eventsConducted : `${club.eventsConducted} Events Conducted`)}
                   </div>
                   <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Total Events</div>
                 </div>
