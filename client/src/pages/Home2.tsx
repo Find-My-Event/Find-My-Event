@@ -165,7 +165,9 @@ const Home2 = () => {
     return 0;
   });
 
-  const top5Events = eventsList.slice(0, 5);
+  const top5Events = [...eventsList]
+    .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+    .slice(0, 5);
   const displayEvents = top5Events.length > 0
     ? top5Events
     : [{ id: `loading-1`, title: `Loading...`, isLoading: true }];
@@ -264,22 +266,21 @@ const Home2 = () => {
             const normalizedActive = ((activeIndex % length) + length) % length;
             const offset = (index - normalizedActive + length) % length;
 
-            let isCenter = false, isAdjRight = false, isFarRight = false, isFarLeft = false, isAdjLeft = false;
+            let isCenter = false, isAdjRight = false, isFarRight = false, isFarLeft = false, isAdjLeft = false, isHidden = false;
 
             if (length === 1) {
               isCenter = true;
             } else if (length === 2) {
-              isCenter = offset === 0;
+              isAdjLeft = offset === 0;
               isAdjRight = offset === 1;
             } else if (length === 3) {
               isCenter = offset === 0;
               isAdjRight = offset === 1;
               isAdjLeft = offset === 2;
             } else if (length === 4) {
-              isCenter = offset === 0;
+              isAdjLeft = offset === 0;
               isAdjRight = offset === 1;
-              isFarRight = offset === 2;
-              isAdjLeft = offset === 3;
+              isHidden = offset === 2 || offset === 3;
             } else {
               isCenter = offset === 0;
               isAdjRight = offset === 1;
@@ -292,30 +293,48 @@ const Home2 = () => {
             let left = '50%';
             let height = '300px';
             let width = '15vw';
+            let opacity = 1;
+            let isTwoCardsLayout = length === 2 || length === 4;
 
             if (isMobile) {
-              if (isCenter) {
-                zIndex = 10; left = '50%'; height = '360px'; width = '255px';
-              } else if (isAdjLeft) {
-                zIndex = 5; left = '20%'; height = '280px'; width = '198px';
-              } else if (isAdjRight) {
-                zIndex = 5; left = '80%'; height = '280px'; width = '198px';
-              } else if (isFarLeft) {
-                zIndex = 2; left = '-5%'; height = '220px'; width = '156px';
-              } else if (isFarRight) {
-                zIndex = 2; left = '105%'; height = '220px'; width = '156px';
+              if (isTwoCardsLayout) {
+                if (isAdjLeft) { zIndex = 15; left = 'calc(50% - 70px)'; height = '360px'; width = '255px'; }
+                else if (isAdjRight) { zIndex = 10; left = 'calc(50% + 70px)'; height = '360px'; width = '255px'; }
+                else if (isHidden) { zIndex = 1; left = '50%'; height = '220px'; width = '156px'; opacity = 0; }
+              } else {
+                if (isCenter) {
+                  zIndex = 10; left = '50%'; height = '360px'; width = '255px';
+                } else if (isAdjLeft) {
+                  zIndex = 5; left = '20%'; height = '280px'; width = '198px';
+                } else if (isAdjRight) {
+                  zIndex = 5; left = '80%'; height = '280px'; width = '198px';
+                } else if (isFarLeft) {
+                  zIndex = 2; left = '-5%'; height = '220px'; width = '156px';
+                } else if (isFarRight) {
+                  zIndex = 2; left = '105%'; height = '220px'; width = '156px';
+                } else if (isHidden) {
+                  zIndex = 1; left = '50%'; height = '220px'; width = '156px'; opacity = 0;
+                }
               }
             } else {
-              if (isCenter) {
-                zIndex = 10; left = '50%'; height = '480px'; width = '340px';
-              } else if (isAdjLeft) {
-                zIndex = 5; left = '35%'; height = '380px'; width = '269px';
-              } else if (isAdjRight) {
-                zIndex = 5; left = '65%'; height = '380px'; width = '269px';
-              } else if (isFarLeft) {
-                zIndex = 2; left = '22%'; height = '300px'; width = '212px';
-              } else if (isFarRight) {
-                zIndex = 2; left = '78%'; height = '300px'; width = '212px';
+              if (isTwoCardsLayout) {
+                if (isAdjLeft) { zIndex = 10; left = 'calc(50% - 180px)'; height = '480px'; width = '340px'; }
+                else if (isAdjRight) { zIndex = 10; left = 'calc(50% + 180px)'; height = '480px'; width = '340px'; }
+                else if (isHidden) { zIndex = 1; left = '50%'; height = '300px'; width = '212px'; opacity = 0; }
+              } else {
+                if (isCenter) {
+                  zIndex = 10; left = '50%'; height = '480px'; width = '340px';
+                } else if (isAdjLeft) {
+                  zIndex = 5; left = '35%'; height = '380px'; width = '269px';
+                } else if (isAdjRight) {
+                  zIndex = 5; left = '65%'; height = '380px'; width = '269px';
+                } else if (isFarLeft) {
+                  zIndex = 2; left = '22%'; height = '300px'; width = '212px';
+                } else if (isFarRight) {
+                  zIndex = 2; left = '78%'; height = '300px'; width = '212px';
+                } else if (isHidden) {
+                  zIndex = 1; left = '50%'; height = '300px'; width = '212px'; opacity = 0;
+                }
               }
             }
 
@@ -333,7 +352,7 @@ const Home2 = () => {
                   height,
                   left,
                   zIndex,
-                  opacity: 1
+                  opacity
                 }}
                 transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
                 style={{
