@@ -152,7 +152,7 @@ router.post('/request-password-change', requireAuth, requireOrganizer, async (re
     // Return masked email
     const [name, domain] = club.presidentEmail.split('@');
     const maskedEmail = `${name.substring(0, 2)}***@${domain}`;
-    
+
     res.status(200).json({ message: 'OTP sent successfully', email: maskedEmail });
   } catch (err) {
     console.error('Error requesting password change:', err);
@@ -165,7 +165,7 @@ router.post('/verify-password-change', requireAuth, requireOrganizer, async (req
   const { otp, newPassword } = req.body;
   try {
     const user = await User.findById(req.user.id);
-    
+
     if (!user.otp || user.otp !== otp || user.otpExpires < Date.now()) {
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
@@ -179,9 +179,9 @@ router.post('/verify-password-change', requireAuth, requireOrganizer, async (req
     user.password = newPassword;
     user.otp = undefined;
     user.otpExpires = undefined;
-    
+
     await user.save();
-    
+
     res.status(200).json({ message: 'Password updated successfully' });
   } catch (err) {
     console.error('Error verifying password change:', err);
@@ -211,13 +211,13 @@ router.post('/events', requireAuth, requireOrganizer, upload.single('image'), as
     }
 
     const { title, description, date, venue, category, price, seats, tag, startDate, endDate, registrationDeadline, mode, location, capacity, rules } = req.body;
-    
+
     if (!req.file) {
       return res.status(400).json({ message: 'Please upload an image for the event' });
     }
 
     const ClubsEvent = require('../models/ClubsEvent');
-    
+
     const event = new ClubsEvent({
       title,
       description: description || 'No description provided.',
@@ -241,7 +241,7 @@ router.post('/events', requireAuth, requireOrganizer, upload.single('image'), as
     });
 
     const savedEvent = await event.save();
-    
+
     // Optionally increment eventsConducted if numeric
     if (typeof club.eventsConducted === 'number') {
       club.eventsConducted += 1;
@@ -280,7 +280,7 @@ router.post('/notifications', requireAuth, requireOrganizer, async (req, res) =>
     if (!title || !message) {
       return res.status(400).json({ message: 'Title and message are required' });
     }
-    
+
     const Notification = require('../models/Notification');
     const notification = new Notification({
       title,
@@ -288,7 +288,7 @@ router.post('/notifications', requireAuth, requireOrganizer, async (req, res) =>
       type: type || 'info',
       createdBy: req.user._id
     });
-    
+
     await notification.save();
     res.status(201).json({ message: 'Notification sent successfully', notification });
   } catch (err) {

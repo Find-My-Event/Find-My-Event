@@ -131,7 +131,7 @@ export default function CreateEvent() {
       formData.append('capacity', capacity ? capacity.toString() : '0');
       formData.append('generateQRCode', generateQRCode.toString());
       formData.append('targetDepartment', targetDepartment);
-      
+
       // Paid Fields
       formData.append('isPaid', isPaid.toString());
       if (isPaid) {
@@ -169,8 +169,10 @@ export default function CreateEvent() {
 
   return (
     <div style={darkPageShell}>
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, opacity: 0.4,
-        backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(236,72,153,0.12) 0%, transparent 45%)' }} />
+      <div style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, opacity: 0.4,
+        backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(236,72,153,0.12) 0%, transparent 45%)'
+      }} />
 
       <AnimatePresence mode="wait">
         {flow === 'form' && (
@@ -239,130 +241,130 @@ export default function CreateEvent() {
                   <label style={labelStyle}>Event location <span style={{ color: '#3b82f6' }}>*</span></label>
                   <input style={inputStyle} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Jaipur, Rajasthan" />
                 </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={labelStyle}>Capacity</label>
+                    <input style={inputStyle} type="number" min={0} value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="3000" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Target Department</label>
+                    <select style={{ ...inputStyle, cursor: 'pointer' }} value={targetDepartment} onChange={(e) => setTargetDepartment(e.target.value)}>
+                      <option value="All">All Departments</option>
+                      {DEPARTMENTS.map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={labelStyle}>Poster Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setImageFile(file);
+                          setImagePreview(URL.createObjectURL(file));
+                        }
+                      }}
+                      style={{ ...inputStyle, cursor: 'pointer', paddingTop: '11px', paddingBottom: '11px' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Paid Event Section */}
+                <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', borderRadius: 20, border: '1px solid var(--border-subtle)', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isPaid ? '1.25rem' : '0' }}>
                     <div>
-                      <label style={labelStyle}>Capacity</label>
-                      <input style={inputStyle} type="number" min={0} value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="3000" />
+                      <h4 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>Paid Event</h4>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Enable ticket pricing and capacity limits</p>
                     </div>
-                    <div>
-                      <label style={labelStyle}>Target Department</label>
-                      <select style={{ ...inputStyle, cursor: 'pointer' }} value={targetDepartment} onChange={(e) => setTargetDepartment(e.target.value)}>
-                        <option value="All">All Departments</option>
-                        {DEPARTMENTS.map(d => (
-                          <option key={d} value={d}>{d}</option>
-                        ))}
-                      </select>
+                    <div
+                      onClick={() => setIsPaid(!isPaid)}
+                      style={{
+                        width: 50, height: 26, background: isPaid ? '#3b82f6' : 'var(--border-color)',
+                        borderRadius: 20, position: 'relative', cursor: 'pointer', transition: '0.3s'
+                      }}
+                    >
+                      <div style={{
+                        width: 20, height: 20, background: '#fff', borderRadius: '50%', position: 'absolute',
+                        top: 3, left: isPaid ? 27 : 3, transition: '0.3s'
+                      }} />
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-                    <div>
-                      <label style={labelStyle}>Poster Image</label>
-                      <input 
-                        type="file" 
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setImageFile(file);
-                            setImagePreview(URL.createObjectURL(file));
-                          }
-                        }} 
-                        style={{ ...inputStyle, cursor: 'pointer', paddingTop: '11px', paddingBottom: '11px' }} 
-                      />
-                    </div>
-                  </div>
-
-                  {/* Paid Event Section */}
-                  <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', borderRadius: 20, border: '1px solid var(--border-subtle)', marginTop: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isPaid ? '1.25rem' : '0' }}>
-                      <div>
-                        <h4 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>Paid Event</h4>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Enable ticket pricing and capacity limits</p>
-                      </div>
-                      <div 
-                        onClick={() => setIsPaid(!isPaid)}
-                        style={{ 
-                          width: 50, height: 26, background: isPaid ? '#3b82f6' : 'var(--border-color)', 
-                          borderRadius: 20, position: 'relative', cursor: 'pointer', transition: '0.3s' 
-                        }}
-                      >
-                        <div style={{ 
-                          width: 20, height: 20, background: '#fff', borderRadius: '50%', position: 'absolute', 
-                          top: 3, left: isPaid ? 27 : 3, transition: '0.3s' 
-                        }} />
-                      </div>
-                    </div>
-
-                    {isPaid && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflow: 'hidden' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
-                          <div>
-                            <label style={labelStyle}>Ticket Price (INR) <span style={{ color: '#3b82f6' }}>*</span></label>
-                            <input style={inputStyle} type="number" value={ticketPrice} onChange={(e) => setTicketPrice(e.target.value)} placeholder="e.g. 499" />
-                          </div>
-                          <div>
-                            <label style={labelStyle}>Ticket Capacity <span style={{ color: '#3b82f6' }}>*</span></label>
-                            <input style={inputStyle} type="number" value={ticketCapacity} onChange={(e) => setTicketCapacity(e.target.value)} placeholder="Max seats" />
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
-                          <div>
-                            <label style={labelStyle}>Max Tickets Per User</label>
-                            <input style={inputStyle} type="number" value={maxTicketsPerUser} onChange={(e) => setMaxTicketsPerUser(e.target.value)} />
-                          </div>
-                          <div>
-                            <label style={labelStyle}>Refund Policy</label>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button 
-                                type="button"
-                                onClick={() => setIsRefundable(true)}
-                                style={{ ...inputStyle, background: isRefundable ? '#3b82f6' : 'var(--border-subtle)', border: 'none', cursor: 'pointer', flex: 1, fontSize: '0.8rem' }}
-                              >Refundable</button>
-                              <button 
-                                type="button"
-                                onClick={() => setIsRefundable(false)}
-                                style={{ ...inputStyle, background: !isRefundable ? '#ef4444' : 'var(--border-subtle)', border: 'none', cursor: 'pointer', flex: 1, fontSize: '0.8rem' }}
-                              >Non-Refundable</button>
-                            </div>
-                          </div>
-                        </div>
-
+                  {isPaid && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
                         <div>
-                          <label style={labelStyle}>Payment Description</label>
-                          <input style={inputStyle} value={paymentDescription} onChange={(e) => setPaymentDescription(e.target.value)} placeholder="e.g. Includes workshop kit + lunch" />
+                          <label style={labelStyle}>Registration Fees (INR) <span style={{ color: '#3b82f6' }}>*</span></label>
+                          <input style={inputStyle} type="number" value={ticketPrice} onChange={(e) => setTicketPrice(e.target.value)} placeholder="e.g. 499" />
                         </div>
-
                         <div>
-                          <label style={labelStyle}>Entry Conditions</label>
-                          <input style={inputStyle} value={entryConditions} onChange={(e) => setEntryConditions(e.target.value)} placeholder="e.g. College ID required at entry" />
+                          <label style={labelStyle}>Ticket Capacity <span style={{ color: '#3b82f6' }}>*</span></label>
+                          <input style={inputStyle} type="number" value={ticketCapacity} onChange={(e) => setTicketCapacity(e.target.value)} placeholder="Max seats" />
                         </div>
-                      </motion.div>
-                    )}
-                  </div>
+                      </div>
 
-                  {/* QR Code Ticketing Section */}
-                  <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', borderRadius: 20, border: '1px solid var(--border-subtle)', marginTop: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
+                        <div>
+                          <label style={labelStyle}>Max Tickets Per User</label>
+                          <input style={inputStyle} type="number" value={maxTicketsPerUser} onChange={(e) => setMaxTicketsPerUser(e.target.value)} />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Refund Policy</label>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => setIsRefundable(true)}
+                              style={{ ...inputStyle, background: isRefundable ? '#3b82f6' : 'var(--border-subtle)', border: 'none', cursor: 'pointer', flex: 1, fontSize: '0.8rem' }}
+                            >Refundable</button>
+                            <button
+                              type="button"
+                              onClick={() => setIsRefundable(false)}
+                              style={{ ...inputStyle, background: !isRefundable ? '#ef4444' : 'var(--border-subtle)', border: 'none', cursor: 'pointer', flex: 1, fontSize: '0.8rem' }}
+                            >Non-Refundable</button>
+                          </div>
+                        </div>
+                      </div>
+
                       <div>
-                        <h4 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>QR Code Ticketing</h4>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Generate digital QR code tickets for attendees</p>
+                        <label style={labelStyle}>Payment Description</label>
+                        <input style={inputStyle} value={paymentDescription} onChange={(e) => setPaymentDescription(e.target.value)} placeholder="e.g. Includes workshop kit + lunch" />
                       </div>
-                      <div 
-                        onClick={() => setGenerateQRCode(!generateQRCode)}
-                        style={{ 
-                          width: 50, height: 26, background: generateQRCode ? '#3b82f6' : 'var(--border-color)', 
-                          borderRadius: 20, position: 'relative', cursor: 'pointer', transition: '0.3s' 
-                        }}
-                      >
-                        <div style={{ 
-                          width: 20, height: 20, background: '#fff', borderRadius: '50%', position: 'absolute', 
-                          top: 3, left: generateQRCode ? 27 : 3, transition: '0.3s' 
-                        }} />
+
+                      <div>
+                        <label style={labelStyle}>Entry Conditions</label>
+                        <input style={inputStyle} value={entryConditions} onChange={(e) => setEntryConditions(e.target.value)} placeholder="e.g. College ID required at entry" />
                       </div>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* QR Code Ticketing Section */}
+                <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', borderRadius: 20, border: '1px solid var(--border-subtle)', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <h4 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 700 }}>QR Code Ticketing</h4>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Generate digital QR code tickets for attendees</p>
+                    </div>
+                    <div
+                      onClick={() => setGenerateQRCode(!generateQRCode)}
+                      style={{
+                        width: 50, height: 26, background: generateQRCode ? '#3b82f6' : 'var(--border-color)',
+                        borderRadius: 20, position: 'relative', cursor: 'pointer', transition: '0.3s'
+                      }}
+                    >
+                      <div style={{
+                        width: 20, height: 20, background: '#fff', borderRadius: '50%', position: 'absolute',
+                        top: 3, left: generateQRCode ? 27 : 3, transition: '0.3s'
+                      }} />
                     </div>
                   </div>
+                </div>
 
                 <motion.button
                   type="button"
@@ -415,8 +417,10 @@ export default function CreateEvent() {
               background: 'linear-gradient(160deg, rgba(9,9,11,0.97) 0%, rgba(15,10,25,0.98) 50%, rgba(9,9,11,0.97) 100%)',
             }}
           >
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
-              background: 'radial-gradient(circle at 100% 0%, rgba(168,85,247,0.2) 0%, transparent 42%), radial-gradient(circle at 0% 100%, rgba(59,130,246,0.08) 0%, transparent 40%)' }} />
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none',
+              background: 'radial-gradient(circle at 100% 0%, rgba(168,85,247,0.2) 0%, transparent 42%), radial-gradient(circle at 0% 100%, rgba(59,130,246,0.08) 0%, transparent 40%)'
+            }} />
 
             {flow === 'pending' && (
               <motion.div
