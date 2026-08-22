@@ -68,6 +68,12 @@ const clubSchema = new mongoose.Schema({
   gmailUrl: {
     type: String,
   },
+  websiteUrl: {
+    type: String,
+  },
+  additionalLink: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now
