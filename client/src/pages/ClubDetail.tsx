@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Loader2, Mail, User, Image as ImageIcon, Trophy, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, Loader2, Mail, User, Image as ImageIcon, Trophy, X, ChevronLeft, ChevronRight, Globe } from 'lucide-react';
 import { api } from '../lib/api';
 import { fallbackClubs } from '../data/clubs';
 import type { Club } from '../data/clubs';
@@ -211,6 +211,24 @@ export default function ClubDetail({ hash }: ClubDetailProps) {
                   <Mail color="#a855f7" size={24} style={{ cursor: 'not-allowed' }} />
                 </div>
               )}
+
+              {/* Website / Additional Link */}
+              {(() => {
+                const extraUrl = club.websiteUrl || club.additionalLink;
+                if (extraUrl) {
+                  const href = extraUrl.startsWith('http') ? extraUrl : `https://${extraUrl}`;
+                  return (
+                    <a href={href} target="_blank" rel="noopener noreferrer" style={{ display: 'flex' }} title="Website / Additional Link">
+                      <Globe color="#06b6d4" size={24} style={{ cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.2)')} onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')} />
+                    </a>
+                  );
+                }
+                return (
+                  <div style={{ display: 'flex', opacity: 0.4 }} title="Website / Additional Link (Not provided)">
+                    <Globe color="#06b6d4" size={24} style={{ cursor: 'not-allowed' }} />
+                  </div>
+                );
+              })()}
             </div>
           </div>
 

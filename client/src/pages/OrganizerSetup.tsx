@@ -23,6 +23,7 @@ export default function OrganizerSetup() {
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [instagramUrl, setInstagramUrl] = useState('');
   const [gmailUrl, setGmailUrl] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState('');
   
   // Arrays
   const [glimpses, setGlimpses] = useState<string[]>([]);
@@ -66,6 +67,7 @@ export default function OrganizerSetup() {
       setLinkedinUrl(data.linkedinUrl || '');
       setInstagramUrl(data.instagramUrl || '');
       setGmailUrl(data.gmailUrl || '');
+      setWebsiteUrl(data.websiteUrl || data.additionalLink || '');
       setGlimpses(data.glimpses || []);
       setLeadership(data.leadership || []);
       
@@ -172,7 +174,9 @@ export default function OrganizerSetup() {
         leadership,
         linkedinUrl,
         instagramUrl,
-        gmailUrl
+        gmailUrl,
+        websiteUrl,
+        additionalLink: websiteUrl
       });
       
       await refreshUser();
@@ -301,6 +305,29 @@ export default function OrganizerSetup() {
               <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>President / Official Contact Email (Recovery Email)</label>
               <input type="email" value={presidentEmail} onChange={(e) => setPresidentEmail(e.target.value)} placeholder="president@club.com" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
               <p style={{ fontSize: '0.85rem', color: '#888', margin: '0.5rem 0 0 0' }}>Used for security purposes (like OTP for password changes). Must be an active email address.</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Instagram Handle / Page URL</label>
+                <input type="url" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://www.instagram.com/your-club" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>LinkedIn Profile / Page URL</label>
+                <input type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://www.linkedin.com/company/your-club" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Official Club Contact Email (Gmail)</label>
+              <input type="email" value={gmailUrl} onChange={(e) => setGmailUrl(e.target.value)} placeholder="yourclub@gmail.com" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
+              <p style={{ fontSize: '0.85rem', color: '#888', margin: '0.5rem 0 0 0' }}>Publicly displayed for student inquiries on your club page.</p>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#333', marginBottom: '0.5rem' }}>Additional Website / Custom Link</label>
+              <input type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://linktr.ee/yourclub or https://yourclub.com" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '1rem', background: '#fafafa', outline: 'none' }} />
+              <p style={{ fontSize: '0.85rem', color: '#888', margin: '0.5rem 0 0 0' }}>Linktree, portfolio, or custom website displayed alongside social icons on your profile.</p>
             </div>
 
 

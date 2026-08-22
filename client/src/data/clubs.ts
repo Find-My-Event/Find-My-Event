@@ -16,6 +16,8 @@ export interface Club {
   linkedinUrl?: string;
   instagramUrl?: string;
   gmailUrl?: string;
+  websiteUrl?: string;
+  additionalLink?: string;
 }
 
 export const fallbackClubs: Club[] = [
