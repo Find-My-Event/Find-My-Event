@@ -154,10 +154,15 @@ const Home2 = () => {
   const initiativeKeywords = ['initiative', 'center', 'centre', 'council', 'jic', 'iaeste', 'zarurat', 'makerspace', 'socialz', 'mpower', 'nss', 'upscale', 'incubation', 'cell', 'outreach'];
 
   const displayedClubs = [...clubs].sort((a, b) => {
-    const typeA = (a.type || '').toLowerCase();
-    const typeB = (b.type || '').toLowerCase();
     const nameA = (a.name || '').toLowerCase();
     const nameB = (b.name || '').toLowerCase();
+    const isAStudentCouncil = nameA.includes('student council');
+    const isBStudentCouncil = nameB.includes('student council');
+    if (isAStudentCouncil && !isBStudentCouncil) return -1;
+    if (!isAStudentCouncil && isBStudentCouncil) return 1;
+
+    const typeA = (a.type || '').toLowerCase();
+    const typeB = (b.type || '').toLowerCase();
     const isAInit = typeA === 'initiative' || typeA === 'center' || typeA === 'centre' || initiativeKeywords.some(k => nameA.includes(k));
     const isBInit = typeB === 'initiative' || typeB === 'center' || typeB === 'centre' || initiativeKeywords.some(k => nameB.includes(k));
     if (isAInit && !isBInit) return -1;
@@ -395,18 +400,6 @@ const Home2 = () => {
         </div>
       </section>
 
-      <section className="categories-section" style={{ maxWidth: '1440px', margin: '0 auto', padding: isMobile ? '1.5rem 1.5rem 1rem' : '2rem 2.5rem 1rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem' }}>Explore Events Categories</h2>
-        <div className="categories-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '1.5rem' }}>
-          {categories.map((cat) => (
-            <motion.div key={cat.name} className="category-card" onClick={() => handleCategoryClick(cat.name)} whileHover={{ y: -8, boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }} style={{ background: `linear-gradient(to bottom, #ffffff 10%, ${cat.color}25 55%, ${cat.color}88 100%)`, borderRadius: '16px', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', aspectRatio: '3/4' }}>
-              <span className="category-text" style={{ fontSize: '0.95rem', fontWeight: 700, color: '#334155', zIndex: 1, textAlign: 'center', marginTop: '1.25rem', padding: '0 0.5rem' }}>{cat.name}</span>
-              <span className="category-icon" style={{ fontSize: '4.5rem', zIndex: 1, marginTop: 'auto', marginBottom: '0.75rem' }}>{cat.icon}</span>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
       {loading ? (
         <div style={{ padding: '6rem 2rem', textAlign: 'center' }}><h2>Loading...</h2></div>
       ) : (
@@ -422,6 +415,18 @@ const Home2 = () => {
                   <motion.img whileHover={{ scale: 1.05 }} src={club.logo} alt={club.name} style={{ width: isMobile ? '90px' : '120px', height: isMobile ? '90px' : '120px', borderRadius: '50%', objectFit: 'cover', background: '#e2e8f0', boxShadow: '0 8px 16px rgba(0,0,0,0.08)', flexShrink: 0 }} />
                   <span style={{ fontWeight: 600, fontSize: isMobile ? '0.82rem' : '0.95rem', textAlign: 'center', lineHeight: 1.2 }}>{club.name}</span>
                 </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="categories-section" style={{ maxWidth: '1440px', margin: '0 auto', padding: isMobile ? '1.5rem 1.5rem 1rem' : '2rem 2.5rem 1rem' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem' }}>Explore Events Categories</h2>
+            <div className="categories-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '1.5rem' }}>
+              {categories.map((cat) => (
+                <motion.div key={cat.name} className="category-card" onClick={() => handleCategoryClick(cat.name)} whileHover={{ y: -8, boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }} style={{ background: `linear-gradient(to bottom, #ffffff 10%, ${cat.color}25 55%, ${cat.color}88 100%)`, borderRadius: '16px', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', aspectRatio: '3/4' }}>
+                  <span className="category-text" style={{ fontSize: '0.95rem', fontWeight: 700, color: '#334155', zIndex: 1, textAlign: 'center', marginTop: '1.25rem', padding: '0 0.5rem' }}>{cat.name}</span>
+                  <span className="category-icon" style={{ fontSize: '4.5rem', zIndex: 1, marginTop: 'auto', marginBottom: '0.75rem' }}>{cat.icon}</span>
+                </motion.div>
               ))}
             </div>
           </section>
