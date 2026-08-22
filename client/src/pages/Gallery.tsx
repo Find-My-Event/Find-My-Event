@@ -19,10 +19,10 @@ const Gallery: React.FC = () => {
 
   return (
     <div style={{ background: '#fafafa', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      
+
       {/* Main Content */}
       <div style={{ flex: 1, padding: '5.5rem 2rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        
+
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <h2 style={{ fontSize: 'clamp(2rem,4.5vw,3.5rem)', fontWeight: 800, letterSpacing: '-0.03em', color: '#111', lineHeight: 1.1 }}>
@@ -33,13 +33,13 @@ const Gallery: React.FC = () => {
         {/* Masonry Grid */}
         <div className="gallery-masonry">
           {IMAGES.map((imgSrc, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="gallery-item"
               onClick={() => setSelectedImageIndex(i)}
               style={{ cursor: 'pointer' }}
             >
-              <img src={imgSrc} alt={`Gallery event ${i+1}`} loading="lazy" />
+              <img src={imgSrc} alt={`Gallery event ${i + 1}`} loading="lazy" />
             </div>
           ))}
         </div>

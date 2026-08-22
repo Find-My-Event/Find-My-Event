@@ -36,8 +36,8 @@ router.get('/approved', softAuth, async (req, res) => {
       return res.json(approvedCache.data);
     }
 
-    const list = await EventSubmission.find({ 
-      status: 'approved', 
+    const list = await EventSubmission.find({
+      status: 'approved',
       withdrawalStatus: { $ne: 'approved' },
       visibility: { $nin: ['Private', 'Unlisted'] }
     })
@@ -129,9 +129,9 @@ router.delete('/submission/:id', requireAuth, async (req, res) => {
 
     if (!s) return res.status(404).json({ message: 'Event not found' });
 
-    let isOwner = (s.createdBy && s.createdBy.toString() === req.user._id.toString()) || 
-                  (s.organizer && s.organizer.toString() === req.user._id.toString()) ||
-                  (s.organizer && req.user.name && s.organizer.toString().toLowerCase() === req.user.name.toLowerCase());
+    let isOwner = (s.createdBy && s.createdBy.toString() === req.user._id.toString()) ||
+      (s.organizer && s.organizer.toString() === req.user._id.toString()) ||
+      (s.organizer && req.user.name && s.organizer.toString().toLowerCase() === req.user.name.toLowerCase());
 
     if (!isOwner && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Forbidden: You can only delete your own events' });
@@ -148,7 +148,7 @@ router.put('/submission/:id', requireAuth, upload.single('image'), async (req, r
   try {
     let s = await EventSubmission.findById(req.params.id);
     let isClubsEvent = false;
-    
+
     if (!s) {
       const ClubsEvent = require('../models/ClubsEvent');
       s = await ClubsEvent.findById(req.params.id);
@@ -156,23 +156,23 @@ router.put('/submission/:id', requireAuth, upload.single('image'), async (req, r
     }
 
     if (!s) return res.status(404).json({ message: 'Not found' });
-    
+
     // Only the organizer (or an admin) can update their event
-    let isOwner = (s.createdBy && s.createdBy.toString() === req.user._id.toString()) || 
-                  (s.organizer && s.organizer.toString() === req.user._id.toString()) ||
-                  (s.organizer && req.user.name && s.organizer.toString().toLowerCase() === req.user.name.toLowerCase());
+    let isOwner = (s.createdBy && s.createdBy.toString() === req.user._id.toString()) ||
+      (s.organizer && s.organizer.toString() === req.user._id.toString()) ||
+      (s.organizer && req.user.name && s.organizer.toString().toLowerCase() === req.user.name.toLowerCase());
 
     if (!isOwner && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Forbidden: You can only edit your own events' });
     }
 
-    const { 
+    const {
       title, description, startDate, endDate, mode, location, capacity, imageUrl,
       participantType, teamMin, teamMax, eligibility, timeline, rules, contacts, announcements, customQuestions,
       tickets, prizes, visibility, registrationControl, personalInfo, eduInfo, organizingTeam, registrationDeadline,
       generateQRCode, targetDepartment
     } = req.body;
-    
+
     if (title !== undefined) s.title = title;
     if (description !== undefined) s.description = description;
     if (startDate !== undefined) s.startDate = startDate;
@@ -180,7 +180,7 @@ router.put('/submission/:id', requireAuth, upload.single('image'), async (req, r
     if (mode !== undefined) s.mode = mode;
     if (location !== undefined) s.location = location;
     s.capacity = capacity !== undefined ? Number(capacity) : s.capacity;
-    
+
     if (req.file) {
       s.imageUrl = req.file.path;
     } else if (imageUrl !== undefined) {
@@ -350,10 +350,10 @@ router.post('/', requireAuth, upload.single('image'), async (req, res) => {
     if (!title || !description || !startDate || !endDate || !mode || !location) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
-    
+
     // Determine the final image URL (from upload or fallback)
     const finalImageUrl = req.file ? req.file.path : (imageUrl || '');
-    
+
     const submission = await EventSubmission.create({
       organizer: req.user._id,
       title,
@@ -443,20 +443,20 @@ router.get('/registered', requireAuth, async (req, res) => {
     const events = await Event.find({ registeredUsers: req.user._id }).lean();
     const submissions = await EventSubmission.find({ registeredUsers: req.user._id }).lean();
     const clubsEvents = await ClubsEvent.find({ registeredUsers: req.user._id }).lean();
-    
+
     const registrations = await Registration.find({ user: req.user._id }).lean();
     const paidRegistrations = await PaidRegistration.find({ user: req.user._id }).lean();
-    
+
     const getRollNo = (eventId) => {
-      const reg = registrations.find(r => r.event.toString() === eventId.toString()) || 
-                  paidRegistrations.find(r => r.event.toString() === eventId.toString());
+      const reg = registrations.find(r => r.event.toString() === eventId.toString()) ||
+        paidRegistrations.find(r => r.event.toString() === eventId.toString());
       if (reg && reg.customAnswers) {
         const rollAnswer = reg.customAnswers.find(a => a.question && a.question.toLowerCase().includes('roll'));
         if (rollAnswer) return rollAnswer.answer;
       }
       return null;
     };
-    
+
     // Fetch all pricing details in one query
     const allRegisteredEventIds = [
       ...submissions.map(s => s._id),
@@ -657,7 +657,7 @@ router.get('/club/:id', async (req, res) => {
       return res.status(404).json({ message: 'Club not found' });
     }
     const events = await ClubsEvent.find({ clubId: club._id, visibility: { $nin: ['Private', 'Unlisted'] } }).sort({ createdAt: -1 }).lean();
-    
+
     const eventIds = events.map(e => e._id);
     const pricingDetails = await PaidEventDetail.find({ event: { $in: eventIds } }).lean();
     const pricingMap = {};
@@ -679,7 +679,7 @@ router.get('/:id', softAuth, async (req, res) => {
   try {
     let eventModel = 'Event';
     let event = await Event.findById(req.params.id).populate('createdBy', 'avatar logo').lean();
-    
+
     if (!event) {
       event = await EventSubmission.findById(req.params.id).populate('createdBy', 'avatar logo').lean();
       eventModel = 'EventSubmission';
@@ -696,9 +696,9 @@ router.get('/:id', softAuth, async (req, res) => {
       if (!req.user) {
         return res.status(403).json({ message: 'This event is private.' });
       }
-      const isOwner = (event.createdBy && event.createdBy.toString() === req.user._id.toString()) || 
-                      (event.organizer && req.user.name && event.organizer.toLowerCase() === req.user.name.toLowerCase());
-      
+      const isOwner = (event.createdBy && event.createdBy.toString() === req.user._id.toString()) ||
+        (event.organizer && req.user.name && event.organizer.toLowerCase() === req.user.name.toLowerCase());
+
       if (!isOwner && req.user.role !== 'admin') {
         return res.status(403).json({ message: 'This event is private.' });
       }
@@ -732,62 +732,62 @@ router.get('/:id/participants', requireAuth, async (req, res) => {
       event = await ClubsEvent.findById(req.params.id).populate('registeredUsers', 'name email phone avatar');
     }
     if (!event) return res.status(404).json({ message: 'Event not found' });
-    
+
     // Also fetch paid registrations
     const paidRegistrations = await PaidRegistration.find({ event: event._id }).populate('user', 'name email phone avatar').lean();
-    
+
     // Fetch free registrations to get custom answers
     const freeRegistrations = await Registration.find({ event: event._id }).populate('user', 'name email phone avatar').lean();
 
     // Combine them
     const allParticipants = [];
     const attendedSet = new Set((event.attendedUsers || []).map(id => id.toString()));
-    
+
     freeRegistrations.forEach(r => {
-        if (!r.user) return;
-        const members = r.teamMembers && r.teamMembers.length > 0 
-            ? r.teamMembers 
-            : [{ name: r.user.name, email: r.user.email, phone: r.user.phone, customAnswers: r.customAnswers }];
-            
-        allParticipants.push({
-            id: r.user._id,
-            name: members[0].name,
-            email: members[0].email,
-            phone: members[0].phone,
-            avatar: r.user.avatar,
-            type: 'Free',
-            status: r.status || 'Registered',
-            answers: members[0].customAnswers || [],
-            checkedIn: attendedSet.has(r.user._id.toString()),
-            isTeam: members.length > 1,
-            teamSize: r.teamSize || members.length,
-            teamMembers: members // Array of all members including leader
-        });
+      if (!r.user) return;
+      const members = r.teamMembers && r.teamMembers.length > 0
+        ? r.teamMembers
+        : [{ name: r.user.name, email: r.user.email, phone: r.user.phone, customAnswers: r.customAnswers }];
+
+      allParticipants.push({
+        id: r.user._id,
+        name: members[0].name,
+        email: members[0].email,
+        phone: members[0].phone,
+        avatar: r.user.avatar,
+        type: 'Free',
+        status: r.status || 'Registered',
+        answers: members[0].customAnswers || [],
+        checkedIn: attendedSet.has(r.user._id.toString()),
+        isTeam: members.length > 1,
+        teamSize: r.teamSize || members.length,
+        teamMembers: members // Array of all members including leader
+      });
     });
 
     paidRegistrations.forEach(r => {
-        if (!r.user) return;
-        const members = r.teamMembers && r.teamMembers.length > 0 
-            ? r.teamMembers 
-            : [{ name: r.user.name, email: r.user.email, phone: r.user.phone, customAnswers: r.customAnswers }];
-            
-        // Avoid duplicates if they are somehow in both (only check leaders to be safe)
-        if (allParticipants.find(p => p.id.toString() === r.user._id.toString())) return;
+      if (!r.user) return;
+      const members = r.teamMembers && r.teamMembers.length > 0
+        ? r.teamMembers
+        : [{ name: r.user.name, email: r.user.email, phone: r.user.phone, customAnswers: r.customAnswers }];
 
-        allParticipants.push({
-            id: r.user._id,
-            name: members[0].name,
-            email: members[0].email,
-            phone: members[0].phone,
-            avatar: r.user.avatar,
-            type: 'Paid',
-            status: r.status || r.paymentStatus || 'Completed',
-            answers: members[0].customAnswers || [],
-            checkedIn: attendedSet.has(r.user._id.toString()),
-            isTeam: members.length > 1,
-            teamSize: r.teamSize || members.length,
-            teamMembers: members
-        });
+      // Avoid duplicates if they are somehow in both (only check leaders to be safe)
+      if (allParticipants.find(p => p.id.toString() === r.user._id.toString())) return;
+
+      allParticipants.push({
+        id: r.user._id,
+        name: members[0].name,
+        email: members[0].email,
+        phone: members[0].phone,
+        avatar: r.user.avatar,
+        type: 'Paid',
+        status: r.status || r.paymentStatus || 'Completed',
+        answers: members[0].customAnswers || [],
+        checkedIn: attendedSet.has(r.user._id.toString()),
+        isTeam: members.length > 1,
+        teamSize: r.teamSize || members.length,
+        teamMembers: members
+      });
     });
 
     res.json(allParticipants);
@@ -801,7 +801,7 @@ router.get('/:id/participants', requireAuth, async (req, res) => {
 router.delete('/:id/participants/:userId', requireAuth, async (req, res) => {
   try {
     const { id: eventId, userId } = req.params;
-    
+
     let event = await Event.findById(eventId);
     let Model = Event;
     if (!event) {
@@ -818,9 +818,9 @@ router.delete('/:id/participants/:userId', requireAuth, async (req, res) => {
     // Ensure authorized (admin, organizer, club_admin, user, or event creator)
     const allowedRoles = ['admin', 'organizer', 'club_admin', 'user'];
     const hasRole = allowedRoles.includes(req.user.role);
-    const isOwner = (event.createdBy && event.createdBy.toString() === req.user._id.toString()) || 
-                    (event.organizer && req.user.name && event.organizer.toLowerCase() === req.user.name.toLowerCase());
-    
+    const isOwner = (event.createdBy && event.createdBy.toString() === req.user._id.toString()) ||
+      (event.organizer && req.user.name && event.organizer.toLowerCase() === req.user.name.toLowerCase());
+
     if (!hasRole && !isOwner) {
       return res.status(403).json({ message: 'Not authorized to manage this event' });
     }
@@ -868,27 +868,27 @@ router.post('/:id/register', requireAuth, async (req, res) => {
     // Check if event registration is expired
     const now = new Date();
     let isExpired = false;
-    
+
     if (event.timeline && event.timeline.length > 0) {
-        const regDeadline = event.timeline.find(t => t.title?.toLowerCase().includes('registration'));
-        if (regDeadline && regDeadline.endDate) {
-            const deadline = new Date(regDeadline.endDate);
-            deadline.setHours(23, 59, 59, 999);
-            if (now > deadline) isExpired = true;
-        }
+      const regDeadline = event.timeline.find(t => t.title?.toLowerCase().includes('registration'));
+      if (regDeadline && regDeadline.endDate) {
+        const deadline = new Date(regDeadline.endDate);
+        deadline.setHours(23, 59, 59, 999);
+        if (now > deadline) isExpired = true;
+      }
     }
     if (!isExpired && event.endDate) {
-        const end = new Date(event.endDate);
-        end.setHours(23, 59, 59, 999);
-        if (now > end) isExpired = true;
+      const end = new Date(event.endDate);
+      end.setHours(23, 59, 59, 999);
+      if (now > end) isExpired = true;
     } else if (!isExpired && event.startDate) {
-        const start = new Date(event.startDate);
-        start.setHours(23, 59, 59, 999);
-        if (now > start) isExpired = true;
+      const start = new Date(event.startDate);
+      start.setHours(23, 59, 59, 999);
+      if (now > start) isExpired = true;
     }
 
     if (isExpired) {
-        return res.status(403).json({ message: 'Registration for this event is closed.' });
+      return res.status(403).json({ message: 'Registration for this event is closed.' });
     }
 
     // Target Department check
@@ -934,13 +934,8 @@ router.post('/:id/register', requireAuth, async (req, res) => {
       await User.findByIdAndUpdate(req.user._id, { phone: req.body.teamMembers[0].phone });
     }
 
-    if (modelName === 'Event') {
-      await Event.findByIdAndUpdate(event._id, { $addToSet: { registeredUsers: req.user._id } });
-    } else if (modelName === 'EventSubmission') {
-      await EventSubmission.findByIdAndUpdate(event._id, { $addToSet: { registeredUsers: req.user._id } });
-    } else if (modelName === 'ClubsEvent') {
-      await ClubsEvent.findByIdAndUpdate(event._id, { $addToSet: { registeredUsers: req.user._id } });
-    }
+    event.registeredUsers.push(req.user._id);
+    await event.save();
 
     // Save custom answers and team members for free registration
     await Registration.create({
@@ -956,12 +951,12 @@ router.post('/:id/register', requireAuth, async (req, res) => {
     let qrToken = null;
     let qrDataUrl = '';
     if (event.generateQRCode) {
-      qrToken = jwt.sign({ 
-        userId: req.user._id, 
-        eventId: event._id, 
+      qrToken = jwt.sign({
+        userId: req.user._id,
+        eventId: event._id,
         model: modelName
       }, process.env.JWT_SECRET || 'secret');
-      
+
       try {
         qrDataUrl = await QRCode.toDataURL(qrToken, { width: 200, margin: 2 });
       } catch (err) {
