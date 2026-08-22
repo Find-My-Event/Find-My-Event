@@ -136,6 +136,11 @@ const eventSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  registrationStatus: {
+    type: String,
+    enum: ['Open', 'Closed', 'Draft', 'Not Yet Started'],
+    default: 'Open'
+  },
   createdAt: {
     type: Date,
     default: Date.now

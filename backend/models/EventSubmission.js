@@ -11,6 +11,11 @@ const eventSubmissionSchema = new mongoose.Schema(
     location: { type: String, required: true },
     capacity: { type: Number, default: 0 },
     imageUrl: { type: String, default: '' },
+    registrationStatus: {
+      type: String,
+      enum: ['Open', 'Closed', 'Draft', 'Not Yet Started'],
+      default: 'Open'
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],

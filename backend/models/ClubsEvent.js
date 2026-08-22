@@ -106,6 +106,11 @@ const eventSchema = new mongoose.Schema({
     amount: String
   }],
   visibility: { type: String, default: 'Public' },
+  registrationStatus: {
+    type: String,
+    enum: ['Open', 'Closed', 'Draft', 'Not Yet Started'],
+    default: 'Open'
+  },
   registrationDeadline: { type: String, default: '' },
   generateQRCode: { type: Boolean, default: false },
   registrationControl: { type: String, default: 'Require Approval' },

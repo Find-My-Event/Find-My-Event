@@ -630,7 +630,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
   const [partType, setPartType] = useState(event?.participantType === 'team' ? 'Team' : 'Individual');
   const [teamMin, setTeamMin] = useState(event?.teamMin?.toString() || '1');
   const [teamMax, setTeamMax] = useState(event?.teamMax?.toString() || '4');
-  const [regWindow, setRegWindow] = useState('Open');
+  const [regWindow, setRegWindow] = useState(event?.registrationStatus || 'Open');
 
   const [tickets, setTickets] = useState<any[]>(event?.tickets?.length > 0 ? event.tickets : [{ id: 1, category: 'General Pass', price: 'Free' }]);
   const [isAddingTicket, setIsAddingTicket] = useState(false);
@@ -669,6 +669,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
               <option value="Open">Open</option>
               <option value="Closed">Closed</option>
               <option value="Draft">Draft</option>
+              <option value="Not Yet Started">Not Yet Started</option>
             </select>
           </div>
         </div>
@@ -924,7 +925,7 @@ function RegistrationTab({ event, saveEvent }: { event: any, saveEvent: any }) {
       </div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', borderTop: '1px solid #eaeaea', paddingTop: '1.5rem' }}>
         <button onClick={async () => {
-          const updatePayload: any = { participantType: partType === 'Team' ? 'team' : 'individual' };
+          const updatePayload: any = { participantType: partType === 'Team' ? 'team' : 'individual', registrationStatus: regWindow };
           if (partType === 'Team') {
             updatePayload.teamMin = parseInt(teamMin) || 1;
             updatePayload.teamMax = parseInt(teamMax) || 4;
