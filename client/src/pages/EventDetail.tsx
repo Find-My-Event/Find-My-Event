@@ -109,7 +109,8 @@ const EventDetail = ({ hash }: { hash?: string }) => {
     return false;
   };
 
-  const isClosed = isRegistrationClosed();
+  const isNotStarted = rawEvent?.registrationStatus === 'Not Yet Started';
+  const isClosed = rawEvent?.registrationStatus === 'Closed' || (!isNotStarted && isRegistrationClosed());
 
 
   if (loading) {
@@ -431,7 +432,6 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                       )}
                     </div>
                   </div>
-
                   {/* Team Size */}
                   {rawEvent?.participantType === 'team' && (
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -471,6 +471,15 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                         return;
                       }
 
+                      if (isClosed || isNotStarted) return;
+                      
+                      if (rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All') {
+                        if (user?.education?.department !== rawEvent.targetDepartment) {
+                          alert(`You are not eligible for this event.\n\nThis event is restricted to ${rawEvent.targetDepartment} students.\nYour department is ${user?.education?.department || 'not specified'}.`);
+                          return;
+                        }
+                      }
+
                       if (currentEvent.title && currentEvent.title.toLowerCase().includes('caravan')) {
                         window.location.href = 'https://pages.razorpay.com/clubcaravan2026';
                         return;
@@ -481,33 +490,26 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                         return;
                       }
 
-                      if (isClosed) return;
-                      if (rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All') {
-                        if (user?.education?.department !== rawEvent.targetDepartment) {
-                          alert(`You are not eligible for this event.\n\nThis event is restricted to ${rawEvent.targetDepartment} students.\nYour department is ${user?.education?.department || 'not specified'}.`);
-                          return;
-                        }
-                      }
                       if (!currentEvent.isRegistered) setShowRegister(true);
                     }}
                     style={{
-                      background: (currentEvent.title && (currentEvent.title.toLowerCase().includes('caravan') || currentEvent.title.toLowerCase().includes('fresher') || currentEvent.title.toLowerCase().includes('mrfresher'))) ? '#0f172a' : (currentEvent.isRegistered ? '#10b981' : (isClosed ? '#ef4444' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? '#94a3b8' : '#0f172a'))),
+                      background: isNotStarted ? '#94a3b8' : (isClosed ? '#ef4444' : (currentEvent.isRegistered ? '#10b981' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? '#94a3b8' : '#0f172a'))),
                       color: '#fff',
                       border: 'none',
                       borderRadius: '8px',
                       padding: '1rem 3rem',
                       fontSize: '1.1rem',
                       fontWeight: 700,
-                      cursor: (currentEvent.title && (currentEvent.title.toLowerCase().includes('caravan') || currentEvent.title.toLowerCase().includes('fresher') || currentEvent.title.toLowerCase().includes('mrfresher'))) ? 'pointer' : (currentEvent.isRegistered ? 'default' : (isClosed ? 'not-allowed' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'not-allowed' : 'pointer'))),
+                      cursor: (isClosed || isNotStarted) ? 'not-allowed' : (currentEvent.isRegistered ? 'default' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'not-allowed' : 'pointer')),
                       transition: 'background 0.2s',
                       boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
                     }}
                   >
-                    {(currentEvent.title && (currentEvent.title.toLowerCase().includes('caravan') || currentEvent.title.toLowerCase().includes('fresher') || currentEvent.title.toLowerCase().includes('mrfresher'))) ? 'Register Now' : (currentEvent.isRegistered ? 'Registered' : (isClosed ? 'Registration Closed' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'Not Eligible' : 'Register Now')))}
+                    {isNotStarted ? 'Coming Soon' : (isClosed ? 'Registration Closed' : (currentEvent.isRegistered ? 'Registered' : ((rawEvent?.targetDepartment && rawEvent.targetDepartment !== 'All' && user?.education?.department !== rawEvent.targetDepartment) ? 'Not Eligible' : 'Register Now')))}
                   </button>
                 </div>
                 <div style={{ textAlign: 'center', fontSize: '0.9rem', color: '#94a3b8', marginTop: '2rem' }}>
-                  {isClosed ? 'This event is no longer accepting new registrations.' : 'Limited slots available, Register now to confirm your spot!'}
+                  {isNotStarted ? 'Registrations for this event have not started yet.' : (isClosed ? 'This event is no longer accepting new registrations.' : 'Limited slots available, Register now to confirm your spot!')}
                 </div>
               </div>
 
