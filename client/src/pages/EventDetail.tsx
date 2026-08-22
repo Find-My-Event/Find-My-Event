@@ -384,8 +384,14 @@ const EventDetail = ({ hash }: { hash?: string }) => {
                       <>
                         <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>{new Date(currentEvent.startDate).toLocaleString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
                         <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>
-                          {new Date(currentEvent.startDate).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit' })} 
-                          {currentEvent.endDate ? ` - ${new Date(currentEvent.endDate).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit' })}` : ''}
+                          {(() => {
+                            const startTime = new Date(currentEvent.startDate).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit' });
+                            if (!currentEvent.endDate) return startTime;
+                            const endObj = new Date(currentEvent.endDate);
+                            const endStr = endObj.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit' });
+                            if (endStr === '11:59 PM' || endObj.getHours() === 23) return startTime;
+                            return `${startTime} - ${endStr}`;
+                          })()}
                         </div>
                       </>
                     ) : (
